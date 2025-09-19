@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { Outlet } from "react-router";
-import type { User } from "../Utils/types";
+import type { User } from "../Utils/Types";
 
 type AuthContextType = {
   isLogged: boolean;
@@ -10,6 +9,7 @@ type AuthContextType = {
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   error: string | null;
+  setError: (errorMessage: string) => void;
   clearError: () => void;
 };
 
@@ -21,6 +21,7 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => {},
   logout: async () => {},
   error: null,
+  setError: () => {},
   clearError: () => {},
 });
 
@@ -29,26 +30,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
     const checkToken = async () => {
-      return;
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/user/check`
+        );
+        if (!response.ok) {
+        }
+      } catch (error) {}
     };
     checkToken();
   }, []);
 
   const login = async (usernam: string, passwor: string) => {
     if (!usernam || !passwor) {
-      setError("Username e senha são obrigatórios!");
+      setLocalError("Username e senha são obrigatórios!");
       return;
     }
     try {
       setLoading(true);
-      setError(null);
+      setLocalError(null);
 
       const response = await fetch(
-        `${process.env.VITE_BACKEND_URL}/user/login`,
+        `${import.meta.env.VITE_BACKEND_URL}/user/login`,
         {
           method: "POST",
           headers: {
@@ -94,7 +101,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLogged(true);
     } catch (error: any) {
       console.error("Erro ao fazer login: ", error);
-      setError(error);
+      setLocalError(error.message);
     } finally {
       setLoading(false);
     }
@@ -102,19 +109,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = async () => {
     try {
       setLoading(true);
-      setError(null);
+      setLocalError(null);
       setToken(null);
       setUser(null);
       setLogged(false);
     } catch (error) {
       console.error(error);
-      setError("Erro ao fazer logout");
+      setLocalError("Erro ao fazer logout");
     } finally {
       setLoading(false);
     }
   };
   const clearError = () => {
-    setError("");
+    setLocalError("");
+  };
+  const setError = (errorMessage: string) => {
+    setLocalError(errorMessage);
   };
 
   return (
@@ -127,6 +137,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         login,
         logout,
         error,
+        setError,
         clearError,
       }}
     >

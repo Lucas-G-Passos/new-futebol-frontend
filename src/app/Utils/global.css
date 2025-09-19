@@ -1,0 +1,13 @@
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  background: #121212;
+  color: var(--color-text);
+  font-family: "Inter Variable", "Roboto Variable", sans-serif;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}

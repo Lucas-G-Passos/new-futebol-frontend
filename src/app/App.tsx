@@ -3,6 +3,8 @@ import { useEffect } from "react";
 import { useAuth } from "./Context/AuthContext";
 import { useLocation, useNavigate } from "react-router";
 import Login from "./Login";
+import "./Utils/global.css";
+import Home from "./Protected/Home";
 
 export default function App() {
   const { isLogged, isLoading } = useAuth();
@@ -20,9 +22,9 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Login />} />
       <Route path="/app">
-        <Route path="home" />
+        <Route path="home" element={<Home />} />
       </Route>
     </Routes>
   );
