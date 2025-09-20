@@ -10,7 +10,7 @@ const Colors = {
 
   // Neutrals (dark mode backgrounds)
   background: "#121212", // main app background
-  backgroundAlt: "#181818", // secondary background (sidebars, panels)
+  backgroundAlt: "#2b2b2bff", // secondary background (sidebars, panels)
   surface: "#1e1e1e", // cards, modals
   surfaceAlt: "#242424", // elevated card / popover
   inputBackground: "#2a2a2a", // input fields

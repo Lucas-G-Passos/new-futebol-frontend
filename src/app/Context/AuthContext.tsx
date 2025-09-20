@@ -27,7 +27,7 @@ const AuthContext = createContext<AuthContextType>({
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLogged, setLogged] = useState(false);
-  const [isLoading, setLoading] = useState(true);
+  const [isLoading, setLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [error, setLocalError] = useState<string | null>(null);
@@ -36,11 +36,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const checkToken = async () => {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/user/check`
+          `${import.meta.env.VITE_BACKEND_URL}/user/check`,
+          { credentials: "include" }
         );
         if (!response.ok) {
+          setLogged(false);
+          return;
         }
-      } catch (error) {}
+        const userCharacteristics = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/user/get`,
+          {
+            credentials: "include",
+          }
+        );
+        if (!userCharacteristics) {
+          throw new Error("Erro ao pegar informações do usuário");
+        }
+        const user = await userCharacteristics.json();
+        setUser(user);
+        setLogged(true);
+      } catch (error) {
+        console.error(error);
+      }
     };
     checkToken();
   }, []);
@@ -61,6 +78,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           headers: {
             "Content-Type": "application/json",
           },
+          credentials: "include",
           body: JSON.stringify({ username: usernam, password: passwor }),
         }
       );
@@ -80,10 +98,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const userCharacteristics = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/user/get`,
         {
-          headers: {
-            Authorization: `Bearer ${resToken}`,
-            "Content-Type": "application/json",
-          },
+          credentials: "include",
         }
       );
 

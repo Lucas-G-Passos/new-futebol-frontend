@@ -36,10 +36,11 @@ export default function LoginForm({
   return (
     <form action={login} style={style.mainContainer}>
       <div style={style.imageContainer}>
-        <img src="/tigre.png" style={style.image} />
+        <img src="/login.png" style={style.image} />
       </div>
       <div style={style.textBoxContainer}>
         <input
+          placeholder="Username"
           ref={usernameRef}
           type="text"
           style={style.textBox}
@@ -50,6 +51,7 @@ export default function LoginForm({
           }}
         />
         <input
+          placeholder="Senha"
           ref={passwordRef}
           type="password"
           style={style.textBox}
@@ -70,7 +72,7 @@ export default function LoginForm({
           onMouseEnter={() => setButtonHover(true)}
           onMouseLeave={() => setButtonHover(false)}
         >
-          {!isLoading ? "Carregando..." : "Login"}
+          {isLoading ? "Carregando..." : "Login"}
         </button>
       </div>
     </form>
@@ -80,7 +82,7 @@ export default function LoginForm({
 const style = StyleSheet.create({
   mainContainer: {
     width: "50vw",
-    height: "50vh",
+    minHeight: "50vh",
     borderRadius: 16,
     border: "1px solid",
     borderColor: Colors.border,
@@ -105,6 +107,7 @@ const style = StyleSheet.create({
   },
   textBox: {
     minWidth: "48ch",
+    maxWidth: "50ch",
     border: "1px solid",
     borderColor: Colors.border,
     backgroundColor: Colors.backgroundAlt,
