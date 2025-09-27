@@ -36,7 +36,7 @@ export default function LoginForm({
   return (
     <form action={login} style={style.mainContainer}>
       <div style={style.imageContainer}>
-        <img src="/login.png" style={style.image} />
+        <img src="/logo.png" style={style.image} />
       </div>
       <div style={style.textBoxContainer}>
         <input

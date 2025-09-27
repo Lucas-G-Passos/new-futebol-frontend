@@ -8,12 +8,12 @@ export default function ErrorDisplay() {
   return (
     <>
       {error ? (
-        <div style={style.errorContainer}>
+        <button style={style.errorContainer} onClick={clearError}>
           <p style={style.error}>{error}</p>
-          <button type="button" onClick={clearError} style={style.button}>
-            <X size={25} color={Colors.error} />
-          </button>
-        </div>
+          <div style={style.iconContainer}>
+            <X size={25} color={"red"} />
+          </div>
+        </button>
       ) : (
         <></>
       )}
@@ -25,20 +25,27 @@ const style = StyleSheet.create({
   errorContainer: {
     margin: 15,
     minWidth: "10vw",
-    color: Colors.error,
+    color: "black",
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
+    zIndex: 999,
+    backgroundColor: "#e6a8a8ff",
+    borderRadius: 16,
+    padding: 10,
+    border: "2px solid",
+    borderColor: "#fc7c7cff",
+    cursor: "pointer",
   },
   error: {
     userSelect: "none",
+    fontSize: 16,
   },
-  button: {
+  iconContainer: {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "transparent",
     border: "none",
-    cursor: "pointer",
   },
 });

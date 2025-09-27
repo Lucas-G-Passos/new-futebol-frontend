@@ -9,6 +9,7 @@ import Navbar from "./Components/Navbar";
 import Search from "./Protected/Search";
 import TurmaManagement from "./Protected/TurmaManagement";
 import UserManagement from "./Protected/UserManagement";
+import CreationFormPage from "./Protected/CreationFormPage";
 
 export default function App() {
   const { isLogged, isLoading, user } = useAuth();
@@ -23,12 +24,12 @@ export default function App() {
 
     if (isLogged && location?.pathname === "/") navigate("/app/home");
 
-    console.log("isLoading? " + isLoading);
-    console.log("IsLogged? " + isLogged);
-    console.log("IsInProtected? " + isInProtected);
-    console.log("Pathname " + location.pathname);
-    console.log("User: " + JSON.stringify(user));
-    console.log("Running?");
+    // console.log("isLoading? " + isLoading);
+    // console.log("IsLogged? " + isLogged);
+    // console.log("IsInProtected? " + isInProtected);
+    // console.log("Pathname " + location.pathname);
+    // console.log("User: " + JSON.stringify(user));
+    // console.log("Running?");
   }, [isLogged, isLoading, location.pathname]);
   if (isLoading) return null;
   return (
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="search" element={<Search />} />
         <Route path="turma" element={<TurmaManagement />} />
         <Route path="users" element={<UserManagement />} />
+        <Route path="form" element={<CreationFormPage />} />
       </Route>
     </Routes>
   );

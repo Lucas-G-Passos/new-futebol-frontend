@@ -22,12 +22,12 @@ export default function Navbar() {
           />
           <NavButton
             path="/app/search"
-            label="teste"
+            label="search"
             icon={<UserCircleIcon size={32} />}
           />
           <NavButton
-            path="/app/search"
-            label="teste"
+            path="/app/form"
+            label="form"
             icon={<UserCircleIcon size={32} />}
           />
           <NavButton
@@ -118,12 +118,13 @@ const style = StyleSheet.create({
   navbar: {
     boxSizing: "border-box",
     padding: 15,
-    minHeight: "5vh",
+    height: "10vh",
     backgroundColor: Colors.backgroundAlt,
     borderBottom: "1px solid",
     borderColor: Colors.border,
     width: "100vw",
     display: "flex",
+    position: "fixed",
   },
   logoContainer: {
     display: "flex",
@@ -149,6 +150,7 @@ const style = StyleSheet.create({
   content: {
     flex: 1,
     overflow: "auto",
+    paddingTop: "11vh",
   },
   navButton: {
     flex: 1,

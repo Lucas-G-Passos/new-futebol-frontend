@@ -8,7 +8,7 @@ import ErrorDisplay from "./Components/ErrorDisplay";
 export default function Login() {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const { login, error, clearError, setError } = useAuth();
+  const { login, setError } = useAuth();
 
   const handleSetUsername = (username: string) => {
     setUsername(username);
@@ -21,10 +21,6 @@ export default function Login() {
       setError("Username e senha são obrigatórios");
     login(username, password);
   };
-
-  useEffect(() => {
-    console.log(username + " " + password);
-  }, [username, password]);
 
   return (
     <div style={style.mainContainer}>

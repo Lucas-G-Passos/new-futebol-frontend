@@ -8,7 +8,6 @@ export type User = {
 };
 
 export type Funcionario = {
-  id: number;
   nome: string;
   dataNascimento: string;
   telefone1: string;
@@ -22,10 +21,7 @@ export type Funcionario = {
   user?: User;
 };
 
-// types.ts
-
 export interface Responsavel {
-  id: number;
   aluno?: Aluno; // optional to avoid circular reference
   cpf: string;
   rg: string;
@@ -36,7 +32,6 @@ export interface Responsavel {
 }
 
 export interface Turma {
-  id: number;
   codigoTurma?: string;
   nome?: string;
   descricao?: string;
@@ -48,7 +43,6 @@ export interface Turma {
 }
 
 export interface Aluno {
-  id: number;
   nomeCompleto: string;
   dataNascimento?: string; // LocalDate → string (YYYY-MM-DD)
   dataMatricula?: string; // LocalDate → string (YYYY-MM-DD)
@@ -79,3 +73,13 @@ export enum DayOfWeek {
   SATURDAY = "SATURDAY",
   SUNDAY = "SUNDAY",
 }
+
+export type FieldConfig = {
+  name: string;
+  placeholder: string;
+  type: "TEXT" | "NUMBER" | "DATE" | "SELECT" | "FILE" | "CHECKBOX" | "TIME";
+  options?: { label: string; value: string | number }[];
+  defaultValue?: any;
+  mask?: string;
+  required?: boolean;
+};
