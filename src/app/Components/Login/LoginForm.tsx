@@ -81,8 +81,9 @@ export default function LoginForm({
 
 const style = StyleSheet.create({
   mainContainer: {
-    width: "50vw",
+    flex: 1,
     minHeight: "50vh",
+    maxWidth: "70vw",
     borderRadius: 16,
     border: "1px solid",
     borderColor: Colors.border,
@@ -104,9 +105,10 @@ const style = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     gap: "2em",
+    flex: 1,
   },
   textBox: {
-    minWidth: "48ch",
+    minWidth: "90%",
     maxWidth: "50ch",
     border: "1px solid",
     borderColor: Colors.border,

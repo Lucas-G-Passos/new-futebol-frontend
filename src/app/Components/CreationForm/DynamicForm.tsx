@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Colors from "../../Utils/Colors";
 import { StyleSheet } from "../../Utils/Stylesheet";
 import type { FieldConfig } from "../../Utils/Types";
@@ -6,6 +6,7 @@ import type { FieldConfig } from "../../Utils/Types";
 type Props = {
   fields: FieldConfig[];
   onSubmit: (formData: FormData) => Promise<void>;
+  title: string;
 };
 
 function escapeForRegex(s: string) {
@@ -57,8 +58,9 @@ function maskToRegex(mask: string): RegExp {
   return new RegExp(regexStr);
 }
 
-export default function DynamicForm({ fields, onSubmit }: Props) {
+export default function DynamicForm({ fields, onSubmit, title }: Props) {
   const [isHovered, setHovered] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [formState, setFormState] = useState<Record<string, any>>(
     Object.fromEntries(fields.map((f) => [f.name, f.defaultValue ?? ""]))
   );
@@ -81,6 +83,13 @@ export default function DynamicForm({ fields, onSubmit }: Props) {
     setFormState((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: errorMsg }));
   };
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,7 +146,11 @@ export default function DynamicForm({ fields, onSubmit }: Props) {
   };
 
   return (
-    <form style={style.mainContainer} onSubmit={handleSubmit}>
+    <form
+      style={{ ...style.mainContainer, width: isMobile ? "80vw" : "50vw" }}
+      onSubmit={handleSubmit}
+    >
+      <h1 style={{ color: Colors.primary, textAlign: "center" }}>{title}</h1>
       {fields.map((field) => {
         const [isHoveredField, setHoveredField] = useState(false);
         const error = errors[field.name];

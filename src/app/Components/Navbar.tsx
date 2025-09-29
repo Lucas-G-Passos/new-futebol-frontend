@@ -4,49 +4,65 @@ import Colors from "../Utils/Colors";
 import { useAuth } from "../Context/AuthContext";
 import { UserCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import { useNavigate } from "react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Navbar() {
   const { user } = useAuth();
+  const [isMobile, setIsMobile] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      console.log(user);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div style={style.mainContainer}>
       <div style={style.navbar}>
-        <div style={style.logoContainer}>
+        <div
+          style={style.logoContainer}
+          onClick={() => {
+            if (isMobile) setMenuOpen((prev) => !prev);
+          }}
+        >
           <img src="/logo.png" style={style.logo} />
         </div>
-        <div style={style.buttonContainer}>
-          <NavButton
-            path="/app/users"
-            label="Users"
-            icon={<UserCircleIcon size={32} />}
-          />
-          <NavButton
-            path="/app/search"
-            label="search"
-            icon={<UserCircleIcon size={32} />}
-          />
-          <NavButton
-            path="/app/form"
-            label="form"
-            icon={<UserCircleIcon size={32} />}
-          />
-          <NavButton
-            path="/app/search"
-            label="teste"
-            icon={<UserCircleIcon size={32} />}
-          />
-        </div>
+
+        {/* only show buttonContainer here on desktop */}
+        {!isMobile && (
+          <div style={style.buttonContainer}>
+            <NavButton
+              path="/app/users"
+              label="Users"
+              icon={<UserCircleIcon size={32} />}
+            />
+            <NavButton
+              path="/app/search"
+              label="search"
+              icon={<UserCircleIcon size={32} />}
+            />
+            <NavButton
+              path="/app/form"
+              label="form"
+              icon={<UserCircleIcon size={32} />}
+            />
+            <NavButton
+              path="/app/search"
+              label="teste"
+              icon={<UserCircleIcon size={32} />}
+            />
+          </div>
+        )}
+
         <div style={style.profileContainer}>
           {user ? (
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 7,
-                }}
-              >
+            <div style={{ marginLeft: "auto" }}>
+              <div style={style.profileRow}>
                 <div>
                   {user.funcionario && user.funcionario.foto ? (
                     <img
@@ -54,9 +70,7 @@ export default function Navbar() {
                       style={{ width: "4em", borderRadius: "50%" }}
                     />
                   ) : (
-                    <>
-                      <UserCircleIcon size={32} />
-                    </>
+                    <UserCircleIcon size={32} />
                   )}
                 </div>
                 {user.username}
@@ -75,30 +89,65 @@ export default function Navbar() {
           )}
         </div>
       </div>
+      {isMobile && menuOpen && (
+        <div style={{ ...style.mobileMenuRow, padding: 0 }}>
+          <NavButton
+            path="/app/users"
+            label="Users"
+            icon={<UserCircleIcon size={32} />}
+            setOpen={setMenuOpen}
+          />
+          <NavButton
+            path="/app/search"
+            label="search"
+            icon={<UserCircleIcon size={32} />}
+            setOpen={setMenuOpen}
+          />
+          <NavButton
+            path="/app/form"
+            label="form"
+            icon={<UserCircleIcon size={32} />}
+            setOpen={setMenuOpen}
+          />
+          <NavButton
+            path="/app/search"
+            label="teste"
+            icon={<UserCircleIcon size={32} />}
+            setOpen={setMenuOpen}
+          />
+        </div>
+      )}
       <div style={style.content}>
         <Outlet />
       </div>
     </div>
   );
 }
+
 function NavButton({
   path,
   icon,
   label,
+  setOpen,
 }: {
   path: string;
   icon: React.ReactNode;
   label: string;
+  setOpen?: (a: boolean) => void;
 }) {
   const navigate = useNavigate();
-  const [isHovered, setHovered] = useState<boolean>(false);
+  const [isHovered, setHovered] = useState(false);
+
   return (
     <div
       style={{
         ...style.navButton,
         borderColor: isHovered ? Colors.primary : Colors.border,
       }}
-      onClick={() => navigate(`${path}`)}
+      onClick={() => {
+        if (setOpen) setOpen(false);
+        navigate(path);
+      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -107,6 +156,7 @@ function NavButton({
     </div>
   );
 }
+
 const style = StyleSheet.create({
   mainContainer: {
     display: "flex",
@@ -145,6 +195,13 @@ const style = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 10,
+    cursor: "pointer",
+  },
+  profileRow: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
   },
   logo: { width: "5em" },
   content: {
@@ -168,5 +225,17 @@ const style = StyleSheet.create({
     transition: "all .2s ease-in",
     userSelect: "none",
     cursor: "pointer",
+  },
+  mobileMenuRow: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    backgroundColor: Colors.backgroundAlt,
+    borderBottom: `1px solid ${Colors.border}`,
+    padding: 10,
+    marginTop: "10vh", // ensures it appears under the navbar
+    position: "fixed",
+    width: "100vw",
+    zIndex: 1,
   },
 });

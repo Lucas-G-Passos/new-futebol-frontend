@@ -12,7 +12,7 @@ import UserManagement from "./Protected/UserManagement";
 import CreationFormPage from "./Protected/CreationFormPage";
 
 export default function App() {
-  const { isLogged, isLoading, user } = useAuth();
+  const { isLogged, isLoading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -23,14 +23,7 @@ export default function App() {
     if (!isLogged && isInProtected) navigate("/");
 
     if (isLogged && location?.pathname === "/") navigate("/app/home");
-
-    // console.log("isLoading? " + isLoading);
-    // console.log("IsLogged? " + isLogged);
-    // console.log("IsInProtected? " + isInProtected);
-    // console.log("Pathname " + location.pathname);
-    // console.log("User: " + JSON.stringify(user));
-    // console.log("Running?");
-  }, [isLogged, isLoading, location.pathname]);
+  }, [isLogged, isLoading]);
   if (isLoading) return null;
   return (
     <Routes>
