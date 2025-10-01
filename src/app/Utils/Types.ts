@@ -22,7 +22,7 @@ export type Funcionario = {
 };
 
 export interface Responsavel {
-  aluno?: Aluno; // optional to avoid circular reference
+  aluno?: Aluno;
   cpf: string;
   rg: string;
   nomeCompleto: string;
@@ -43,9 +43,10 @@ export interface Turma {
 }
 
 export interface Aluno {
+  id: number;
   nomeCompleto: string;
-  dataNascimento?: string; // LocalDate → string (YYYY-MM-DD)
-  dataMatricula?: string; // LocalDate → string (YYYY-MM-DD)
+  dataNascimento?: Date; // LocalDate → string (YYYY-MM-DD)
+  dataMatricula?: Date; // LocalDate → string (YYYY-MM-DD)
   telefone1: string;
   telefone2?: string;
   cpf: string;
@@ -58,7 +59,7 @@ export interface Aluno {
   time?: string;
   indicacao?: string;
   observacao?: string;
-  filePath?: string;
+  url?: string;
   responsavel?: Responsavel;
   turma?: Turma;
 }
@@ -82,4 +83,18 @@ export type FieldConfig = {
   defaultValue?: any;
   mask?: string;
   required?: boolean;
+};
+
+export type Campos = {
+  sections: Section[];
+  image?: string; // foto ou url
+};
+
+type Section = {
+  label: string;
+  value: string | number | boolean;
+  field: {
+    type: string;
+    highlight?: boolean; // se true, mostra em bold
+  };
 };

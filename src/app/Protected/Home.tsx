@@ -10,8 +10,6 @@ export default function Home() {
         );
         if (!response.ok)
           throw new Error(response.status + " " + response.statusText);
-
-        console.log(await response.json());
       } catch (error) {
         console.error(error);
       }

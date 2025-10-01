@@ -137,11 +137,6 @@ export default function DynamicForm({ fields, onSubmit, title }: Props) {
       }
     }
 
-    console.log("Form data being sent:");
-    for (const [key, value] of data.entries()) {
-      console.log(`${key}:`, value);
-    }
-
     await onSubmit(data);
   };
 

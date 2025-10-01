@@ -14,7 +14,6 @@ export default function Navbar() {
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
-      console.log(user);
     };
     handleResize();
     window.addEventListener("resize", handleResize);
@@ -33,7 +32,6 @@ export default function Navbar() {
           <img src="/logo.png" style={style.logo} />
         </div>
 
-        {/* only show buttonContainer here on desktop */}
         {!isMobile && (
           <div style={style.buttonContainer}>
             <NavButton
