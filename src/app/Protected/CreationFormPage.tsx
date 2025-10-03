@@ -259,7 +259,7 @@ export default function CreationFormPage() {
 
         const turmas = await response.json();
 
-        const turmaOptions = turmas.map((t: any) => ({
+        const turmaOptions = turmas.turmas.map((t: any) => ({
           label: t.nome,
           value: t.id,
         }));
@@ -346,6 +346,7 @@ export default function CreationFormPage() {
           onSubmit={handleSubmit}
           fields={alunoFields}
           title="Criação de Aluno"
+          sendAs="FORMDATA"
         />
       ) : (
         <div>
@@ -353,6 +354,7 @@ export default function CreationFormPage() {
             onSubmit={handleSubmit}
             fields={funcionarioFields}
             title="Criação de Funcionário"
+            sendAs="FORMDATA"
           />
         </div>
       )}

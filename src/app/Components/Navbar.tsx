@@ -5,6 +5,11 @@ import { useAuth } from "../Context/AuthContext";
 import { UserCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
+import {
+  MagnifyingGlassIcon,
+  PencilSimpleLineIcon,
+  UsersFourIcon,
+} from "@phosphor-icons/react";
 
 export default function Navbar() {
   const { user } = useAuth();
@@ -35,23 +40,23 @@ export default function Navbar() {
         {!isMobile && (
           <div style={style.buttonContainer}>
             <NavButton
-              path="/app/users"
-              label="Users"
-              icon={<UserCircleIcon size={32} />}
-            />
-            <NavButton
               path="/app/search"
-              label="search"
-              icon={<UserCircleIcon size={32} />}
+              label="Pesquisa"
+              icon={<MagnifyingGlassIcon size={32} />}
             />
             <NavButton
               path="/app/form"
-              label="form"
-              icon={<UserCircleIcon size={32} />}
+              label="Form"
+              icon={<PencilSimpleLineIcon size={32} />}
             />
             <NavButton
-              path="/app/search"
-              label="teste"
+              path="/app/turmas"
+              label="Turmas"
+              icon={<UsersFourIcon size={32} />}
+            />
+            <NavButton
+              path="/app/users"
+              label="Usuários"
               icon={<UserCircleIcon size={32} />}
             />
           </div>

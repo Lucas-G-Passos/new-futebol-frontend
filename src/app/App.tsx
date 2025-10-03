@@ -7,9 +7,9 @@ import "./Utils/global.css";
 import Home from "./Protected/Home";
 import Navbar from "./Components/Navbar";
 import Search from "./Protected/Search";
-import TurmaManagement from "./Protected/TurmaManagement";
 import UserManagement from "./Protected/UserManagement";
 import CreationFormPage from "./Protected/CreationFormPage";
+import Turmas from "./Protected/Turmas";
 
 export default function App() {
   const { isLogged, isLoading } = useAuth();
@@ -31,7 +31,7 @@ export default function App() {
       <Route path="/app" element={<Navbar />}>
         <Route path="home" element={<Home />} />
         <Route path="search" element={<Search />} />
-        <Route path="turma" element={<TurmaManagement />} />
+        <Route path="turmas" element={<Turmas />} />
         <Route path="users" element={<UserManagement />} />
         <Route path="form" element={<CreationFormPage />} />
       </Route>

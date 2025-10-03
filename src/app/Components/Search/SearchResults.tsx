@@ -4,6 +4,7 @@ import Colors from "../../Utils/Colors";
 type SearchResultsProps = {
   data: any[];
   onClick: (item: any) => void;
+  type?: "ALUNO" | "FUNCIONARIO";
 };
 
 // Helper function to format grade
@@ -50,7 +51,57 @@ const formatPhone = (phone: string): string => {
   return phone;
 };
 
-export default function SearchResults({ data, onClick }: SearchResultsProps) {
+// Helper function to format CPF
+const formatCPF = (cpf: string): string => {
+  if (!cpf) return "";
+
+  const cleanCPF = cpf.replace(/\D/g, "");
+
+  if (cleanCPF.length === 11) {
+    return cleanCPF.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+  }
+
+  return cpf;
+};
+
+// Helper function to format RG
+const formatRG = (rg: string): string => {
+  if (!rg) return "";
+
+  const cleanRG = rg.replace(/\D/g, "");
+
+  if (cleanRG.length === 9) {
+    return cleanRG.replace(/(\d{2})(\d{3})(\d{3})(\d{1})/, "$1.$2.$3-$4");
+  }
+
+  return rg;
+};
+
+// Helper function to get permissions label
+const getPermissionsLabel = (permissions: any[]): string => {
+  if (!permissions || permissions.length === 0) return "Sem permissões";
+
+  const permissionNames = permissions.map((p) => {
+    switch (p.permission) {
+      case "ADMIN":
+        return "Administrador";
+      case "TEACHER":
+        return "Professor";
+      case "STAFF":
+        return "Funcionário";
+      default:
+        return p.permission;
+    }
+  });
+
+  return permissionNames.join(", ");
+};
+
+export default function SearchResults({
+  data,
+  onClick,
+  type = "ALUNO",
+}: SearchResultsProps) {
   if (!data || data.length === 0) {
     return (
       <div style={style.emptyState}>
@@ -60,13 +111,19 @@ export default function SearchResults({ data, onClick }: SearchResultsProps) {
     );
   }
 
+  const isFuncionario = type === "FUNCIONARIO";
+  const entityName = isFuncionario ? "funcionário" : "aluno";
+  const entityNamePlural = isFuncionario ? "funcionários" : "alunos";
+
   return (
     <div style={style.container}>
       <div style={style.header}>
         <h3 style={style.title}>Resultados da Busca</h3>
         <div style={style.count}>
           {data.length}{" "}
-          {data.length === 1 ? "aluno encontrado" : "alunos encontrados"}
+          {data.length === 1
+            ? `${entityName} encontrado`
+            : `${entityNamePlural} encontrados`}
         </div>
       </div>
 
@@ -78,72 +135,188 @@ export default function SearchResults({ data, onClick }: SearchResultsProps) {
             onClick={() => onClick(item)}
             className="result-card"
           >
-            <div style={style.cardHeader}>
-              <div style={style.avatar}>
-                {item.nomeCompleto?.charAt(0) || "A"}
-              </div>
-              <div style={style.studentInfo}>
-                <div style={style.studentName}>
-                  {item.nomeCompleto || "Nome não informado"}
-                </div>
-                <div style={style.studentDetails}>
-                  {item.dataNascimento && (
-                    <span style={style.detailItem}>
-                      Nascimento:{" "}
-                      {new Date(item.dataNascimento).toLocaleDateString(
-                        "pt-BR"
+            {isFuncionario ? (
+              // FUNCIONARIO CARD LAYOUT
+              <>
+                {console.log(item)}
+                <div style={style.cardHeader}>
+                  <div style={style.avatar}>{item.nome?.charAt(0) || "F"}</div>
+                  <div style={style.studentInfo}>
+                    <div style={style.studentName}>
+                      {item.nome || "Nome não informado"}
+                    </div>
+                    <div style={style.studentDetails}>
+                      {item.dataNascimento && (
+                        <span style={style.detailItem}>
+                          Nascimento:{" "}
+                          {new Date(item.dataNascimento).toLocaleDateString(
+                            "pt-BR"
+                          )}
+                        </span>
                       )}
-                    </span>
-                  )}
-                  {item.colegioAno && (
-                    <span style={style.detailItem}>
-                      Série: {formatGrade(item.colegioAno)}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div style={style.cardContent}>
-              {item.responsavel && (
-                <div style={style.responsibleInfo}>
-                  <div style={style.responsibleLabel}>Responsável</div>
-                  <div style={style.responsibleName}>
-                    {item.responsavel.nomeCompleto}
+                      {item.dataAdmissao && (
+                        <span style={style.detailItem}>
+                          Admissão:{" "}
+                          {new Date(item.dataAdmissao).toLocaleDateString(
+                            "pt-BR"
+                          )}
+                        </span>
+                      )}
+                      {item.situacao && (
+                        <span
+                          style={{
+                            ...style.detailItem,
+                            backgroundColor:
+                              item.situacao === "OK"
+                                ? Colors.success
+                                : Colors.warning,
+                            border: `1px solid ${
+                              item.situacao === "OK"
+                                ? Colors.success
+                                : Colors.warning
+                            }`,
+                          }}
+                        >
+                          {item.situacao}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  {item.responsavel.telefone1 && (
-                    <div style={style.responsibleContact}>
-                      📞 {formatPhone(item.responsavel.telefone1)}
+                </div>
+
+                <div style={style.cardContent}>
+                  {item.user && (
+                    <div style={style.responsibleInfo}>
+                      <div style={style.responsibleLabel}>Usuário</div>
+                      <div style={style.responsibleName}>
+                        {item.user.username}
+                      </div>
+                      {item.user.email && (
+                        <div style={style.responsibleContact}>
+                          📧 {item.user.email}
+                        </div>
+                      )}
+                      {item.user.permissions && (
+                        <div style={style.responsibleContact}>
+                          🛡️ {item.user.permissions.join(", ")}
+                        </div>
+                      )}
                     </div>
                   )}
-                </div>
-              )}
 
-              <div style={style.additionalInfo}>
-                {item.colegio && (
-                  <div style={style.infoItem}>
-                    <span style={style.infoLabel}>Colégio:</span>
-                    <span style={style.infoValue}>{item.colegio}</span>
+                  <div style={style.additionalInfo}>
+                    {item.cpf && (
+                      <div style={style.infoItem}>
+                        <span style={style.infoLabel}>CPF:</span>
+                        <span style={style.infoValue}>
+                          {formatCPF(item.cpf)}
+                        </span>
+                      </div>
+                    )}
+                    {item.rg && (
+                      <div style={style.infoItem}>
+                        <span style={style.infoLabel}>RG:</span>
+                        <span style={style.infoValue}>{formatRG(item.rg)}</span>
+                      </div>
+                    )}
+                    {item.telefone1 && (
+                      <div style={style.infoItem}>
+                        <span style={style.infoLabel}>Telefone:</span>
+                        <span style={style.infoValue}>
+                          {formatPhone(item.telefone1)}
+                        </span>
+                      </div>
+                    )}
+                    {item.telefone2 && (
+                      <div style={style.infoItem}>
+                        <span style={style.infoLabel}>Telefone 2:</span>
+                        <span style={style.infoValue}>
+                          {formatPhone(item.telefone2)}
+                        </span>
+                      </div>
+                    )}
+                    {item.jornadaEscala && (
+                      <div style={style.infoItem}>
+                        <span style={style.infoLabel}>Jornada:</span>
+                        <span style={style.infoValue}>
+                          {item.jornadaEscala}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                )}
-                {item.telefone1 && (
-                  <div style={style.infoItem}>
-                    <span style={style.infoLabel}>Telefone:</span>
-                    <span style={style.infoValue}>
-                      {formatPhone(item.telefone1)}
-                    </span>
+                </div>
+              </>
+            ) : (
+              // ALUNO CARD LAYOUT (original)
+              <>
+                <div style={style.cardHeader}>
+                  <div style={style.avatar}>
+                    {item.nomeCompleto?.charAt(0) || "A"}
                   </div>
-                )}
-                {item.telefone2 && (
-                  <div style={style.infoItem}>
-                    <span style={style.infoLabel}>Telefone 2:</span>
-                    <span style={style.infoValue}>
-                      {formatPhone(item.telefone2)}
-                    </span>
+                  <div style={style.studentInfo}>
+                    <div style={style.studentName}>
+                      {item.nomeCompleto || "Nome não informado"}
+                    </div>
+                    <div style={style.studentDetails}>
+                      {item.dataNascimento && (
+                        <span style={style.detailItem}>
+                          Nascimento:{" "}
+                          {new Date(item.dataNascimento).toLocaleDateString(
+                            "pt-BR"
+                          )}
+                        </span>
+                      )}
+                      {item.colegioAno && (
+                        <span style={style.detailItem}>
+                          Série: {formatGrade(item.colegioAno)}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                )}
-              </div>
-            </div>
+                </div>
+
+                <div style={style.cardContent}>
+                  {item.responsavel && (
+                    <div style={style.responsibleInfo}>
+                      <div style={style.responsibleLabel}>Responsável</div>
+                      <div style={style.responsibleName}>
+                        {item.responsavel.nomeCompleto}
+                      </div>
+                      {item.responsavel.telefone1 && (
+                        <div style={style.responsibleContact}>
+                          📞 {formatPhone(item.responsavel.telefone1)}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div style={style.additionalInfo}>
+                    {item.colegio && (
+                      <div style={style.infoItem}>
+                        <span style={style.infoLabel}>Colégio:</span>
+                        <span style={style.infoValue}>{item.colegio}</span>
+                      </div>
+                    )}
+                    {item.telefone1 && (
+                      <div style={style.infoItem}>
+                        <span style={style.infoLabel}>Telefone:</span>
+                        <span style={style.infoValue}>
+                          {formatPhone(item.telefone1)}
+                        </span>
+                      </div>
+                    )}
+                    {item.telefone2 && (
+                      <div style={style.infoItem}>
+                        <span style={style.infoLabel}>Telefone 2:</span>
+                        <span style={style.infoValue}>
+                          {formatPhone(item.telefone2)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
 
             <div style={style.cardFooter}>
               <div style={style.clickHint}>Clique para ver detalhes →</div>
@@ -231,7 +404,7 @@ const style = StyleSheet.create({
     flexWrap: "wrap",
   },
   detailItem: {
-    color: Colors.textMuted,
+    color: "white",
     fontSize: "12px",
     backgroundColor: Colors.surfaceAlt,
     padding: "2px 8px",
@@ -288,7 +461,7 @@ const style = StyleSheet.create({
     color: Colors.text,
     fontSize: "12px",
     textAlign: "right",
-    fontFamily: "'Monaco', 'Menlo', 'Ubuntu Mono', monospace", // Monospace for phone numbers
+    fontFamily: "'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
   },
   cardFooter: {
     marginTop: "12px",

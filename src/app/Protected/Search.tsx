@@ -9,7 +9,9 @@ import Colors from "../Utils/Colors";
 
 export default function Search() {
   const [results, setResults] = useState<any[]>([]);
-  const [type, setType] = useState<"ALUNO" | "FUNCIONARIO">("ALUNO");
+  const [searchType, setSearchType] = useState<"ALUNO" | "FUNCIONARIO">(
+    "ALUNO"
+  );
   const [turmas, setTurmas] = useState<Record<number, string>>({});
   const [selected, setSelected] = useState<any | null>(null);
   const { setError } = useAuth();
@@ -30,7 +32,7 @@ export default function Search() {
         if (!response.ok) throw new Error(await response.text());
 
         const turmasData = await response.json();
-        const turmasMap = turmasData.reduce(
+        const turmasMap = turmasData.turmas.reduce(
           (acc: Record<number, string>, turma: any) => {
             acc[turma.id] = turma.nome;
             return acc;
@@ -46,7 +48,7 @@ export default function Search() {
     getTurmas();
   }, []);
 
-  const handleSearch = async (query: string) => {
+  const handleSearch = async (query: string, type: "ALUNO" | "FUNCIONARIO") => {
     try {
       if (!query.trim()) {
         setResults([]);
@@ -77,7 +79,26 @@ export default function Search() {
       }
 
       if (type === "FUNCIONARIO") {
-        return [];
+        const response = await fetch(
+          `${
+            import.meta.env.VITE_BACKEND_URL
+          }/funcionarios/search?nome=${encodeURIComponent(query)}`,
+          {
+            credentials: "include",
+          }
+        );
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            setResults([]);
+            return [];
+          }
+          throw new Error(await response.text());
+        }
+
+        const data = await response.json();
+        setResults(data);
+        return data;
       }
 
       return [];
@@ -89,12 +110,17 @@ export default function Search() {
     }
   };
 
+  const handleSearchResult = (data: any, type: "ALUNO" | "FUNCIONARIO") => {
+    setResults(data || []);
+    setSearchType(type);
+  };
+
   // Function to refresh search with current query
   const refreshSearch = async () => {
     if (searchFieldRef.current) {
       const currentQuery = searchFieldRef.current.getValue();
       if (currentQuery.trim()) {
-        await handleSearch(currentQuery);
+        await handleSearch(currentQuery, searchType);
       }
     }
   };
@@ -103,7 +129,7 @@ export default function Search() {
   const triggerSearch = async () => {
     if (searchFieldRef.current) {
       const query = searchFieldRef.current.getValue();
-      await handleSearch(query);
+      await handleSearch(query, searchType);
     }
   };
 
@@ -125,11 +151,24 @@ export default function Search() {
     setResults([]);
   };
 
+  const getTitle = () => {
+    return searchType === "ALUNO" ? "Buscar Alunos" : "Buscar Funcionários";
+  };
+
+  const getEmptyStateMessage = () => {
+    if (!searchFieldRef.current?.getValue()) {
+      return `Digite um termo de busca para encontrar ${
+        searchType === "ALUNO" ? "alunos" : "funcionários"
+      }`;
+    }
+    return `Nenhum resultado encontrado para "${searchFieldRef.current.getValue()}"`;
+  };
+
   return (
     <div style={style.container}>
       {/* Search Header with Controls */}
       <div style={style.header}>
-        <h2 style={style.title}>Buscar Alunos</h2>
+        <h2 style={style.title}>{getTitle()}</h2>
         <div style={style.headerActions}>
           <button onClick={clearSearch} style={style.secondaryButton}>
             Limpar
@@ -142,10 +181,10 @@ export default function Search() {
 
       {/* Search Field */}
       <SearchField
-        types="TEXT"
         onSearch={handleSearch}
-        onResult={setResults}
+        onResult={handleSearchResult}
         ref={searchFieldRef}
+        type={searchType}
       />
 
       {/* Search Type Selector */}
@@ -154,8 +193,10 @@ export default function Search() {
           <input
             type="radio"
             value="ALUNO"
-            checked={type === "ALUNO"}
-            onChange={(e) => setType(e.target.value as "ALUNO" | "FUNCIONARIO")}
+            checked={searchType === "ALUNO"}
+            onChange={(e) =>
+              setSearchType(e.target.value as "ALUNO" | "FUNCIONARIO")
+            }
             style={style.radioInput}
           />
           Alunos
@@ -164,34 +205,39 @@ export default function Search() {
           <input
             type="radio"
             value="FUNCIONARIO"
-            checked={type === "FUNCIONARIO"}
-            onChange={(e) => setType(e.target.value as "ALUNO" | "FUNCIONARIO")}
+            checked={searchType === "FUNCIONARIO"}
+            onChange={(e) =>
+              setSearchType(e.target.value as "ALUNO" | "FUNCIONARIO")
+            }
             style={style.radioInput}
           />
           Funcionários
         </label>
       </div>
 
-      {/* Results */}
       {results.length > 0 && (
         <div style={style.resultsSection}>
           <div style={style.resultsHeader}>
-            <h3 style={style.resultsTitle}>Resultados ({results.length})</h3>
+            <h3 style={style.resultsTitle}>
+              Resultados ({results.length}) -{" "}
+              {searchType === "ALUNO" ? "Alunos" : "Funcionários"}
+            </h3>
             <button onClick={refreshSearch} style={style.refreshButton}>
               ↻ Atualizar
             </button>
           </div>
-          <SearchResults data={results} onClick={setSelected} />
+          <SearchResults
+            data={results}
+            onClick={setSelected}
+            type={searchType}
+          />
         </div>
       )}
 
       {/* No Results */}
       {results.length === 0 && searchFieldRef.current?.getValue() && (
         <div style={style.emptyState}>
-          <p style={style.emptyText}>
-            Nenhum resultado encontrado para "
-            {searchFieldRef.current.getValue()}"
-          </p>
+          <p style={style.emptyText}>{getEmptyStateMessage()}</p>
           <button onClick={clearSearch} style={style.secondaryButton}>
             Limpar Busca
           </button>
@@ -199,21 +245,30 @@ export default function Search() {
       )}
 
       {/* Empty State */}
-      {!searchFieldRef.current?.getValue() && (
+      {!searchFieldRef.current?.getValue() && results.length === 0 && (
         <div style={style.emptyState}>
-          <p style={style.emptyText}>
-            Digite um termo de busca para encontrar alunos
-          </p>
+          <p style={style.emptyText}>{getEmptyStateMessage()}</p>
         </div>
       )}
 
       {/* Student Details Modal */}
-      {selected && type === "ALUNO" && (
+      {selected && searchType === "ALUNO" && (
         <DetailsAluno
           data={selected}
           close={handleCloseDetails}
           onUpdate={handleStudentUpdated}
         />
+      )}
+
+      {/* TODO: Add DetailsFuncionario component when available */}
+      {selected && searchType === "FUNCIONARIO" && (
+        <div style={style.comingSoon}>
+          <h3>Detalhes do Funcionário</h3>
+          <p>Funcionalidade em desenvolvimento</p>
+          <button onClick={handleCloseDetails} style={style.secondaryButton}>
+            Fechar
+          </button>
+        </div>
       )}
 
       <ErrorDisplay />
@@ -258,9 +313,12 @@ const style = StyleSheet.create({
     gap: "8px",
     color: Colors.text,
     cursor: "pointer",
+    fontSize: "14px",
+    fontWeight: "500",
   },
   radioInput: {
     margin: 0,
+    cursor: "pointer",
   },
   resultsSection: {
     marginTop: "8px",
@@ -299,6 +357,9 @@ const style = StyleSheet.create({
     fontSize: "14px",
     fontWeight: "500",
     transition: "all 0.2s ease",
+    ":hover": {
+      backgroundColor: Colors.primaryDark,
+    },
   },
   secondaryButton: {
     padding: "8px 16px",
@@ -310,6 +371,9 @@ const style = StyleSheet.create({
     fontSize: "14px",
     fontWeight: "500",
     transition: "all 0.2s ease",
+    ":hover": {
+      backgroundColor: Colors.border,
+    },
   },
   refreshButton: {
     padding: "6px 12px",
@@ -321,5 +385,22 @@ const style = StyleSheet.create({
     fontSize: "12px",
     fontWeight: "500",
     transition: "all 0.2s ease",
+    ":hover": {
+      backgroundColor: Colors.surfaceAlt,
+    },
+  },
+  comingSoon: {
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    backgroundColor: Colors.surface,
+    padding: "24px",
+    borderRadius: "12px",
+    border: `1px solid ${Colors.border}`,
+    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+    zIndex: 1000,
+    textAlign: "center",
+    minWidth: "300px",
   },
 });

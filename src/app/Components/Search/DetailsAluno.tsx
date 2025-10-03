@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { StyleSheet } from "../../Utils/Stylesheet";
-import type { Aluno } from "../../Utils/Types";
+import type { Aluno, FieldConfig } from "../../Utils/Types";
 import Colors from "../../Utils/Colors";
 import {
   X,
@@ -9,6 +9,168 @@ import {
   Trash,
   ArrowCounterClockwise,
 } from "@phosphor-icons/react";
+
+// Masking functions from DynamicForm
+function escapeForRegex(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function applyMask(value: string, mask: string): string {
+  let result = "";
+  let valIndex = 0;
+
+  for (let i = 0; i < mask.length; i++) {
+    if (valIndex >= value.length) break;
+
+    const m = mask[i];
+    if (m === "9") {
+      if (/\d/.test(value[valIndex])) {
+        result += value[valIndex];
+        valIndex++;
+      } else {
+        valIndex++;
+        i--;
+      }
+    } else {
+      result += m;
+      if (value[valIndex] === m) {
+        valIndex++;
+      }
+    }
+  }
+
+  return result;
+}
+
+function removeMask(value: string): string {
+  return value.replace(/\D/g, "");
+}
+
+function maskToRegex(mask: string): RegExp {
+  const escaped = escapeForRegex(mask);
+  const regexStr = "^" + escaped.replace(/9/g, "\\d") + "$";
+  return new RegExp(regexStr);
+}
+
+// Field configuration matching the object structure
+const alunoFields: FieldConfig[] = [
+  {
+    name: "nomeCompleto",
+    placeholder: "Nome Completo",
+    type: "TEXT",
+    required: true,
+  },
+  {
+    name: "dataNascimento",
+    placeholder: "Data de Nascimento",
+    type: "DATE",
+    required: true,
+  },
+  {
+    name: "dataMatricula",
+    placeholder: "Data de Matrícula",
+    type: "DATE",
+    required: true,
+  },
+  {
+    name: "telefone1",
+    placeholder: "Telefone 1",
+    type: "TEXT",
+    mask: "(99) 99999-9999",
+    required: true,
+  },
+  {
+    name: "telefone2",
+    placeholder: "Telefone 2",
+    type: "TEXT",
+    mask: "(99) 99999-9999",
+  },
+  {
+    name: "cpf",
+    placeholder: "CPF",
+    type: "TEXT",
+    mask: "999.999.999-99",
+    required: true,
+  },
+  {
+    name: "rg",
+    placeholder: "RG",
+    type: "TEXT",
+    mask: "99.999.999-9",
+    required: true,
+  },
+  { name: "alergia", placeholder: "Alergia", type: "TEXT" },
+  { name: "usoMedicamento", placeholder: "Uso de Medicamento", type: "TEXT" },
+  {
+    name: "horarioMedicamento",
+    placeholder: "Horário do Medicamento",
+    type: "TIME",
+  },
+  { name: "colegio", placeholder: "Colégio", type: "TEXT", required: true },
+  {
+    name: "colegioAno",
+    placeholder: "Ano Escolar",
+    type: "SELECT",
+    required: true,
+    options: [
+      { label: "1° Ano", value: "1ano" },
+      { label: "2° Ano", value: "2ano" },
+      { label: "3° Ano", value: "3ano" },
+      { label: "4° Ano", value: "4ano" },
+      { label: "5° Ano", value: "5ano" },
+      { label: "6° Ano", value: "6ano" },
+      { label: "7° Ano", value: "7ano" },
+      { label: "8° Ano", value: "8ano" },
+      { label: "9° Ano", value: "9ano" },
+      { label: "1° Médio", value: "1medio" },
+      { label: "2° Médio", value: "2medio" },
+      { label: "3° Médio", value: "3medio" },
+      { label: "Terminou", value: "terminou" },
+    ],
+  },
+  { name: "time", placeholder: "Time", type: "TEXT" },
+  { name: "indicacao", placeholder: "Indicação", type: "TEXT" },
+  { name: "observacao", placeholder: "Observação", type: "TEXT" },
+  {
+    name: "responsavel.nomeCompleto",
+    placeholder: "Nome do Responsável",
+    type: "TEXT",
+    required: true,
+  },
+  {
+    name: "responsavel.cpf",
+    placeholder: "CPF do Responsável",
+    type: "TEXT",
+    mask: "999.999.999-99",
+    required: true,
+  },
+  {
+    name: "responsavel.rg",
+    placeholder: "RG do Responsável",
+    type: "TEXT",
+    mask: "99.999.999-9",
+    required: true,
+  },
+  {
+    name: "responsavel.telefone1",
+    placeholder: "Telefone 1 do Responsável",
+    type: "TEXT",
+    mask: "(99) 99999-9999",
+    required: true,
+  },
+  {
+    name: "responsavel.telefone2",
+    placeholder: "Telefone 2 do Responsável",
+    type: "TEXT",
+    mask: "(99) 99999-9999",
+  },
+  {
+    name: "responsavel.email",
+    placeholder: "Email do Responsável",
+    type: "TEXT",
+    required: true,
+  },
+];
 
 export default function DetailsAluno({
   data,
@@ -20,6 +182,8 @@ export default function DetailsAluno({
   onUpdate: () => void;
 }) {
   const [editMode, setEditMode] = useState<boolean>(false);
+  const [formState, setFormState] = useState<Record<string, any>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [areYouSure, setAreYouSure] = useState<{
     open: boolean;
     label: string;
@@ -27,347 +191,251 @@ export default function DetailsAluno({
     onConfirm: () => Promise<void> | void;
   } | null>(null);
 
-  useEffect(() => console.log(data), []);
+  // Initialize form state from data
+  useEffect(() => {
+    const initialState: Record<string, any> = {};
 
-  // Helper function to format CPF
-  const formatCPF = (cpf: string): string => {
-    if (!cpf) return "Não informado";
-    const cleanCPF = cpf.replace(/\D/g, "");
-    return cleanCPF.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
-  };
+    alunoFields.forEach((field) => {
+      if (field.name.includes(".")) {
+        // Handle nested properties (responsavel.*)
+        const [parent, child] = field.name.split(".");
+        initialState[field.name] = data[parent]?.[child] || "";
+      } else {
+        initialState[field.name] = data[field.name as keyof Aluno] || "";
+      }
+    });
 
-  // Helper function to format RG
-  const formatRG = (rg: string): string => {
-    if (!rg) return "Não informado";
-    const cleanRG = rg.replace(/\D/g, "");
-    if (cleanRG.length <= 8) {
-      return cleanRG.replace(/(\d{2})(\d{3})(\d{3})/, "$1.$2.$3");
-    }
-    return cleanRG.replace(/(\d{2})(\d{3})(\d{3})(\d{1})/, "$1.$2.$3-$4");
-  };
+    // Handle file separately
+    initialState["url"] = data.url || "";
 
-  // Helper function to format phone numbers
-  const formatPhone = (phone: string): string => {
-    if (!phone) return "Não informado";
-    const cleanPhone = phone.replace(/\D/g, "");
+    setFormState(initialState);
+  }, [data]);
 
-    if (cleanPhone.length === 10) {
-      return cleanPhone.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
-    } else if (cleanPhone.length === 11) {
-      return cleanPhone.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
-    } else if (cleanPhone.length === 8) {
-      return cleanPhone.replace(/(\d{4})(\d{4})/, "$1-$2");
-    } else if (cleanPhone.length === 9) {
-      return cleanPhone.replace(/(\d{5})(\d{4})/, "$1-$2");
-    }
+  const handleFieldChange = (name: string, rawValue: any, mask?: string) => {
+    let value = rawValue;
+    let errorMsg = "";
 
-    return phone;
-  };
+    if (mask && typeof rawValue === "string") {
+      const digits = rawValue.replace(/\D/g, "");
+      value = applyMask(digits, mask);
 
-  // Helper function to format date
-  const formatDate = (date: string): string => {
-    if (!date) return "Não informado";
-    try {
-      return new Date(date).toLocaleDateString("pt-BR");
-    } catch {
-      return "Data inválida";
-    }
-  };
-
-  // Helper function to format time
-  const formatTime = (time: string): string => {
-    if (!time) return "Não informado";
-    try {
-      const [hours, minutes] = time.split(":");
-      return `${hours}:${minutes}`;
-    } catch {
-      return time;
-    }
-  };
-
-  // Helper function to format grade
-  const formatGrade = (grade: string): string => {
-    if (!grade) return "Não informado";
-    const cleanGrade = grade.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-    const gradeMatch = cleanGrade.match(/^(\d+)(?:ano|series?)?$/);
-    if (gradeMatch) {
-      const gradeNumber = gradeMatch[1];
-      return `${gradeNumber}° Ano`;
-    }
-    return grade
-      .replace(/(\d+)/, "$1°")
-      .replace(/\b\w/g, (l) => l.toUpperCase());
-  };
-
-  const renderField = (
-    label: string,
-    value: any,
-    key: string,
-    type: "text" | "date" | "time" | "file" = "text"
-  ) => {
-    let displayValue = value ?? "Não informado";
-
-    if (!editMode) {
-      switch (key) {
-        case "cpf":
-        case "responsavel.cpf":
-          displayValue = formatCPF(value);
-          break;
-        case "rg":
-        case "responsavel.rg":
-          displayValue = formatRG(value);
-          break;
-        case "telefone1":
-        case "telefone2":
-        case "responsavel.telefone1":
-        case "responsavel.telefone2":
-          displayValue = formatPhone(value);
-          break;
-        case "dataNascimento":
-        case "dataMatricula":
-          displayValue = formatDate(value);
-          break;
-        case "horarioMedicamento":
-          displayValue = formatTime(value);
-          break;
-        case "colegioAno":
-          displayValue = formatGrade(value);
-          break;
-        default:
-          displayValue = value ?? "Não informado";
+      const regex = maskToRegex(mask);
+      if (value && !regex.test(value)) {
+        errorMsg = "Formato inválido";
       }
     }
 
-    return (
-      <div style={style.fieldContainer}>
-        <label style={style.label}>{label}</label>
-        {editMode ? (
-          <input
-            key={key}
-            name={key}
-            type={type}
-            defaultValue={type === "file" ? undefined : value ?? ""}
-            style={style.input}
-            className="input-field"
-          />
-        ) : (
+    setFormState((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: errorMsg }));
+  };
+
+  const cleanValueForSubmission = (value: string, mask?: string): string => {
+    if (!mask || !value) return value;
+    const cleaned = removeMask(value);
+    return cleaned.length > 0 ? cleaned : value;
+  };
+
+  // Helper function to format display values (for view mode)
+  const formatDisplayValue = (value: any, field: FieldConfig): string => {
+    if (!value) return "Não informado";
+
+    switch (field.type) {
+      case "DATE":
+        try {
+          return new Date(value).toLocaleDateString("pt-BR");
+        } catch {
+          return "Data inválida";
+        }
+      case "TIME":
+        try {
+          const [hours, minutes] = value.split(":");
+          return `${hours}:${minutes}`;
+        } catch {
+          return value;
+        }
+      case "SELECT":
+        const option = field.options?.find((opt) => opt.value === value);
+        return option?.label || value;
+      default:
+        if (field.mask && value) {
+          return applyMask(removeMask(value), field.mask);
+        }
+        return value;
+    }
+  };
+
+  const getFieldValue = (fieldName: string): any => {
+    if (fieldName.includes(".")) {
+      const [parent, child] = fieldName.split(".");
+      return data[parent as keyof Aluno]?.[child] || "";
+    }
+    return data[fieldName as keyof Aluno] || "";
+  };
+
+  const renderField = (field: FieldConfig) => {
+    const value = editMode ? formState[field.name] : getFieldValue(field.name);
+    const error = errors[field.name];
+    const displayValue = editMode ? value : formatDisplayValue(value, field);
+
+    if (!editMode) {
+      return (
+        <div style={style.fieldContainer}>
+          <label style={style.label}>{field.placeholder}</label>
           <div
             style={{
               ...style.value,
               ...(displayValue === "Não informado" ? style.notInformed : {}),
             }}
-            key={key}
           >
             {displayValue}
           </div>
-        )}
-      </div>
+        </div>
+      );
+    }
+
+    const labelWithRequired = (
+      <label style={style.label}>
+        {field.placeholder}
+        {field.required && <span style={{ color: "red" }}> *</span>}
+      </label>
     );
+
+    switch (field.type) {
+      case "TEXT":
+      case "NUMBER":
+      case "DATE":
+      case "TIME":
+        return (
+          <div style={style.fieldContainer} key={field.name}>
+            {labelWithRequired}
+            <input
+              type={field.type.toLowerCase()}
+              value={formState[field.name] || ""}
+              onChange={(e) =>
+                handleFieldChange(field.name, e.target.value, field.mask)
+              }
+              style={{
+                ...style.input,
+                borderColor: error ? "red" : Colors.border,
+              }}
+              className="input-field"
+            />
+            {error && <span style={style.error}>{error}</span>}
+          </div>
+        );
+
+      case "SELECT":
+        return (
+          <div style={style.fieldContainer} key={field.name}>
+            {labelWithRequired}
+            <select
+              value={formState[field.name] || ""}
+              onChange={(e) => handleFieldChange(field.name, e.target.value)}
+              style={{
+                ...style.input,
+                borderColor: error ? "red" : Colors.border,
+              }}
+            >
+              <option value="">Selecione...</option>
+              {field.options?.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            {error && <span style={style.error}>{error}</span>}
+          </div>
+        );
+
+      case "FILE":
+        return (
+          <div style={style.fieldContainer} key={field.name}>
+            {labelWithRequired}
+            <input
+              type="file"
+              onChange={(e) =>
+                handleFieldChange(field.name, e.target.files?.[0] || null)
+              }
+              style={style.input}
+            />
+            {data.url && (
+              <img src={data.url} style={style.previewImage} alt="Preview" />
+            )}
+            {error && <span style={style.error}>{error}</span>}
+          </div>
+        );
+
+      default:
+        return (
+          <div style={style.fieldContainer} key={field.name}>
+            {labelWithRequired}
+            <input
+              type="text"
+              value={formState[field.name] || ""}
+              onChange={(e) =>
+                handleFieldChange(field.name, e.target.value, field.mask)
+              }
+              style={{
+                ...style.input,
+                borderColor: error ? "red" : Colors.border,
+              }}
+              className="input-field"
+            />
+            {error && <span style={style.error}>{error}</span>}
+          </div>
+        );
+    }
   };
 
   const handleSaveEdit = async () => {
+    // Validate required fields
+    const newErrors: Record<string, string> = {};
+    alunoFields.forEach((field) => {
+      if (field.required) {
+        const value = formState[field.name];
+        const empty = value === "" || value == null;
+        if (empty) {
+          newErrors[field.name] = "Campo obrigatório";
+        }
+      }
+
+      if (field.mask && formState[field.name]) {
+        const regex = maskToRegex(field.mask);
+        if (!regex.test(formState[field.name])) {
+          newErrors[field.name] = "Formato inválido";
+        }
+      }
+    });
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     try {
       const formData = new FormData();
 
-      // Add student data - convert all values to strings
+      // Add student data
       formData.append("id", data.id.toString());
-      formData.append(
-        "nomeCompleto",
-        (document.querySelector('[name="nomeCompleto"]') as HTMLInputElement)
-          ?.value ||
-          data.nomeCompleto ||
-          ""
-      );
 
-      // Convert dates to string format YYYY-MM-DD
-      const dataNascimentoValue = (
-        document.querySelector('[name="dataNascimento"]') as HTMLInputElement
-      )?.value;
-      const dataMatriculaValue = (
-        document.querySelector('[name="dataMatricula"]') as HTMLInputElement
-      )?.value;
+      alunoFields.forEach((field) => {
+        let value = formState[field.name];
 
-      formData.append(
-        "dataNascimento",
-        dataNascimentoValue ||
-          (data.dataNascimento instanceof Date
-            ? data.dataNascimento.toISOString().split("T")[0]
-            : data.dataNascimento || "")
-      );
+        // Clean masked values
+        if (field.mask && typeof value === "string") {
+          value = cleanValueForSubmission(value, field.mask);
+        }
 
-      formData.append(
-        "dataMatricula",
-        dataMatriculaValue ||
-          (data.dataMatricula instanceof Date
-            ? data.dataMatricula.toISOString().split("T")[0]
-            : data.dataMatricula || "")
-      );
+        // Handle file separately
+        if (field.type === "FILE" && value instanceof File) {
+          formData.append("file", value);
+        } else {
+          formData.append(field.name, value || "");
+        }
+      });
 
-      formData.append(
-        "telefone1",
-        (document.querySelector('[name="telefone1"]') as HTMLInputElement)
-          ?.value ||
-          data.telefone1 ||
-          ""
-      );
-      formData.append(
-        "telefone2",
-        (document.querySelector('[name="telefone2"]') as HTMLInputElement)
-          ?.value ||
-          data.telefone2 ||
-          ""
-      );
-      formData.append(
-        "cpf",
-        (document.querySelector('[name="cpf"]') as HTMLInputElement)?.value ||
-          data.cpf ||
-          ""
-      );
-      formData.append(
-        "rg",
-        (document.querySelector('[name="rg"]') as HTMLInputElement)?.value ||
-          data.rg ||
-          ""
-      );
-      formData.append(
-        "alergia",
-        (document.querySelector('[name="alergia"]') as HTMLInputElement)
-          ?.value ||
-          data.alergia ||
-          ""
-      );
-      formData.append(
-        "usoMedicamento",
-        (document.querySelector('[name="usoMedicamento"]') as HTMLInputElement)
-          ?.value ||
-          data.usoMedicamento ||
-          ""
-      );
-
-      // Handle time field
-      const horarioMedicamentoValue = (
-        document.querySelector(
-          '[name="horarioMedicamento"]'
-        ) as HTMLInputElement
-      )?.value;
-      formData.append(
-        "horarioMedicamento",
-        horarioMedicamentoValue || data.horarioMedicamento || ""
-      );
-
-      formData.append(
-        "colegio",
-        (document.querySelector('[name="colegio"]') as HTMLInputElement)
-          ?.value ||
-          data.colegio ||
-          ""
-      );
-      formData.append(
-        "colegioAno",
-        (document.querySelector('[name="colegioAno"]') as HTMLInputElement)
-          ?.value ||
-          data.colegioAno ||
-          ""
-      );
-      formData.append(
-        "time",
-        (document.querySelector('[name="time"]') as HTMLInputElement)?.value ||
-          data.time ||
-          ""
-      );
-      formData.append(
-        "indicacao",
-        (document.querySelector('[name="indicacao"]') as HTMLInputElement)
-          ?.value ||
-          data.indicacao ||
-          ""
-      );
-      formData.append(
-        "observacao",
-        (document.querySelector('[name="observacao"]') as HTMLInputElement)
-          ?.value ||
-          data.observacao ||
-          ""
-      );
+      // Add fixed fields
       formData.append("ativo", "true");
-      formData.append(
-        "url",
-        (document.querySelector('[name="url"]') as HTMLInputElement)?.value ||
-          data.url ||
-          ""
-      );
-
-      // Add responsible data if exists
-      if (data.responsavel) {
-        formData.append(
-          "responsavel.nomeCompleto",
-          (
-            document.querySelector(
-              '[name="responsavel.nomeCompleto"]'
-            ) as HTMLInputElement
-          )?.value ||
-            data.responsavel.nomeCompleto ||
-            ""
-        );
-        formData.append(
-          "responsavel.cpf",
-          (
-            document.querySelector(
-              '[name="responsavel.cpf"]'
-            ) as HTMLInputElement
-          )?.value ||
-            data.responsavel.cpf ||
-            ""
-        );
-        formData.append(
-          "responsavel.rg",
-          (
-            document.querySelector(
-              '[name="responsavel.rg"]'
-            ) as HTMLInputElement
-          )?.value ||
-            data.responsavel.rg ||
-            ""
-        );
-        formData.append(
-          "responsavel.telefone1",
-          (
-            document.querySelector(
-              '[name="responsavel.telefone1"]'
-            ) as HTMLInputElement
-          )?.value ||
-            data.responsavel.telefone1 ||
-            ""
-        );
-        formData.append(
-          "responsavel.telefone2",
-          (
-            document.querySelector(
-              '[name="responsavel.telefone2"]'
-            ) as HTMLInputElement
-          )?.value ||
-            data.responsavel.telefone2 ||
-            ""
-        );
-        formData.append(
-          "responsavel.email",
-          (
-            document.querySelector(
-              '[name="responsavel.email"]'
-            ) as HTMLInputElement
-          )?.value ||
-            data.responsavel.email ||
-            ""
-        );
-      }
-
-      // Handle file upload
-      const fileInput = document.querySelector(
-        '[name="url"]'
-      ) as HTMLInputElement;
-      if (fileInput?.files?.[0]) {
-        formData.append("file", fileInput.files[0]);
-      }
 
       console.log("Sending multipart form data");
 
@@ -379,15 +447,13 @@ export default function DetailsAluno({
           body: formData,
         }
       );
-      console.log(formData);
 
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(errorText || `HTTP error! status: ${response.status}`);
       }
 
-      const updatedAluno = await response.json();
-      console.log("Atualizado com sucesso!:", updatedAluno);
+      alert("Atualizado com sucesso!");
 
       onUpdate?.();
       setEditMode(false);
@@ -431,10 +497,49 @@ export default function DetailsAluno({
       label: "Tem certeza que deseja descartar todas as alterações?",
       options: ["Cancelar", "Descartar"],
       onConfirm: () => {
+        // Reset form state to original data
+        const initialState: Record<string, any> = {};
+        alunoFields.forEach((field) => {
+          if (field.name.includes(".")) {
+            const [parent, child] = field.name.split(".");
+            initialState[field.name] = data[parent]?.[child] || "";
+          } else {
+            initialState[field.name] = data[field.name as keyof Aluno] || "";
+          }
+        });
+        setFormState(initialState);
+        setErrors({});
         setEditMode(false);
         setAreYouSure(null);
       },
     });
+  };
+
+  // Group fields by category for display
+  const fieldGroups = {
+    personal: alunoFields.filter((field) =>
+      [
+        "nomeCompleto",
+        "dataNascimento",
+        "dataMatricula",
+        "telefone1",
+        "telefone2",
+        "cpf",
+        "rg",
+      ].includes(field.name)
+    ),
+    school: alunoFields.filter((field) =>
+      ["colegio", "colegioAno"].includes(field.name)
+    ),
+    health: alunoFields.filter((field) =>
+      ["alergia", "usoMedicamento", "horarioMedicamento"].includes(field.name)
+    ),
+    additional: alunoFields.filter((field) =>
+      ["time", "indicacao", "observacao"].includes(field.name)
+    ),
+    responsible: alunoFields.filter((field) =>
+      field.name.startsWith("responsavel.")
+    ),
   };
 
   return (
@@ -517,13 +622,15 @@ export default function DetailsAluno({
               <h3 style={style.cardTitle}>Foto</h3>
               {editMode ? (
                 <div style={style.fileUpload}>
-                  {renderField("Foto", data.url, "url", "file")}
-                  {data.url && (
-                    <img src={data.url} style={style.previewImage} />
-                  )}
+                  {renderField({
+                    name: "url",
+                    placeholder: "Foto",
+                    type: "FILE",
+                    required: false,
+                  })}
                 </div>
               ) : data.url ? (
-                <img src={data.url} style={style.image} />
+                <img src={data.url} style={style.image} alt="Aluno" />
               ) : (
                 <div style={style.placeholderImage}>Sem foto</div>
               )}
@@ -535,27 +642,7 @@ export default function DetailsAluno({
                 Dados Pessoais
               </h3>
               <div style={style.fieldsGrid}>
-                {renderField(
-                  "Nome Completo",
-                  data.nomeCompleto,
-                  "nomeCompleto"
-                )}
-                {renderField(
-                  "Data de Nascimento",
-                  data.dataNascimento,
-                  "dataNascimento",
-                  "date"
-                )}
-                {renderField(
-                  "Data de Matrícula",
-                  data.dataMatricula,
-                  "dataMatricula",
-                  "date"
-                )}
-                {renderField("CPF", data.cpf, "cpf")}
-                {renderField("RG", data.rg, "rg")}
-                {renderField("Telefone 1", data.telefone1, "telefone1")}
-                {renderField("Telefone 2", data.telefone2, "telefone2")}
+                {fieldGroups.personal.map((field) => renderField(field))}
               </div>
             </div>
           </div>
@@ -567,8 +654,7 @@ export default function DetailsAluno({
                 Informações Escolares
               </h3>
               <div style={style.fieldsGrid}>
-                {renderField("Colégio", data.colegio, "colegio")}
-                {renderField("Ano/Série", data.colegioAno, "colegioAno")}
+                {fieldGroups.school.map((field) => renderField(field))}
               </div>
             </div>
 
@@ -578,18 +664,7 @@ export default function DetailsAluno({
                 Saúde
               </h3>
               <div style={style.fieldsGrid}>
-                {renderField("Alergias", data.alergia, "alergia")}
-                {renderField(
-                  "Uso de Medicamento",
-                  data.usoMedicamento,
-                  "usoMedicamento"
-                )}
-                {renderField(
-                  "Horário do Medicamento",
-                  data.horarioMedicamento,
-                  "horarioMedicamento",
-                  "time"
-                )}
+                {fieldGroups.health.map((field) => renderField(field))}
               </div>
             </div>
           </div>
@@ -601,9 +676,7 @@ export default function DetailsAluno({
                 Informações Adicionais
               </h3>
               <div style={style.fieldsGrid}>
-                {renderField("Time", data.time, "time")}
-                {renderField("Indicação", data.indicacao, "indicacao")}
-                {renderField("Observações", data.observacao, "observacao")}
+                {fieldGroups.additional.map((field) => renderField(field))}
               </div>
             </div>
 
@@ -614,28 +687,7 @@ export default function DetailsAluno({
                   Responsável
                 </h3>
                 <div style={style.fieldsGrid}>
-                  {renderField(
-                    "Nome",
-                    data.responsavel.nomeCompleto,
-                    "responsavel.nomeCompleto"
-                  )}
-                  {renderField("CPF", data.responsavel.cpf, "responsavel.cpf")}
-                  {renderField("RG", data.responsavel.rg, "responsavel.rg")}
-                  {renderField(
-                    "Telefone 1",
-                    data.responsavel.telefone1,
-                    "responsavel.telefone1"
-                  )}
-                  {renderField(
-                    "Telefone 2",
-                    data.responsavel.telefone2,
-                    "responsavel.telefone2"
-                  )}
-                  {renderField(
-                    "Email",
-                    data.responsavel.email,
-                    "responsavel.email"
-                  )}
+                  {fieldGroups.responsible.map((field) => renderField(field))}
                 </div>
               </div>
             )}
@@ -701,7 +753,7 @@ const style = StyleSheet.create({
   mainContainer: {
     width: "90%",
     maxWidth: 1200,
-    height: "90%",
+    minHeight: "90%",
     backgroundColor: Colors.surface,
     borderRadius: 20,
     border: `1px solid ${Colors.border}`,
@@ -976,5 +1028,10 @@ const style = StyleSheet.create({
     fontWeight: "600",
     fontSize: "14px",
     transition: "all 0.2s ease",
+  },
+  error: {
+    color: Colors.error,
+    fontSize: "12px",
+    marginTop: "4px",
   },
 });

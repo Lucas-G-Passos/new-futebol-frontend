@@ -78,7 +78,15 @@ export enum DayOfWeek {
 export type FieldConfig = {
   name: string;
   placeholder: string;
-  type: "TEXT" | "NUMBER" | "DATE" | "SELECT" | "FILE" | "CHECKBOX" | "TIME";
+  type:
+    | "TEXT"
+    | "NUMBER"
+    | "DATE"
+    | "SELECT"
+    | "FILE"
+    | "CHECKBOX"
+    | "TIME"
+    | "CHECKBOXGROUP";
   options?: { label: string; value: string | number }[];
   defaultValue?: any;
   mask?: string;

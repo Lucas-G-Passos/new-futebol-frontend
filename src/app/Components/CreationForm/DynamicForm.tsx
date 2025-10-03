@@ -5,8 +5,9 @@ import type { FieldConfig } from "../../Utils/Types";
 
 type Props = {
   fields: FieldConfig[];
-  onSubmit: (formData: FormData) => Promise<void>;
+  onSubmit: (formData: any) => Promise<void>;
   title: string;
+  sendAs: "JSON" | "FORMDATA";
 };
 
 function escapeForRegex(s: string) {
@@ -58,11 +59,21 @@ function maskToRegex(mask: string): RegExp {
   return new RegExp(regexStr);
 }
 
-export default function DynamicForm({ fields, onSubmit, title }: Props) {
+export default function DynamicForm({
+  fields,
+  onSubmit,
+  title,
+  sendAs,
+}: Props) {
   const [isHovered, setHovered] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [formState, setFormState] = useState<Record<string, any>>(
-    Object.fromEntries(fields.map((f) => [f.name, f.defaultValue ?? ""]))
+    Object.fromEntries(
+      fields.map((f) => [
+        f.name,
+        f.defaultValue ?? (f.type === "CHECKBOXGROUP" ? [] : ""),
+      ])
+    )
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -84,6 +95,29 @@ export default function DynamicForm({ fields, onSubmit, title }: Props) {
     setErrors((prev) => ({ ...prev, [name]: errorMsg }));
   };
 
+  const handleCheckboxGroupChange = (
+    fieldName: string,
+    optionValue: string,
+    isChecked: boolean
+  ) => {
+    setFormState((prev) => {
+      const currentValues = prev[fieldName] || [];
+      let newValues;
+
+      if (isChecked) {
+        newValues = [...currentValues, optionValue];
+      } else {
+        newValues = currentValues.filter(
+          (value: string) => value !== optionValue
+        );
+      }
+
+      return { ...prev, [fieldName]: newValues };
+    });
+
+    setErrors((prev) => ({ ...prev, [fieldName]: "" }));
+  };
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
@@ -94,50 +128,74 @@ export default function DynamicForm({ fields, onSubmit, title }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newErrors: Record<string, string> = {};
-    fields.forEach((field) => {
-      const value = formState[field.name];
+    if (sendAs === "FORMDATA") {
+      const newErrors: Record<string, string> = {};
+      fields.forEach((field) => {
+        const value = formState[field.name];
 
-      if (field.required) {
-        const empty =
-          field.type === "CHECKBOX"
-            ? value !== true
-            : value === "" || value == null;
-        if (empty) {
-          newErrors[field.name] = "Campo obrigatório";
-          return;
+        if (field.required) {
+          let empty = false;
+
+          if (field.type === "CHECKBOX") {
+            empty = value !== true;
+          } else if (field.type === "CHECKBOXGROUP") {
+            empty = !value || value.length === 0;
+          } else {
+            empty = value === "" || value == null;
+          }
+
+          if (empty) {
+            newErrors[field.name] = "Campo obrigatório";
+            return;
+          }
+        }
+
+        if (field.mask && value && typeof value === "string") {
+          const regex = maskToRegex(field.mask);
+          if (!regex.test(value)) {
+            newErrors[field.name] = "Formato inválido";
+          }
+        }
+      });
+
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        return;
+      }
+
+      const data = new FormData();
+
+      for (const [key, value] of Object.entries(formState)) {
+        const fieldConfig = fields.find((f) => f.name === key);
+
+        if (value instanceof File) {
+          data.append(key, value);
+        } else if (fieldConfig?.mask && typeof value === "string") {
+          const cleanedValue = cleanValueForSubmission(value, fieldConfig.mask);
+          data.append(key, cleanedValue);
+        } else if (Array.isArray(value)) {
+          data.append(key, JSON.stringify(value));
+        } else {
+          data.append(key, value);
+        }
+      }
+      await onSubmit(data);
+    }
+    if (sendAs === "JSON") {
+      const jsonData: Record<string, any> = {};
+
+      for (const [key, value] of Object.entries(formState)) {
+        const fieldConfig = fields.find((f) => f.name === key);
+
+        if (fieldConfig?.mask && typeof value === "string") {
+          jsonData[key] = cleanValueForSubmission(value, fieldConfig.mask);
+        } else {
+          jsonData[key] = value;
         }
       }
 
-      if (field.mask && value) {
-        const regex = maskToRegex(field.mask);
-        if (!regex.test(value)) {
-          newErrors[field.name] = "Formato inválido";
-        }
-      }
-    });
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
+      await onSubmit(jsonData);
     }
-
-    const data = new FormData();
-
-    for (const [key, value] of Object.entries(formState)) {
-      const fieldConfig = fields.find((f) => f.name === key);
-
-      if (value instanceof File) {
-        data.append(key, value);
-      } else if (fieldConfig?.mask && typeof value === "string") {
-        const cleanedValue = cleanValueForSubmission(value, fieldConfig.mask);
-        data.append(key, cleanedValue);
-      } else {
-        data.append(key, value);
-      }
-    }
-
-    await onSubmit(data);
   };
 
   return (
@@ -228,7 +286,7 @@ export default function DynamicForm({ fields, onSubmit, title }: Props) {
           case "CHECKBOX":
             return (
               <div style={style.checkboxWrapper} key={field.name}>
-                <label>
+                <label style={style.checkboxLabel}>
                   <input
                     type="checkbox"
                     checked={!!formState[field.name]}
@@ -238,6 +296,40 @@ export default function DynamicForm({ fields, onSubmit, title }: Props) {
                   {field.placeholder}{" "}
                   {field.required && <span style={{ color: "red" }}>*</span>}
                 </label>
+                {error && <span style={style.error}>{error}</span>}
+              </div>
+            );
+          case "CHECKBOXGROUP":
+            return (
+              <div style={style.fieldGroup} key={field.name}>
+                {labelWithRequired}
+                <div style={style.checkboxGroup}>
+                  {field.options?.map((option) => {
+                    const isChecked = (formState[field.name] || []).includes(
+                      option.value
+                    );
+                    return (
+                      <label
+                        key={option.value}
+                        style={style.checkboxGroupLabel}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) =>
+                            handleCheckboxGroupChange(
+                              field.name,
+                              option.value,
+                              e.target.checked
+                            )
+                          }
+                          style={style.checkbox}
+                        />
+                        {option.label}
+                      </label>
+                    );
+                  })}
+                </div>
                 {error && <span style={style.error}>{error}</span>}
               </div>
             );
@@ -300,10 +392,34 @@ const style = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
+  checkboxLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    cursor: "pointer",
+  },
+  checkboxGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+    padding: "12px",
+    backgroundColor: Colors.inputBackground,
+    borderRadius: 8,
+    border: `1px solid ${Colors.border}`,
+  },
+  checkboxGroupLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    cursor: "pointer",
+    fontSize: 14,
+    color: Colors.text,
+  },
   checkbox: {
     width: 16,
     height: 16,
     accentColor: Colors.primary,
+    cursor: "pointer",
   },
   button: {
     marginTop: 8,

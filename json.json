@@ -1,0 +1,117 @@
+{
+  "turmas": [
+    {
+      "diaSemana": ["MONDAY", "WEDNESDAY", "FRIDAY"],
+      "horaTermino": "16:00:00",
+      "alunos": [],
+      "nome": "Turma A",
+      "id": 2,
+      "codigoTurma": "T123",
+      "horaInicio": "14:00:00",
+      "local": "Quadra 1",
+      "descricao": "Descrição da turma"
+    },
+    {
+      "diaSemana": ["MONDAY", "WEDNESDAY", "FRIDAY"],
+      "horaTermino": "16:00:00",
+      "alunos": [
+        {
+          "id": 7,
+          "nomeCompleto": "Autem molestiae aliq",
+          "dataNascimento": "1975-10-04",
+          "dataMatricula": "2016-05-22",
+          "telefone1": "76543467894",
+          "telefone2": "09456789645",
+          "cpf": "09456789876",
+          "rg": "043456789",
+          "alergia": "Earum maxime odio ma",
+          "usoMedicamento": "Laboris et nihil et ",
+          "horarioMedicamento": "16:40:00",
+          "colegio": "Qui deserunt culpa ",
+          "colegioAno": "5ano",
+          "time": "Ut sed illo expedita",
+          "indicacao": "Id quia perspiciati",
+          "observacao": "Id nesciunt quia p",
+          "ativo": false,
+          "filePath": "/app/storage/pictures/aluno/Autem_molestiae_aliq/cute_custom_render_2025-09-27T00_25_36.188Z.png",
+          "url": "http://192.168.1.171:6060/alunos/files/7",
+          "turmaId": 1,
+          "responsavel": {
+            "nomeCompleto": "Consequatur laudant",
+            "cpf": "09876567890",
+            "rg": "945678909",
+            "telefone1": "09567890678",
+            "telefone2": "",
+            "email": "Dolor nulla voluptas"
+          }
+        },
+        {
+          "id": 6,
+          "nomeCompleto": "Corrupti sit venia",
+          "dataNascimento": "2010-03-21",
+          "dataMatricula": "2024-05-04",
+          "telefone1": "98765678909",
+          "telefone2": "",
+          "cpf": "87655678975",
+          "rg": "845678904",
+          "alergia": "Tempor commodo conse",
+          "usoMedicamento": "Fuga Facilis nihil ",
+          "horarioMedicamento": "23:50:00",
+          "colegio": "Sit incididunt nequ",
+          "colegioAno": "7ano",
+          "time": "Excepteur aliqua Mo",
+          "indicacao": "In at tenetur deseru",
+          "observacao": "Qui et magni et opti",
+          "ativo": false,
+          "filePath": "/app/storage/pictures/aluno/Corrupti_sit_venia/cute_render_body_2025-09-27T00_38_52.564Z.png",
+          "url": "http://192.168.1.171:6060/alunos/files/6",
+          "turmaId": 1,
+          "responsavel": {
+            "nomeCompleto": "Aute aut nihil duis ",
+            "cpf": "45678345674",
+            "rg": "456789345",
+            "telefone1": "45678934567",
+            "telefone2": "",
+            "email": "Aut eum ullam volupt"
+          }
+        },
+        {
+          "id": 8,
+          "nomeCompleto": "Repellendus Nulla i",
+          "dataNascimento": "2008-11-06",
+          "dataMatricula": "2019-05-03",
+          "telefone1": "98765434567",
+          "telefone2": "",
+          "cpf": "09876545678",
+          "rg": "098678998",
+          "alergia": "Eum unde commodi eum",
+          "usoMedicamento": "Qui rem rerum doloru",
+          "horarioMedicamento": "08:17:00",
+          "colegio": "Quas dolorem pariatu",
+          "colegioAno": "3ano",
+          "time": "Dolor ipsum est et ",
+          "indicacao": "Est ratione quia dol",
+          "observacao": "Eu quae sed dolor id",
+          "ativo": false,
+          "filePath": "/app/storage/pictures/aluno/Repellendus_Nulla_i/cute_render_body_2025-09-27T00_38_52.564Z.png",
+          "url": "http://192.168.1.171:6060/alunos/files/8",
+          "turmaId": 1,
+          "responsavel": {
+            "nomeCompleto": "Beatae dolor dolorum",
+            "cpf": "09878908900",
+            "rg": "700890789",
+            "telefone1": "67890890987",
+            "telefone2": "",
+            "email": "In qui veniam ad ni"
+          }
+        }
+      ],
+      "nome": "Turma A",
+      "id": 1,
+      "codigoTurma": "T123",
+      "horaInicio": "14:00:00",
+      "local": "Quadra 1",
+      "descricao": "Descrição da turma"
+    }
+  ]
+}
