@@ -199,10 +199,11 @@ const style = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.8)",
     display: "flex",
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "flex-start",
     zIndex: 1000,
     padding: "20px",
     backdropFilter: "blur(4px)",
+    overflow: "auto",
   },
   formContainer: {
     display: "flex",
