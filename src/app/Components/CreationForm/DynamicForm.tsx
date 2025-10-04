@@ -316,13 +316,14 @@ export default function DynamicForm({
                         <input
                           type="checkbox"
                           checked={isChecked}
-                          onChange={(e) =>
+                          onChange={(e) => {
+                            if (typeof option.value === "number") return;
                             handleCheckboxGroupChange(
                               field.name,
                               option.value,
                               e.target.checked
-                            )
-                          }
+                            );
+                          }}
                           style={style.checkbox}
                         />
                         {option.label}
