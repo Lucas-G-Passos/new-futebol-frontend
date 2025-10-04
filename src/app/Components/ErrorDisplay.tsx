@@ -1,6 +1,5 @@
 import { X } from "@phosphor-icons/react";
 import { useAuth } from "../Context/AuthContext";
-import Colors from "../Utils/Colors";
 import { StyleSheet } from "../Utils/Stylesheet";
 
 export default function ErrorDisplay() {

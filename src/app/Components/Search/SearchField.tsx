@@ -12,7 +12,7 @@ type SearchFieldProps = {
 };
 
 export default forwardRef(function SearchField(
-  { value = "", onSearch, onResult, type, options }: SearchFieldProps,
+  { value = "", onSearch, onResult, type }: SearchFieldProps,
   ref: React.Ref<{ getValue: () => string; setValue: (value: string) => void }>
 ) {
   const [searchValue, setSearchValue] = useState<string>(value);
