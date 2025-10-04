@@ -29,6 +29,8 @@ export interface Responsavel {
   telefone1: string;
   telefone2?: string;
   email: string;
+
+  [key: string]: any;
 }
 
 export interface Turma {
@@ -62,6 +64,8 @@ export interface Aluno {
   url?: string;
   responsavel?: Responsavel;
   turma?: Turma;
+
+  [key: string]: any;
 }
 
 // Optional enum for Java DayOfWeek
