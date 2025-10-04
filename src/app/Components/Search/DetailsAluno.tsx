@@ -742,13 +742,12 @@ const style = StyleSheet.create({
   overlay: {
     position: "fixed",
     inset: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    backgroundColor: "rgba(0,0,0,0.8)",
     display: "flex",
     justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000,
-    padding: 20,
-    backdropFilter: "blur(4px)",
+    alignItems: "flex-start",
+    overflowY: "auto",
+    padding: 40,
   },
   mainContainer: {
     width: "90%",
@@ -760,7 +759,8 @@ const style = StyleSheet.create({
     boxShadow: "0 20px 60px rgba(0, 0, 0, 0.3)",
     display: "flex",
     flexDirection: "column",
-    overflow: "hidden",
+    justifyContent: "flex-start",
+    overflow: "auto",
   },
   header: {
     padding: "24px 32px",
@@ -980,7 +980,7 @@ const style = StyleSheet.create({
     boxShadow: "0 20px 60px rgba(0, 0, 0, 0.4)",
     maxWidth: "400px",
     width: "90%",
-    overflow: "hidden",
+    overflow: "auto",
   },
   dialogContent: {
     padding: "32px",
