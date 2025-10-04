@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import SearchField from "../Components/Search/SearchField";
 import SearchResults from "../Components/Search/SearchResults";
 import { useAuth } from "../Context/AuthContext";
@@ -12,7 +12,6 @@ export default function Search() {
   const [searchType, setSearchType] = useState<"ALUNO" | "FUNCIONARIO">(
     "ALUNO"
   );
-  const [turmas, setTurmas] = useState<Record<number, string>>({});
   const [selected, setSelected] = useState<any | null>(null);
   const { setError } = useAuth();
 
@@ -21,32 +20,6 @@ export default function Search() {
     getValue: () => string;
     setValue: (value: string) => void;
   }>(null);
-
-  useEffect(() => {
-    const getTurmas = async () => {
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/turmas/all`,
-          { credentials: "include" }
-        );
-        if (!response.ok) throw new Error(await response.text());
-
-        const turmasData = await response.json();
-        const turmasMap = turmasData.turmas.reduce(
-          (acc: Record<number, string>, turma: any) => {
-            acc[turma.id] = turma.nome;
-            return acc;
-          },
-          {}
-        );
-        setTurmas(turmasMap);
-      } catch (error: any) {
-        console.error(error);
-        setError(error);
-      }
-    };
-    getTurmas();
-  }, []);
 
   const handleSearch = async (query: string, type: "ALUNO" | "FUNCIONARIO") => {
     try {

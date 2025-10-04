@@ -77,26 +77,6 @@ const formatRG = (rg: string): string => {
   return rg;
 };
 
-// Helper function to get permissions label
-const getPermissionsLabel = (permissions: any[]): string => {
-  if (!permissions || permissions.length === 0) return "Sem permissões";
-
-  const permissionNames = permissions.map((p) => {
-    switch (p.permission) {
-      case "ADMIN":
-        return "Administrador";
-      case "TEACHER":
-        return "Professor";
-      case "STAFF":
-        return "Funcionário";
-      default:
-        return p.permission;
-    }
-  });
-
-  return permissionNames.join(", ");
-};
-
 export default function SearchResults({
   data,
   onClick,

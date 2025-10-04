@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "./Context/AuthContext";
 import { StyleSheet } from "./Utils/Stylesheet";
 import LoginForm from "./Components/Login/LoginForm";
