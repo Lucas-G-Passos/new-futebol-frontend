@@ -8,6 +8,7 @@ import {
   Pencil,
   Trash,
   ArrowCounterClockwise,
+  FilePdfIcon,
 } from "@phosphor-icons/react";
 
 // Masking functions from DynamicForm
@@ -263,6 +264,7 @@ export default function DetailsAluno({
   const [editMode, setEditMode] = useState<boolean>(false);
   const [formState, setFormState] = useState<Record<string, any>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [id, setId] = useState<number>();
   const [areYouSure, setAreYouSure] = useState<{
     open: boolean;
     label: string;
@@ -287,8 +289,8 @@ export default function DetailsAluno({
     // Handle file separately
     initialState["url"] = data.url || "";
 
+    setId(data.id);
     setFormState(initialState);
-    console.log(alunoFields);
   }, [data]);
 
   const handleFieldChange = (name: string, rawValue: any, mask?: string) => {
@@ -517,8 +519,6 @@ export default function DetailsAluno({
       // Add fixed fields
       formData.append("ativo", "true");
 
-      console.log("Sending multipart form data");
-
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/alunos`,
         {
@@ -549,7 +549,6 @@ export default function DetailsAluno({
       label: "Tem certeza que deseja excluir este aluno?",
       options: ["Cancelar", "Excluir"],
       onConfirm: async () => {
-        console.log("Deleting student:", data.id);
         try {
           await fetch(
             `${import.meta.env.VITE_BACKEND_URL}/alunos?id=${encodeURIComponent(
@@ -594,8 +593,37 @@ export default function DetailsAluno({
       },
     });
   };
+  const handlePdf = async (id: number) => {
+    try {
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/alunos/contrato?id=${encodeURIComponent(id)}`,
+        { credentials: "include" }
+      );
 
-  // Group fields by category for display
+      if (!response.ok) {
+        throw new Error("Failed to fetch PDF");
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      const newWindow = window.open(url, "_blank");
+
+      if (
+        !newWindow ||
+        newWindow.closed ||
+        typeof newWindow.closed === "undefined"
+      ) {
+        window.location.href = url;
+      }
+    } catch (error) {
+      console.error("Error loading PDF:", error);
+      alert("Erro ao carregar o PDF");
+    }
+  };
+
   const fieldGroups = {
     personal: alunoFields.filter((field) =>
       [
@@ -645,6 +673,16 @@ export default function DetailsAluno({
             <div style={style.subtitle}>Detalhes do Aluno</div>
           </div>
           <div style={style.actions}>
+            <button
+              type="button"
+              onClick={() => id && handlePdf(id)}
+              style={style.saveButton}
+              className="action-button"
+            >
+              <FilePdfIcon size={18} />
+              Gerar PDF
+            </button>
+
             {!editMode && (
               <button
                 type="button"

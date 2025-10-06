@@ -113,7 +113,6 @@ export default function SearchResults({
             key={item.id}
             style={style.resultCard}
             onClick={() => {
-              console.log(item);
               onClick(item);
             }}
             className="result-card"
@@ -121,7 +120,6 @@ export default function SearchResults({
             {isFuncionario ? (
               // FUNCIONARIO CARD LAYOUT
               <>
-                {console.log(item)}
                 <div style={style.cardHeader}>
                   <div style={style.avatar}>{item.nome?.charAt(0) || "F"}</div>
                   <div style={style.studentInfo}>

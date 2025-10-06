@@ -356,7 +356,6 @@ export default function CreationFormPage() {
         }
 
         const data = await response.json();
-        console.log("Aluno criado com sucesso:", data);
         alert("Aluno criado com sucesso!");
       } catch (err: any) {
         console.error("Erro na requisição:", err);
@@ -382,7 +381,6 @@ export default function CreationFormPage() {
         }
 
         const data = await response.json();
-        console.log("Funcionário criado com sucesso:", data);
         alert("Funcionário criado com sucesso!");
       } catch (err) {
         console.error("Erro na requisição:", err);
