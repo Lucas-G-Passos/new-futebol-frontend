@@ -106,7 +106,6 @@ export default function CreationFormPage() {
 
     { name: "file", placeholder: "Foto", type: "FILE", required: true },
 
-    // Responsável
     {
       name: "responsavel.nomeCompleto",
       placeholder: "Nome do Responsável",
@@ -145,6 +144,66 @@ export default function CreationFormPage() {
       placeholder: "Email do Responsável",
       type: "TEXT",
       required: true,
+    },
+    {
+      name: "cep",
+      placeholder: "CEP",
+      type: "TEXT",
+      required: true,
+    },
+    {
+      name: "rua",
+      placeholder: "Rua",
+      type: "TEXT",
+      required: true,
+    },
+    {
+      name: "enderecoNumero",
+      placeholder: "Número",
+      type: "TEXT",
+      required: true,
+      mask: "99999999",
+    },
+    {
+      name: "cidade",
+      placeholder: "Cidade",
+      type: "TEXT",
+      required: true,
+    },
+    {
+      name: "estado",
+      placeholder: "Estado",
+      type: "SELECT",
+      required: true,
+      options: [
+        { label: "Acre", value: "AC" },
+        { label: "Alagoas", value: "AL" },
+        { label: "Amapá", value: "AP" },
+        { label: "Amazonas", value: "AM" },
+        { label: "Bahia", value: "BA" },
+        { label: "Ceará", value: "CE" },
+        { label: "Distrito Federal", value: "DF" },
+        { label: "Espírito Santo", value: "ES" },
+        { label: "Goiás", value: "GO" },
+        { label: "Maranhão", value: "MA" },
+        { label: "Mato Grosso", value: "MT" },
+        { label: "Mato Grosso do Sul", value: "MS" },
+        { label: "Minas Gerais", value: "MG" },
+        { label: "Pará", value: "PA" },
+        { label: "Paraíba", value: "PB" },
+        { label: "Paraná", value: "PR" },
+        { label: "Pernambuco", value: "PE" },
+        { label: "Piauí", value: "PI" },
+        { label: "Rio de Janeiro", value: "RJ" },
+        { label: "Rio Grande do Norte", value: "RN" },
+        { label: "Rio Grande do Sul", value: "RS" },
+        { label: "Rondônia", value: "RO" },
+        { label: "Roraima", value: "RR" },
+        { label: "Santa Catarina", value: "SC" },
+        { label: "São Paulo", value: "SP" },
+        { label: "Sergipe", value: "SE" },
+        { label: "Tocantins", value: "TO" },
+      ],
     },
   ]);
   const { setError } = useAuth();
@@ -297,7 +356,6 @@ export default function CreationFormPage() {
         }
 
         const data = await response.json();
-        console.log("Aluno criado com sucesso:", data);
         alert("Aluno criado com sucesso!");
       } catch (err: any) {
         console.error("Erro na requisição:", err);
@@ -323,7 +381,6 @@ export default function CreationFormPage() {
         }
 
         const data = await response.json();
-        console.log("Funcionário criado com sucesso:", data);
         alert("Funcionário criado com sucesso!");
       } catch (err) {
         console.error("Erro na requisição:", err);

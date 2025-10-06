@@ -112,13 +112,14 @@ export default function SearchResults({
           <div
             key={item.id}
             style={style.resultCard}
-            onClick={() => onClick(item)}
+            onClick={() => {
+              onClick(item);
+            }}
             className="result-card"
           >
             {isFuncionario ? (
               // FUNCIONARIO CARD LAYOUT
               <>
-                {console.log(item)}
                 <div style={style.cardHeader}>
                   <div style={style.avatar}>{item.nome?.charAt(0) || "F"}</div>
                   <div style={style.studentInfo}>

@@ -47,6 +47,7 @@ export default function Search() {
         }
 
         const data = await response.json();
+        console.log(data);
         setResults(data);
         return data;
       }

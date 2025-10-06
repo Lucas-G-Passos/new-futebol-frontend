@@ -4,12 +4,12 @@ import { useAuth } from "./Context/AuthContext";
 import { useLocation, useNavigate } from "react-router";
 import Login from "./Login";
 import "./Utils/global.css";
-import Home from "./Protected/Home";
+import Home from "./Pages/Home";
 import Navbar from "./Components/Navbar";
-import Search from "./Protected/Search";
-import UserManagement from "./Protected/UserManagement";
-import CreationFormPage from "./Protected/CreationFormPage";
-import Turmas from "./Protected/Turmas";
+import Search from "./Pages/Search";
+import UserManagement from "./Pages/UserManagement";
+import CreationFormPage from "./Pages/CreationFormPage";
+import Turmas from "./Pages/Turmas";
 
 export default function App() {
   const { isLogged, isLoading } = useAuth();
