@@ -52,7 +52,6 @@ function maskToRegex(mask: string): RegExp {
   return new RegExp(regexStr);
 }
 
-// Field configuration matching the object structure
 const alunoFields: FieldConfig[] = [
   {
     name: "nomeCompleto",
@@ -60,6 +59,7 @@ const alunoFields: FieldConfig[] = [
     type: "TEXT",
     required: true,
   },
+
   {
     name: "dataNascimento",
     placeholder: "Data de Nascimento",
@@ -72,6 +72,7 @@ const alunoFields: FieldConfig[] = [
     type: "DATE",
     required: true,
   },
+
   {
     name: "telefone1",
     placeholder: "Telefone 1",
@@ -85,6 +86,7 @@ const alunoFields: FieldConfig[] = [
     type: "TEXT",
     mask: "(99) 99999-9999",
   },
+
   {
     name: "cpf",
     placeholder: "CPF",
@@ -99,6 +101,7 @@ const alunoFields: FieldConfig[] = [
     mask: "99.999.999-9",
     required: true,
   },
+
   { name: "alergia", placeholder: "Alergia", type: "TEXT" },
   { name: "usoMedicamento", placeholder: "Uso de Medicamento", type: "TEXT" },
   {
@@ -106,31 +109,47 @@ const alunoFields: FieldConfig[] = [
     placeholder: "Horário do Medicamento",
     type: "TIME",
   },
+
   { name: "colegio", placeholder: "Colégio", type: "TEXT", required: true },
+
   {
     name: "colegioAno",
     placeholder: "Ano Escolar",
     type: "SELECT",
     required: true,
     options: [
-      { label: "1° Ano", value: "1ano" },
-      { label: "2° Ano", value: "2ano" },
-      { label: "3° Ano", value: "3ano" },
-      { label: "4° Ano", value: "4ano" },
-      { label: "5° Ano", value: "5ano" },
-      { label: "6° Ano", value: "6ano" },
-      { label: "7° Ano", value: "7ano" },
-      { label: "8° Ano", value: "8ano" },
-      { label: "9° Ano", value: "9ano" },
-      { label: "1° Médio", value: "1medio" },
-      { label: "2° Médio", value: "2medio" },
-      { label: "3° Médio", value: "3medio" },
+      { label: "1º Ano", value: "1ano" },
+      { label: "2º Ano", value: "2ano" },
+      { label: "3º Ano", value: "3ano" },
+      { label: "4º Ano", value: "4ano" },
+      { label: "5º Ano", value: "5ano" },
+      { label: "6º Ano", value: "6ano" },
+      { label: "7º Ano", value: "7ano" },
+      { label: "8º Ano", value: "8ano" },
+      { label: "9º Ano", value: "9ano" },
+      { label: "1º Médio", value: "1medio" },
+      { label: "2º Médio", value: "2medio" },
+      { label: "3º Médio", value: "3medio" },
       { label: "Terminou", value: "terminou" },
     ],
   },
+
   { name: "time", placeholder: "Time", type: "TEXT" },
   { name: "indicacao", placeholder: "Indicação", type: "TEXT" },
   { name: "observacao", placeholder: "Observação", type: "TEXT" },
+
+  { name: "ativo", placeholder: "Ativo", type: "CHECKBOX", required: true },
+
+  {
+    name: "turmaId",
+    placeholder: "Turma",
+    type: "SELECT",
+    required: true,
+    options: [],
+  },
+
+  { name: "file", placeholder: "Foto", type: "FILE", required: true },
+
   {
     name: "responsavel.nomeCompleto",
     placeholder: "Nome do Responsável",
@@ -169,6 +188,66 @@ const alunoFields: FieldConfig[] = [
     placeholder: "Email do Responsável",
     type: "TEXT",
     required: true,
+  },
+  {
+    name: "cep",
+    placeholder: "CEP",
+    type: "TEXT",
+    required: true,
+  },
+  {
+    name: "rua",
+    placeholder: "Rua",
+    type: "TEXT",
+    required: true,
+  },
+  {
+    name: "enderecoNumero",
+    placeholder: "Número",
+    type: "TEXT",
+    required: true,
+    mask: "99999999",
+  },
+  {
+    name: "cidade",
+    placeholder: "Cidade",
+    type: "TEXT",
+    required: true,
+  },
+  {
+    name: "estado",
+    placeholder: "Estado",
+    type: "SELECT",
+    required: true,
+    options: [
+      { label: "Acre", value: "AC" },
+      { label: "Alagoas", value: "AL" },
+      { label: "Amapá", value: "AP" },
+      { label: "Amazonas", value: "AM" },
+      { label: "Bahia", value: "BA" },
+      { label: "Ceará", value: "CE" },
+      { label: "Distrito Federal", value: "DF" },
+      { label: "Espírito Santo", value: "ES" },
+      { label: "Goiás", value: "GO" },
+      { label: "Maranhão", value: "MA" },
+      { label: "Mato Grosso", value: "MT" },
+      { label: "Mato Grosso do Sul", value: "MS" },
+      { label: "Minas Gerais", value: "MG" },
+      { label: "Pará", value: "PA" },
+      { label: "Paraíba", value: "PB" },
+      { label: "Paraná", value: "PR" },
+      { label: "Pernambuco", value: "PE" },
+      { label: "Piauí", value: "PI" },
+      { label: "Rio de Janeiro", value: "RJ" },
+      { label: "Rio Grande do Norte", value: "RN" },
+      { label: "Rio Grande do Sul", value: "RS" },
+      { label: "Rondônia", value: "RO" },
+      { label: "Roraima", value: "RR" },
+      { label: "Santa Catarina", value: "SC" },
+      { label: "São Paulo", value: "SP" },
+      { label: "Sergipe", value: "SE" },
+      { label: "Tocantins", value: "TO" },
+    ],
   },
 ];
 
@@ -209,6 +288,7 @@ export default function DetailsAluno({
     initialState["url"] = data.url || "";
 
     setFormState(initialState);
+    console.log(alunoFields);
   }, [data]);
 
   const handleFieldChange = (name: string, rawValue: any, mask?: string) => {
@@ -540,6 +620,9 @@ export default function DetailsAluno({
     responsible: alunoFields.filter((field) =>
       field.name.startsWith("responsavel.")
     ),
+    endereco: alunoFields.filter((field) =>
+      ["rua", "cep", "cidade", "estado"].includes(field.name)
+    ),
   };
 
   return (
@@ -691,6 +774,17 @@ export default function DetailsAluno({
                 </div>
               </div>
             )}
+          </div>
+          <div style={style.row}>
+            <div style={style.card}>
+              <h3 style={style.cardTitle}>
+                <span style={style.icon}>🏠</span>
+                Endereço
+              </h3>
+              <div style={style.fieldsGrid}>
+                {fieldGroups.endereco.map((field) => renderField(field))}
+              </div>
+            </div>
           </div>
         </div>
       </div>

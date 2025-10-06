@@ -112,7 +112,10 @@ export default function SearchResults({
           <div
             key={item.id}
             style={style.resultCard}
-            onClick={() => onClick(item)}
+            onClick={() => {
+              console.log(item);
+              onClick(item);
+            }}
             className="result-card"
           >
             {isFuncionario ? (

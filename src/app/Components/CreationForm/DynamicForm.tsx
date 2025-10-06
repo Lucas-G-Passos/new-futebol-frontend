@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Colors from "../../Utils/Colors";
 import { StyleSheet } from "../../Utils/Stylesheet";
 import type { FieldConfig } from "../../Utils/Types";
@@ -76,6 +76,7 @@ export default function DynamicForm({
     )
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const cepTimerRef = useRef<number | null>(null);
 
   const handleChange = (name: string, rawValue: any, mask?: string) => {
     let value = rawValue;
@@ -93,6 +94,42 @@ export default function DynamicForm({
 
     setFormState((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: errorMsg }));
+
+    // If the user is typing the CEP, debounce a lookup and autofill address fields
+    if (name === "cep" && typeof value === "string") {
+      const digits = value.replace(/\D/g, "");
+
+      // clear existing timer
+      if (cepTimerRef.current) {
+        window.clearTimeout(cepTimerRef.current);
+        cepTimerRef.current = null;
+      }
+
+      if (digits.length >= 8) {
+        // debounce API call by 500ms
+        cepTimerRef.current = window.setTimeout(async () => {
+          try {
+            const res = await fetch(`https://opencep.com/v1/${digits}.json`);
+            if (!res.ok) throw new Error("CEP não encontrado");
+            const data: any = await res.json();
+
+            // Map API fields to our form fields: logradouro -> rua, localidade -> cidade, uf -> estado
+            setFormState((prev) => ({
+              ...prev,
+              rua: data.logradouro ?? prev.rua,
+              cidade: data.localidade ?? prev.cidade,
+              estado: data.uf ?? prev.estado,
+            }));
+
+            setErrors((prev) => ({ ...prev, cep: "" }));
+          } catch (err: any) {
+            setErrors((prev) => ({ ...prev, cep: "CEP não encontrado" }));
+          } finally {
+            cepTimerRef.current = null;
+          }
+        }, 500);
+      }
+    }
   };
 
   const handleCheckboxGroupChange = (
