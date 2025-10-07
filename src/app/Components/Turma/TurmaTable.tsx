@@ -9,15 +9,13 @@ export default function TurmaTable({
   onEdit,
 }: {
   data: { turmas: Turma[] };
-  onEdit: () => Promise<any>;
+  onEdit: (formData: Record<string, any>) => Promise<any> | void;
 }) {
   const [selectedAluno, setSelectedAluno] = useState<Aluno | null>(null);
   const [expandedTurma, setExpandedTurma] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    console.log(data);
-
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -40,8 +38,20 @@ export default function TurmaTable({
     setSelectedAluno(null);
   };
 
-  const handleAlunoUpdate = () => {
-    console.log("Aluno updated, refresh data if needed");
+  const handleEditTurma = (turma: Turma) => {
+    const formData = {
+      id: turma.id,
+      codigoTurma: turma.codigoTurma,
+      nome: turma.nome,
+      descricao: turma.descricao,
+      diaSemana: turma.diaSemana,
+      horaInicio: turma.horaInicio,
+      horaTermino: turma.horaTermino,
+      local: turma.local,
+      alunos: turma.alunos?.map((a) => a.id) || [],
+    };
+
+    onEdit(formData);
   };
 
   const formatDaysOfWeek = (days: string[]) => {
@@ -62,7 +72,6 @@ export default function TurmaTable({
     return timeString?.substring(0, 5) || "";
   };
 
-  // Mobile card view
   const renderMobileView = () => {
     return (
       <div style={style.mobileContainer}>
@@ -215,7 +224,10 @@ export default function TurmaTable({
                   </div>
                 </td>
                 <td style={style.td}>
-                  <button onClick={onEdit} style={style.editButton}>
+                  <button
+                    onClick={() => handleEditTurma(turma)}
+                    style={style.editButton}
+                  >
                     Editar
                   </button>
                 </td>
@@ -269,11 +281,7 @@ export default function TurmaTable({
   return (
     <div style={style.mainContainer}>
       {selectedAluno && (
-        <DetailsAluno
-          data={selectedAluno}
-          close={handleCloseAlunoDetails}
-          onUpdate={handleAlunoUpdate}
-        />
+        <DetailsAluno data={selectedAluno} close={handleCloseAlunoDetails} />
       )}
 
       {isMobile ? renderMobileView() : renderDesktopView()}

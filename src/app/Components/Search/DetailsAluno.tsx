@@ -259,7 +259,7 @@ export default function DetailsAluno({
 }: {
   data: Aluno;
   close: (value: any) => void;
-  onUpdate: () => void;
+  onUpdate?: () => void;
 }) {
   const [editMode, setEditMode] = useState<boolean>(false);
   const [formState, setFormState] = useState<Record<string, any>>({});

@@ -5,7 +5,7 @@ import type { FieldConfig } from "../../Utils/Types";
 
 type Props = {
   fields: FieldConfig[];
-  onSubmit: (formData: any) => Promise<void>;
+  onSubmit: (formData: any) => Promise<void> | void;
   title: string;
   sendAs: "JSON" | "FORMDATA";
 };
@@ -77,6 +77,17 @@ export default function DynamicForm({
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const cepTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setFormState(
+      Object.fromEntries(
+        fields.map((f) => [
+          f.name,
+          f.defaultValue ?? (f.type === "CHECKBOXGROUP" ? [] : ""),
+        ])
+      )
+    );
+  }, [fields]);
 
   const handleChange = (name: string, rawValue: any, mask?: string) => {
     let value = rawValue;
@@ -230,6 +241,7 @@ export default function DynamicForm({
           jsonData[key] = value;
         }
       }
+      console.log("formData being sent:", jsonData);
 
       await onSubmit(jsonData);
     }
@@ -370,6 +382,15 @@ export default function DynamicForm({
                 </div>
                 {error && <span style={style.error}>{error}</span>}
               </div>
+            );
+          case "HIDDEN":
+            return (
+              <input
+                key={field.name}
+                type="hidden"
+                value={formState[field.name] ?? ""}
+                onChange={(e) => handleChange(field.name, e.target.value)}
+              />
             );
         }
       })}
