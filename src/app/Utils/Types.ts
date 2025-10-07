@@ -34,6 +34,7 @@ export interface Responsavel {
 }
 
 export interface Turma {
+  id: number;
   codigoTurma?: string;
   nome?: string;
   descricao?: string;
@@ -90,7 +91,8 @@ export type FieldConfig = {
     | "FILE"
     | "CHECKBOX"
     | "TIME"
-    | "CHECKBOXGROUP";
+    | "CHECKBOXGROUP"
+    | "HIDDEN";
   options?: { label: string; value: string | number }[];
   defaultValue?: any;
   mask?: string;

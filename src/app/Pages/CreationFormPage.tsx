@@ -162,7 +162,6 @@ export default function CreationFormPage() {
       placeholder: "Número",
       type: "TEXT",
       required: true,
-      mask: "99999999",
     },
     {
       name: "cidade",

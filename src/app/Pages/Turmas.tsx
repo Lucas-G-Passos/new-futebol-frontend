@@ -9,6 +9,11 @@ export default function Turmas() {
   const [turmas, setTurmas] = useState(null);
   const [refresh, setRefresh] = useState<boolean>(false);
   const [showForm, setShowForm] = useState<boolean>(false);
+  const [editForm, setEditForm] = useState<boolean>(false);
+  const [selectedTurma, setSelectedTurma] = useState<Record<
+    string,
+    any
+  > | null>(null);
 
   useEffect(() => {
     const getTurmas = async () => {
@@ -20,7 +25,6 @@ export default function Turmas() {
         if (!response.ok) throw new Error("Erro ao pegar turmas");
         const data = await response.json();
         setTurmas(data); // Handle both response formats
-        console.log(data);
       } catch (error) {
         alert(error);
       }
@@ -84,7 +88,6 @@ export default function Turmas() {
 
   const handleCreateTurma = async (formData: Record<string, any>) => {
     try {
-      // Format the data for the backend
       const turmaData = {
         codigoTurma: formData.codigoTurma,
         nome: formData.nome,
@@ -117,7 +120,6 @@ export default function Turmas() {
       const result = await response.json();
       console.log("Turma created:", result);
 
-      // Close form and refresh the list
       setShowForm(false);
       setRefresh(!refresh);
       alert("Turma criada com sucesso!");
@@ -127,8 +129,49 @@ export default function Turmas() {
     }
   };
 
-  const handleEditTurma = async () => {
-    console.log("Edit turma functionality");
+  const handleEditTurma = async (formData: Record<string, any>) => {
+    try {
+      setEditForm(true);
+      const turmaData = {
+        id: formData.id,
+        codigoTurma: formData.codigoTurma,
+        nome: formData.nome,
+        descricao: formData.descricao || "",
+        diaSemana: formData.diaSemana,
+        horaInicio: formData.horaInicio ? formData.horaInicio : null,
+        horaTermino: formData.horaTermino ? formData.horaTermino : null,
+        local: formData.local,
+      };
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/turmas`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(turmaData),
+        }
+      );
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Erro ao editar turma");
+      }
+
+      console.log(turmaData);
+      setEditForm(false);
+      setRefresh(!refresh);
+      alert("Turma editada com sucesso!");
+    } catch (error: any) {
+      console.error("Error editing turma:", error);
+      alert("Erro ao editar turma: " + error.message);
+    }
+  };
+
+  const handleSelectTurmaForEdit = (formData: Record<string, any>) => {
+    console.log("selectingTurma:", formData);
+    setSelectedTurma(formData);
+    setEditForm(true);
   };
 
   return (
@@ -152,8 +195,40 @@ export default function Turmas() {
           </div>
         </div>
       )}
+      {editForm &&
+        selectedTurma &&
+        (() => {
+          let turmaFieldsWithDefaults: FieldConfig[] = turmaFields.map(
+            (field) => ({
+              ...field,
+              defaultValue: selectedTurma
+                ? selectedTurma[field.name] ?? ""
+                : "",
+            })
+          );
+          turmaFieldsWithDefaults.push({
+            name: "id",
+            type: "HIDDEN",
+            placeholder: "",
+            defaultValue: selectedTurma.id,
+            required: true,
+          });
 
-      {turmas && <TurmaTable data={turmas} onEdit={handleEditTurma} />}
+          return (
+            <div style={style.formOverlay}>
+              <div style={style.formContainer}>
+                <DynamicForm
+                  onSubmit={handleEditTurma}
+                  fields={turmaFieldsWithDefaults}
+                  title={`Editar Turma: ${selectedTurma.nome}`}
+                  sendAs="JSON"
+                />
+              </div>
+            </div>
+          );
+        })()}
+
+      {turmas && <TurmaTable data={turmas} onEdit={handleSelectTurmaForEdit} />}
     </div>
   );
 }

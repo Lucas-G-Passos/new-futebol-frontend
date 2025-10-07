@@ -95,28 +95,24 @@ export default function Navbar() {
       {isMobile && menuOpen && (
         <div style={{ ...style.mobileMenuRow, padding: 0 }}>
           <NavButton
-            path="/app/users"
-            label="Users"
-            icon={<UserCircleIcon size={32} />}
-            setOpen={setMenuOpen}
-          />
-          <NavButton
             path="/app/search"
-            label="search"
-            icon={<UserCircleIcon size={32} />}
-            setOpen={setMenuOpen}
+            label="Pesquisa"
+            icon={<MagnifyingGlassIcon size={32} />}
           />
           <NavButton
             path="/app/form"
-            label="form"
-            icon={<UserCircleIcon size={32} />}
-            setOpen={setMenuOpen}
+            label="Form"
+            icon={<PencilSimpleLineIcon size={32} />}
           />
           <NavButton
-            path="/app/search"
-            label="teste"
+            path="/app/turmas"
+            label="Turmas"
+            icon={<UsersFourIcon size={32} />}
+          />
+          <NavButton
+            path="/app/users"
+            label="Usuários"
             icon={<UserCircleIcon size={32} />}
-            setOpen={setMenuOpen}
           />
         </div>
       )}
