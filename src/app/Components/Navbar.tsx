@@ -76,12 +76,16 @@ export default function Navbar() {
                     <UserCircleIcon size={32} />
                   )}
                 </div>
-                {user.username}
-                {user.permissions.some((p) => p.permission === "admin") && (
-                  <div style={{ color: "red", fontWeight: "bold" }}>Admin</div>
-                )}
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  {user.username}
+                  <div style={{ fontSize: 11, fontStyle: "italic" }}>
+                    {user.permissions.map((p) => (
+                      <>{p.permission}, </>
+                    ))}
+                  </div>
+                </div>
               </div>
-              {user.funcionario === null && (
+              {user.email === null && (
                 <div style={{ fontStyle: "italic", fontSize: "0.8em" }}>
                   Considere criar um usuário vinculado a um funcionário
                 </div>

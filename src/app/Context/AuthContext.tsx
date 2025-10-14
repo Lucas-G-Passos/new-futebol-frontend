@@ -5,6 +5,7 @@ type AuthContextType = {
   isLogged: boolean;
   isLoading: boolean;
   user: User | null;
+  setUserG: (user: User) => Promise<any>;
   token: string | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -17,6 +18,7 @@ const AuthContext = createContext<AuthContextType>({
   isLogged: false,
   isLoading: true,
   user: null,
+  setUserG: async () => {},
   token: null,
   login: async () => {},
   logout: async () => {},
@@ -96,24 +98,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const resToken = await response.text();
       setToken(resToken);
-      const userCharacteristics = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/user/get`,
-        {
-          credentials: "include",
-        }
-      );
+      // const userCharacteristics = await fetch(
+      //   `${import.meta.env.VITE_BACKEND_URL}/user/get`,
+      //   {
+      //     credentials: "include",
+      //   }
+      // );
 
-      if (!userCharacteristics.ok) {
-        if (userCharacteristics.status === 401) {
-          throw new Error("Username ou senha inválidos");
-        } else if (response.status >= 500) {
-          throw new Error("Erro no servidor, tente novamente mais tarde");
-        } else {
-          throw new Error("Erro ao fazer login");
-        }
-      }
-      const user = await userCharacteristics.json();
-      setUser(user);
+      // if (!userCharacteristics.ok) {
+      //   if (userCharacteristics.status === 401) {
+      //     throw new Error("Username ou senha inválidos");
+      //   } else if (response.status >= 500) {
+      //     throw new Error("Erro no servidor, tente novamente mais tarde");
+      //   } else {
+      //     throw new Error("Erro ao fazer login");
+      //   }
+      // }
+      // const user = await userCharacteristics.json();
+      // setUser(user);
       setLogged(true);
     } catch (error: any) {
       console.error("Erro ao fazer login: ", error);
@@ -142,6 +144,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const setError = (errorMessage: string) => {
     setLocalError(errorMessage);
   };
+  const setUserG = async (user: User) => {
+    setUser(user);
+  };
 
   return (
     <AuthContext.Provider
@@ -149,6 +154,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         isLogged,
         isLoading,
         user,
+        setUserG,
         token,
         login,
         logout,

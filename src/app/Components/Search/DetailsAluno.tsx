@@ -680,7 +680,7 @@ export default function DetailsAluno({
               className="action-button"
             >
               <FilePdfIcon size={18} />
-              Gerar PDF
+              <span style={style.buttonText}>Gerar PDF</span>
             </button>
 
             {!editMode && (
@@ -691,7 +691,7 @@ export default function DetailsAluno({
                 className="action-button"
               >
                 <Trash size={18} />
-                Excluir
+                <span style={style.buttonText}>Excluir</span>
               </button>
             )}
 
@@ -704,12 +704,12 @@ export default function DetailsAluno({
               {editMode ? (
                 <>
                   <FloppyDisk size={18} />
-                  Salvar
+                  <span style={style.buttonText}>Salvar</span>
                 </>
               ) : (
                 <>
                   <Pencil size={18} />
-                  Editar
+                  <span style={style.buttonText}>Editar</span>
                 </>
               )}
             </button>
@@ -722,7 +722,7 @@ export default function DetailsAluno({
                 className="action-button"
               >
                 <ArrowCounterClockwise size={18} />
-                Descartar
+                <span style={style.buttonText}>Descartar</span>
               </button>
             )}
 
@@ -879,12 +879,13 @@ const style = StyleSheet.create({
     justifyContent: "center",
     alignItems: "flex-start",
     overflowY: "auto",
-    padding: 40,
+    padding: "2vw",
+    zIndex: 1000,
   },
   mainContainer: {
-    width: "90%",
+    width: "90vw",
     maxWidth: 1200,
-    minHeight: "90%",
+    minHeight: "85vh",
     backgroundColor: Colors.surface,
     borderRadius: 20,
     border: `1px solid ${Colors.border}`,
@@ -895,192 +896,217 @@ const style = StyleSheet.create({
     overflow: "auto",
   },
   header: {
-    padding: "24px 32px",
+    padding: "1.5rem 2rem",
     borderBottom: `1px solid ${Colors.border}`,
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-start",
     backgroundColor: "rgba(255, 255, 255, 0.02)",
+    flexWrap: "wrap",
+    gap: "1rem",
   },
   titleSection: {
-    flex: 1,
+    flex: "1 1 300px",
+    minWidth: 0,
   },
   title: {
     color: Colors.primary,
     margin: 0,
-    fontSize: "28px",
+    fontSize: "clamp(1.25rem, 4vw, 1.75rem)",
     fontWeight: "700",
-    marginBottom: "4px",
+    marginBottom: "0.25rem",
+    wordBreak: "break-word",
   },
   subtitle: {
     color: Colors.textMuted,
-    fontSize: "14px",
+    fontSize: "0.875rem",
     opacity: 0.8,
   },
   actions: {
     display: "flex",
-    gap: "12px",
+    gap: "0.75rem",
     alignItems: "center",
+    flexWrap: "wrap",
+    justifyContent: "flex-end",
+  },
+  buttonText: {
+    // Text will automatically hide when container is too small due to flexbox
   },
   editButton: {
     display: "flex",
     alignItems: "center",
-    gap: "8px",
-    padding: "10px 20px",
+    gap: "0.5rem",
+    padding: "0.625rem 1.25rem",
     backgroundColor: Colors.primary,
     color: "black",
     border: "none",
     borderRadius: "10px",
     cursor: "pointer",
     fontWeight: "600",
-    fontSize: "14px",
+    fontSize: "0.875rem",
     transition: "all 0.2s ease",
+    whiteSpace: "nowrap",
+    minWidth: "min-content",
   },
   saveButton: {
     display: "flex",
     alignItems: "center",
-    gap: "8px",
-    padding: "10px 20px",
+    gap: "0.5rem",
+    padding: "0.625rem 1.25rem",
     backgroundColor: "#10b981",
     color: "black",
     border: "none",
     borderRadius: "10px",
     cursor: "pointer",
     fontWeight: "600",
-    fontSize: "14px",
+    fontSize: "0.875rem",
     transition: "all 0.2s ease",
+    whiteSpace: "nowrap",
+    minWidth: "min-content",
   },
   discardButton: {
     display: "flex",
     alignItems: "center",
-    gap: "8px",
-    padding: "10px 20px",
+    gap: "0.5rem",
+    padding: "0.625rem 1.25rem",
     backgroundColor: "#f59e0b",
     color: "black",
     border: "none",
     borderRadius: "10px",
     cursor: "pointer",
     fontWeight: "600",
-    fontSize: "14px",
+    fontSize: "0.875rem",
     transition: "all 0.2s ease",
+    whiteSpace: "nowrap",
+    minWidth: "min-content",
   },
   deleteButton: {
     display: "flex",
     alignItems: "center",
-    gap: "8px",
-    padding: "10px 20px",
+    gap: "0.5rem",
+    padding: "0.625rem 1.25rem",
     backgroundColor: Colors.error,
     color: "black",
     border: "none",
     borderRadius: "10px",
     cursor: "pointer",
     fontWeight: "600",
-    fontSize: "14px",
+    fontSize: "0.875rem",
     transition: "all 0.2s ease",
+    whiteSpace: "nowrap",
+    minWidth: "min-content",
   },
   closeButton: {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    width: "44px",
-    height: "44px",
+    width: "2.75rem",
+    height: "2.75rem",
     backgroundColor: "rgba(0, 0, 0, 0.1)",
     border: `1px solid ${Colors.border}`,
     borderRadius: "10px",
     color: Colors.textMuted,
     cursor: "pointer",
     transition: "all 0.2s ease",
+    flexShrink: 0,
   },
   content: {
     flex: 1,
-    padding: "32px",
+    padding: "2rem",
     overflowY: "auto",
     display: "flex",
     flexDirection: "column",
-    gap: "24px",
+    gap: "1.5rem",
   },
   row: {
     display: "flex",
-    gap: "24px",
+    gap: "1.5rem",
     alignItems: "stretch",
+    flexWrap: "wrap",
   },
   card: {
-    flex: 1,
+    flex: "1 1 300px",
     backgroundColor: Colors.surfaceAlt,
-    padding: "24px",
+    padding: "1.5rem",
     borderRadius: "16px",
     border: `1px solid ${Colors.border}`,
-    minWidth: "300px",
+    minWidth: "min(100%, 300px)",
     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
   },
   imageContainer: {
-    flex: "0 0 300px",
+    flex: "0 1 300px",
     display: "flex",
     flexDirection: "column",
   },
   cardTitle: {
     color: Colors.primary,
-    fontSize: "18px",
+    fontSize: "1.125rem",
     fontWeight: "600",
-    margin: "0 0 20px 0",
+    margin: "0 0 1.25rem 0",
     display: "flex",
     alignItems: "center",
-    gap: "10px",
+    gap: "0.625rem",
   },
   icon: {
-    fontSize: "20px",
+    fontSize: "1.25rem",
   },
   fieldsGrid: {
     display: "flex",
     flexDirection: "column",
-    gap: "16px",
+    gap: "1rem",
   },
   fieldContainer: {
     display: "flex",
     flexDirection: "column",
-    gap: "6px",
+    gap: "0.375rem",
   },
   label: {
     fontWeight: "600",
-    fontSize: "13px",
+    fontSize: "0.8125rem",
     color: Colors.textMuted,
     textTransform: "uppercase",
     letterSpacing: "0.5px",
   },
   value: {
     color: Colors.text,
-    fontSize: "15px",
-    padding: "4px 0",
-    minHeight: "24px",
+    fontSize: "0.9375rem",
+    padding: "0.25rem 0",
+    minHeight: "1.5rem",
+    wordBreak: "break-word",
   },
   notInformed: {
     color: Colors.textMuted,
     fontStyle: "italic",
   },
   input: {
-    padding: "10px 12px",
+    padding: "0.625rem 0.75rem",
     border: `2px solid ${Colors.border}`,
     borderRadius: "8px",
-    fontSize: "15px",
+    fontSize: "0.9375rem",
     backgroundColor: Colors.surface,
     transition: "all 0.2s ease",
     color: Colors.text,
+    width: "100%",
+    boxSizing: "border-box",
   },
   image: {
     width: "100%",
+    height: "auto",
     objectFit: "cover",
     borderRadius: "12px",
     border: `1px solid ${Colors.border}`,
   },
   previewImage: {
     width: "100%",
+    height: "auto",
     objectFit: "cover",
     borderRadius: "8px",
-    marginTop: "12px",
+    marginTop: "0.75rem",
     border: `1px solid ${Colors.border}`,
   },
   placeholderImage: {
     width: "100%",
+    height: "200px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -1088,7 +1114,7 @@ const style = StyleSheet.create({
     borderRadius: "12px",
     border: `2px dashed ${Colors.border}`,
     color: Colors.textMuted,
-    fontSize: "14px",
+    fontSize: "0.875rem",
   },
   fileUpload: {
     flex: 1,
@@ -1104,6 +1130,7 @@ const style = StyleSheet.create({
     alignItems: "center",
     zIndex: 1001,
     backdropFilter: "blur(8px)",
+    padding: "1rem",
   },
   dialogContainer: {
     backgroundColor: Colors.surface,
@@ -1111,59 +1138,62 @@ const style = StyleSheet.create({
     border: `1px solid ${Colors.border}`,
     boxShadow: "0 20px 60px rgba(0, 0, 0, 0.4)",
     maxWidth: "400px",
-    width: "90%",
+    width: "90vw",
     overflow: "auto",
   },
   dialogContent: {
-    padding: "32px",
+    padding: "2rem",
     textAlign: "center",
   },
   warningIcon: {
-    fontSize: "48px",
-    marginBottom: "16px",
+    fontSize: "3rem",
+    marginBottom: "1rem",
   },
   dialogTitle: {
     color: Colors.primary,
-    margin: "0 0 12px 0",
-    fontSize: "20px",
+    margin: "0 0 0.75rem 0",
+    fontSize: "1.25rem",
     fontWeight: "600",
   },
   dialogMessage: {
     color: Colors.text,
-    margin: "0 0 24px 0",
-    fontSize: "15px",
+    margin: "0 0 1.5rem 0",
+    fontSize: "0.9375rem",
     lineHeight: "1.5",
   },
   dialogActions: {
     display: "flex",
-    gap: "12px",
+    gap: "0.75rem",
     justifyContent: "center",
+    flexWrap: "wrap",
   },
   dialogSecondaryButton: {
-    padding: "10px 24px",
+    padding: "0.625rem 1.5rem",
     backgroundColor: "transparent",
     color: Colors.textMuted,
     border: `1px solid ${Colors.border}`,
     borderRadius: "8px",
     cursor: "pointer",
     fontWeight: "600",
-    fontSize: "14px",
+    fontSize: "0.875rem",
     transition: "all 0.2s ease",
+    minWidth: "120px",
   },
   dialogPrimaryButton: {
-    padding: "10px 24px",
+    padding: "0.625rem 1.5rem",
     backgroundColor: Colors.error,
     color: "black",
     border: "none",
     borderRadius: "8px",
     cursor: "pointer",
     fontWeight: "600",
-    fontSize: "14px",
+    fontSize: "0.875rem",
     transition: "all 0.2s ease",
+    minWidth: "120px",
   },
   error: {
     color: Colors.error,
-    fontSize: "12px",
-    marginTop: "4px",
+    fontSize: "0.75rem",
+    marginTop: "0.25rem",
   },
 });
