@@ -15,7 +15,6 @@ export default function CreationFormPage() {
       type: "TEXT",
       required: true,
     },
-
     {
       name: "dataNascimento",
       placeholder: "Data de Nascimento",
@@ -203,6 +202,19 @@ export default function CreationFormPage() {
         { label: "Sergipe", value: "SE" },
         { label: "Tocantins", value: "TO" },
       ],
+    },
+    {
+      name: "valorFatura",
+      placeholder: "Valor da Fatura",
+      type: "TEXT",
+      required: true,
+    },
+    {
+      name: "dataPagamento",
+      placeholder: "Dia a se pagar",
+      type: "TEXT",
+      required: true,
+      mask: "99",
     },
   ]);
   const { setError } = useAuth();
