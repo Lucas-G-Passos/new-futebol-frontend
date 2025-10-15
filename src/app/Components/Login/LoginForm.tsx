@@ -37,6 +37,7 @@ export default function LoginForm({
     <form action={login} style={style.mainContainer}>
       <div style={style.imageContainer}>
         <img src="/logo.png" style={style.image} />
+        <h1 style={{ color: "red" }}>BETA TEST</h1>
       </div>
       <div style={style.textBoxContainer}>
         <input
@@ -97,6 +98,7 @@ const style = StyleSheet.create({
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    flexDirection: "column",
   },
   image: { width: "16em" },
   textBoxContainer: {
