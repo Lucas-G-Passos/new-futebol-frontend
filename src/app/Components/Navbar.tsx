@@ -19,6 +19,7 @@ export default function Navbar() {
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
+      console.log(user);
     };
     handleResize();
     window.addEventListener("resize", handleResize);
