@@ -139,7 +139,13 @@ const alunoFields: FieldConfig[] = [
   { name: "indicacao", placeholder: "Indicação", type: "TEXT" },
   { name: "observacao", placeholder: "Observação", type: "TEXT" },
 
-  { name: "ativo", placeholder: "Ativo", type: "CHECKBOX", required: true },
+  {
+    name: "isAtivo",
+    placeholder: "Ativo",
+    type: "CHECKBOX",
+    required: true,
+    defaultValue: true,
+  },
 
   {
     name: "turmaId",
@@ -149,7 +155,7 @@ const alunoFields: FieldConfig[] = [
     options: [],
   },
 
-  { name: "file", placeholder: "Foto", type: "FILE", required: true },
+  { name: "file", placeholder: "Foto", type: "FILE" },
 
   {
     name: "responsavel.nomeCompleto",
@@ -205,9 +211,8 @@ const alunoFields: FieldConfig[] = [
   {
     name: "enderecoNumero",
     placeholder: "Número",
-    type: "TEXT",
+    type: "NUMBER",
     required: true,
-    mask: "99999999",
   },
   {
     name: "cidade",
@@ -272,17 +277,21 @@ export default function DetailsAluno({
     onConfirm: () => Promise<void> | void;
   } | null>(null);
 
-  // Initialize form state from data
   useEffect(() => {
     const initialState: Record<string, any> = {};
 
     alunoFields.forEach((field) => {
       if (field.name.includes(".")) {
-        // Handle nested properties (responsavel.*)
         const [parent, child] = field.name.split(".");
         initialState[field.name] = data[parent]?.[child] || "";
       } else {
-        initialState[field.name] = data[field.name as keyof Aluno] || "";
+        if (field.type === "CHECKBOX") {
+          const value = data[field.name as keyof Aluno];
+          initialState[field.name] =
+            value === true || value === "true" || value === 1;
+        } else {
+          initialState[field.name] = data[field.name as keyof Aluno] || "";
+        }
       }
     });
 
@@ -291,8 +300,8 @@ export default function DetailsAluno({
 
     setId(data.id);
     setFormState(initialState);
+    console.log("Initial state:", initialState);
   }, [data]);
-
   const handleFieldChange = (name: string, rawValue: any, mask?: string) => {
     let value = rawValue;
     let errorMsg = "";
@@ -338,6 +347,9 @@ export default function DetailsAluno({
       case "SELECT":
         const option = field.options?.find((opt) => opt.value === value);
         return option?.label || value;
+      case "CHECKBOX":
+        return value ? "Sim" : "Não";
+
       default:
         if (field.mask && value) {
           return applyMask(removeMask(value), field.mask);
@@ -446,7 +458,25 @@ export default function DetailsAluno({
             {error && <span style={style.error}>{error}</span>}
           </div>
         );
-
+      // In the renderField function, update the CHECKBOX case:
+      case "CHECKBOX":
+        return (
+          <div style={style.fieldContainer} key={field.name}>
+            <label style={style.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={!!formState[field.name]} // Convert to boolean
+                onChange={(e) =>
+                  handleFieldChange(field.name, e.target.checked)
+                } // Use checked property
+                style={style.checkbox}
+              />
+              {field.placeholder}
+              {field.required && <span style={{ color: "red" }}> *</span>}
+            </label>
+            {error && <span style={style.error}>{error}</span>}
+          </div>
+        );
       default:
         return (
           <div style={style.fieldContainer} key={field.name}>
@@ -470,12 +500,15 @@ export default function DetailsAluno({
   };
 
   const handleSaveEdit = async () => {
-    // Validate required fields
+    console.log("Saving - starting validation");
+
     const newErrors: Record<string, string> = {};
+
     alunoFields.forEach((field) => {
       if (field.required) {
         const value = formState[field.name];
         const empty = value === "" || value == null;
+
         if (empty) {
           newErrors[field.name] = "Campo obrigatório";
         }
@@ -489,6 +522,8 @@ export default function DetailsAluno({
       }
     });
 
+    console.log("Validation errors:", newErrors);
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -496,11 +531,20 @@ export default function DetailsAluno({
 
     try {
       const formData = new FormData();
-
-      // Add student data
       formData.append("id", data.id.toString());
 
+      // Build the student data object
+      const alunoData: any = {
+        id: data.id,
+      };
+
+      // Process regular fields
       alunoFields.forEach((field) => {
+        if (field.name.startsWith("responsavel.")) {
+          // Skip nested fields for now
+          return;
+        }
+
         let value = formState[field.name];
 
         // Clean masked values
@@ -512,13 +556,36 @@ export default function DetailsAluno({
         if (field.type === "FILE" && value instanceof File) {
           formData.append("file", value);
         } else {
-          formData.append(field.name, value || "");
+          alunoData[field.name] = value || "";
         }
       });
 
-      // Add fixed fields
-      formData.append("ativo", "true");
+      // Build nested responsavel object
+      const responsavelData: any = {};
+      alunoFields
+        .filter((field) => field.name.startsWith("responsavel."))
+        .forEach((field) => {
+          const responsavelField = field.name.replace("responsavel.", "");
+          let value = formState[field.name];
 
+          if (field.mask && typeof value === "string") {
+            value = cleanValueForSubmission(value, field.mask);
+          }
+
+          responsavelData[responsavelField] = value || "";
+        });
+
+      alunoData.responsavel = responsavelData;
+
+      // Append the main data as JSON
+      formData.append(
+        "dto",
+        new Blob([JSON.stringify(alunoData)], {
+          type: "application/json",
+        })
+      );
+
+      console.log("sending...");
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/alunos`,
         {
@@ -533,8 +600,7 @@ export default function DetailsAluno({
         throw new Error(errorText || `HTTP error! status: ${response.status}`);
       }
 
-      alert("Atualizado com sucesso!");
-
+      alert("Aluno atualizado com sucesso!");
       onUpdate?.();
       setEditMode(false);
     } catch (error: any) {
@@ -643,13 +709,13 @@ export default function DetailsAluno({
       ["alergia", "usoMedicamento", "horarioMedicamento"].includes(field.name)
     ),
     additional: alunoFields.filter((field) =>
-      ["time", "indicacao", "observacao"].includes(field.name)
+      ["time", "indicacao", "observacao", "isAtivo"].includes(field.name)
     ),
     responsible: alunoFields.filter((field) =>
       field.name.startsWith("responsavel.")
     ),
     endereco: alunoFields.filter((field) =>
-      ["rua", "cep", "cidade", "estado"].includes(field.name)
+      ["rua", "cep", "cidade", "estado", "enderecoNumero"].includes(field.name)
     ),
   };
 
@@ -1195,5 +1261,21 @@ const style = StyleSheet.create({
     color: Colors.error,
     fontSize: "0.75rem",
     marginTop: "0.25rem",
+  },
+  checkboxLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    fontWeight: "600",
+    fontSize: "0.8125rem",
+    color: Colors.textMuted,
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+    cursor: "pointer",
+  },
+  checkbox: {
+    width: "1rem",
+    height: "1rem",
+    cursor: "pointer",
   },
 });

@@ -1,10 +1,11 @@
 export type User = {
-  id: string;
+  id?: string;
   username: string;
   password: string;
   email?: string | null;
   permissions: [{ permission: string }];
   funcionario?: Funcionario;
+  funcionarioId?: number;
 };
 
 export type Funcionario = {

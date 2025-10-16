@@ -93,7 +93,7 @@ export default function CreationFormPage() {
     { name: "indicacao", placeholder: "Indicação", type: "TEXT" },
     { name: "observacao", placeholder: "Observação", type: "TEXT" },
 
-    { name: "ativo", placeholder: "Ativo", type: "CHECKBOX", required: true },
+    { name: "isAtivo", placeholder: "Ativo", type: "CHECKBOX", required: true },
 
     {
       name: "turmaId",
