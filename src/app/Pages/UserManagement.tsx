@@ -150,35 +150,32 @@ export default function UserManagement() {
       const userData = {
         id: formData.id,
         username: formData.username,
-        email: formData.email || "",
+        email: formData.email || undefined,
         password: formData.password,
         permissions: formData.permissions,
         funcionarioId: formData.funcionarioId,
       };
 
-      // Note: Backend doesn't have a PATCH endpoint yet for users
-      // When backend is ready, use this endpoint:
-      // const response = await fetch(
-      //   `${import.meta.env.VITE_BACKEND_URL}/user`,
-      //   {
-      //     method: "PATCH",
-      //     credentials: "include",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify(userData),
-      //   }
-      // );
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/user/update`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(userData),
+        }
+      );
 
-      // if (!response.ok) {
-      //   const errorText = await response.text();
-      //   throw new Error(errorText || "Erro ao editar usuário");
-      // }
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Erro ao editar usuário");
+      }
 
       console.log("User edit data prepared:", userData);
 
-      // Temporary: Just close the form until backend supports edit
-      alert("Funcionalidade de edição será implementada no backend em breve");
+      alert("Usuário alterado com sucesso!");
 
       setEditForm(false);
       setRefresh(!refresh);
