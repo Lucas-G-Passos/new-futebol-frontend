@@ -93,11 +93,18 @@ export type FieldConfig = {
     | "CHECKBOX"
     | "TIME"
     | "CHECKBOXGROUP"
-    | "HIDDEN";
+    | "HIDDEN"
+    | "TEXTIFCHECKBOXOK";
   options?: { label: string; value: string | number }[];
   defaultValue?: any;
   mask?: string;
   required?: boolean;
+  ifCheckboxOk?: {
+    defaultValue?: any;
+    mask?: string;
+    required?: boolean;
+    checkBoxLabel: string;
+  };
 };
 
 export type Campos = {

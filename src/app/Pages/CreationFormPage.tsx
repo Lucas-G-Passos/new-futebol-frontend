@@ -290,25 +290,21 @@ export default function CreationFormPage() {
       name: "user.username",
       placeholder: "Nome de Usuário",
       type: "TEXT",
-      required: true,
     },
     {
       name: "user.email",
       placeholder: "Email",
       type: "TEXT",
-      required: true,
     },
     {
       name: "user.password",
       placeholder: "Senha",
       type: "TEXT",
-      required: true,
     },
     {
       name: "user.permissions",
       placeholder: "Permissões",
       type: "SELECT",
-      required: true,
       options: [
         { label: "Administrador", value: "ADMIN" },
         { label: "Funcionário", value: "FUNCIONARIO" },

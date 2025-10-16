@@ -216,6 +216,18 @@ export default function DynamicForm({
       for (const [key, value] of Object.entries(formState)) {
         const fieldConfig = fields.find((f) => f.name === key);
 
+        // Skip internal checkbox state keys (e.g., "fieldName_enabled")
+        if (key.endsWith("_enabled")) continue;
+
+        // Skip TEXTIFCHECKBOXOK fields if their checkbox is not checked
+        if (fieldConfig?.type === "TEXTIFCHECKBOXOK") {
+          const checkboxStateName = `${key}_enabled`;
+          if (!formState[checkboxStateName]) continue;
+        }
+
+        // Skip undefined values
+        if (value === undefined) continue;
+
         if (value instanceof File) {
           data.append(key, value);
         } else if (fieldConfig?.mask && typeof value === "string") {
@@ -234,6 +246,18 @@ export default function DynamicForm({
 
       for (const [key, value] of Object.entries(formState)) {
         const fieldConfig = fields.find((f) => f.name === key);
+
+        // Skip internal checkbox state keys (e.g., "fieldName_enabled")
+        if (key.endsWith("_enabled")) continue;
+
+        // Skip TEXTIFCHECKBOXOK fields if their checkbox is not checked
+        if (fieldConfig?.type === "TEXTIFCHECKBOXOK") {
+          const checkboxStateName = `${key}_enabled`;
+          if (!formState[checkboxStateName]) continue;
+        }
+
+        // Skip undefined values
+        if (value === undefined) continue;
 
         if (fieldConfig?.mask && typeof value === "string") {
           jsonData[key] = cleanValueForSubmission(value, fieldConfig.mask);
@@ -391,6 +415,64 @@ export default function DynamicForm({
                 value={formState[field.name] ?? ""}
                 onChange={(e) => handleChange(field.name, e.target.value)}
               />
+            );
+          case "TEXTIFCHECKBOXOK":
+            const checkboxStateName = `${field.name}_enabled`;
+            const isCheckboxChecked = !!formState[checkboxStateName];
+            const checkboxLabel = field.ifCheckboxOk?.checkBoxLabel || field.placeholder;
+            const inputRequired = field.ifCheckboxOk?.required || field.required;
+            const inputMask = field.ifCheckboxOk?.mask || field.mask;
+
+            return (
+              <div style={style.fieldGroup} key={field.name}>
+                {/* Checkbox principal */}
+                <div style={style.checkboxWrapper}>
+                  <label style={style.checkboxLabel}>
+                    <input
+                      type="checkbox"
+                      checked={isCheckboxChecked}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setFormState((prev) => ({
+                          ...prev,
+                          [checkboxStateName]: checked,
+                          // Limpa o valor quando desmarca
+                          [field.name]: checked ? prev[field.name] || field.ifCheckboxOk?.defaultValue || "" : undefined,
+                        }));
+                      }}
+                      style={style.checkbox}
+                    />
+                    {checkboxLabel}
+                  </label>
+                </div>
+
+                {/* Input de texto que aparece quando checkbox está marcado */}
+                {isCheckboxChecked && (
+                  <div style={{ marginLeft: 24, marginTop: 8 }}>
+                    <input
+                      type="text"
+                      placeholder={field.placeholder}
+                      value={formState[field.name] ?? ""}
+                      onChange={(e) => handleChange(field.name, e.target.value, inputMask)}
+                      style={{
+                        ...style.input,
+                        borderColor: error
+                          ? "red"
+                          : isHoveredField
+                          ? Colors.primary
+                          : Colors.border,
+                        backgroundColor: isHoveredField
+                          ? Colors.surfaceAlt
+                          : Colors.inputBackground,
+                      }}
+                      onMouseEnter={() => setHoveredField(true)}
+                      onMouseLeave={() => setHoveredField(false)}
+                    />
+                    {inputRequired && <span style={{ color: "red", fontSize: 12, marginLeft: 4 }}>*</span>}
+                  </div>
+                )}
+                {error && <span style={style.error}>{error}</span>}
+              </div>
             );
         }
       })}

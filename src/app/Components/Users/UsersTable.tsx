@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { User, Funcionario } from "../../Utils/Types";
+import type { User } from "../../Utils/Types";
 import { StyleSheet } from "../../Utils/Stylesheet";
 import Colors from "../../Utils/Colors";
 
@@ -10,7 +10,6 @@ export default function UserTable({
   data: User[];
   onEdit: (user: User) => Promise<any> | void;
 }) {
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -25,16 +24,9 @@ export default function UserTable({
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  const toggleUserExpansion = (userId: string) => {
+  const toggleUserExpansion = (userId: string | undefined) => {
+    if (!userId) return;
     setExpandedUser(expandedUser === userId ? null : userId);
-  };
-
-  const handleUserClick = (user: User) => {
-    setSelectedUser(user);
-  };
-
-  const handleCloseUserDetails = () => {
-    setSelectedUser(null);
   };
 
   const handleEditUser = (user: User) => {
@@ -50,7 +42,6 @@ export default function UserTable({
   };
 
   const formatPhone = (phone: string) => {
-    // Basic phone formatting for Brazilian numbers
     const cleaned = phone.replace(/\D/g, "");
     if (cleaned.length === 11) {
       return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
@@ -65,7 +56,7 @@ export default function UserTable({
     return (
       <div style={style.mobileContainer}>
         {data.map((user) => (
-          <div key={user.id} style={style.mobileCard}>
+          <div key={user.id || user.username} style={style.mobileCard}>
             {/* User Header */}
             <div style={style.mobileCardHeader}>
               <div style={style.mobileCardTitle}>
@@ -87,7 +78,7 @@ export default function UserTable({
               <div style={style.mobileDetailRow}>
                 <span style={style.mobileLabel}>ID:</span>
                 <span style={style.mobileValue}>
-                  {user.id.split("-")[0]}...
+                  {user.id ? `${user.id.split("-")[0]}...` : "N/A"}
                 </span>
               </div>
               <div style={style.mobileDetailRow}>
@@ -121,7 +112,7 @@ export default function UserTable({
                 <div style={style.mobileExpandedDetails}>
                   <div style={style.mobileDetailRow}>
                     <span style={style.mobileLabel}>ID Completo:</span>
-                    <span style={style.mobileValue}>{user.id}</span>
+                    <span style={style.mobileValue}>{user.id || "N/A"}</span>
                   </div>
                   <div style={style.mobileDetailRow}>
                     <span style={style.mobileLabel}>Username:</span>
@@ -239,8 +230,10 @@ export default function UserTable({
         <tbody>
           {data.map((user) => (
             <>
-              <tr key={user.id} style={style.tableRow}>
-                <td style={style.td}>{user.id.split("-")[0]}...</td>
+              <tr key={user.id || user.username} style={style.tableRow}>
+                <td style={style.td}>
+                  {user.id ? `${user.id.split("-")[0]}...` : "N/A"}
+                </td>
                 <td style={style.td}>{user.username}</td>
                 <td style={style.td}>{user.email || "Não informado"}</td>
                 <td style={style.td}>
@@ -285,7 +278,9 @@ export default function UserTable({
                             <span style={style.expandedLabel}>
                               ID Completo:
                             </span>
-                            <span style={style.expandedValue}>{user.id}</span>
+                            <span style={style.expandedValue}>
+                              {user.id || "N/A"}
+                            </span>
                           </div>
                           <div style={style.expandedDetail}>
                             <span style={style.expandedLabel}>Username:</span>
