@@ -112,7 +112,6 @@ export default function UserManagement() {
         email: formdata?.email,
         password: formdata.password,
         permissions: formdata.permissions,
-        funcionarioId: formdata.funcionarioId,
       };
       console.log("Userdata: " + userData);
 

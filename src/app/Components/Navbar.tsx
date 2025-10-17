@@ -67,14 +67,7 @@ export default function Navbar() {
             <div style={{ marginLeft: "auto" }}>
               <div style={style.profileRow}>
                 <div>
-                  {user.funcionario && user.funcionario.foto ? (
-                    <img
-                      src={user.funcionario.foto}
-                      style={{ width: "4em", borderRadius: "50%" }}
-                    />
-                  ) : (
-                    <UserCircleIcon size={32} />
-                  )}
+                  <UserCircleIcon size={32} />
                 </div>
                 <div style={{ display: "flex", flexDirection: "column" }}>
                   {user.username}
@@ -87,7 +80,7 @@ export default function Navbar() {
               </div>
               {user.email === null && (
                 <div style={{ fontStyle: "italic", fontSize: "0.8em" }}>
-                  Considere criar um usuário vinculado a um funcionário
+                  Considere criar um usuário com email.
                 </div>
               )}
             </div>

@@ -4,8 +4,6 @@ export type User = {
   password: string;
   email?: string | null;
   permissions: [{ permission: string }];
-  funcionario?: Funcionario;
-  funcionarioId?: number;
 };
 
 export type Funcionario = {

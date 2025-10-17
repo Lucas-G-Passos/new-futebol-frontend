@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import type { User } from "../../Utils/Types";
-import { StyleSheet } from "../../Utils/Stylesheet";
 import Colors from "../../Utils/Colors";
+import { StyleSheet } from "../../Utils/Stylesheet";
+import type { User } from "../../Utils/Types";
 
 export default function UserTable({
   data,
@@ -35,21 +35,6 @@ export default function UserTable({
 
   const formatPermissions = (permissions: { permission: string }[]) => {
     return permissions.join(", ");
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("pt-BR");
-  };
-
-  const formatPhone = (phone: string) => {
-    const cleaned = phone.replace(/\D/g, "");
-    if (cleaned.length === 11) {
-      return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
-    }
-    if (cleaned.length === 10) {
-      return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
-    }
-    return phone;
   };
 
   const renderMobileView = () => {
@@ -87,12 +72,6 @@ export default function UserTable({
                   {formatPermissions(user.permissions)}
                 </span>
               </div>
-              {user.funcionario && (
-                <div style={style.mobileDetailRow}>
-                  <span style={style.mobileLabel}>Funcionário:</span>
-                  <span style={style.mobileValue}>{user.funcionario.nome}</span>
-                </div>
-              )}
             </div>
 
             {/* Actions */}
@@ -130,80 +109,6 @@ export default function UserTable({
                       {formatPermissions(user.permissions)}
                     </span>
                   </div>
-
-                  {/* Funcionario Details */}
-                  {user.funcionario ? (
-                    <>
-                      <div style={style.mobileSectionDivider}></div>
-                      <h5 style={style.mobileSectionTitle}>
-                        Dados do Funcionário
-                      </h5>
-                      <div style={style.mobileDetailRow}>
-                        <span style={style.mobileLabel}>Nome:</span>
-                        <span style={style.mobileValue}>
-                          {user.funcionario.nome}
-                        </span>
-                      </div>
-                      <div style={style.mobileDetailRow}>
-                        <span style={style.mobileLabel}>CPF:</span>
-                        <span style={style.mobileValue}>
-                          {user.funcionario.cpf}
-                        </span>
-                      </div>
-                      <div style={style.mobileDetailRow}>
-                        <span style={style.mobileLabel}>RG:</span>
-                        <span style={style.mobileValue}>
-                          {user.funcionario.rg}
-                        </span>
-                      </div>
-                      <div style={style.mobileDetailRow}>
-                        <span style={style.mobileLabel}>Nascimento:</span>
-                        <span style={style.mobileValue}>
-                          {formatDate(user.funcionario.dataNascimento)}
-                        </span>
-                      </div>
-                      <div style={style.mobileDetailRow}>
-                        <span style={style.mobileLabel}>Telefone 1:</span>
-                        <span style={style.mobileValue}>
-                          {formatPhone(user.funcionario.telefone1)}
-                        </span>
-                      </div>
-                      {user.funcionario.telefone2 && (
-                        <div style={style.mobileDetailRow}>
-                          <span style={style.mobileLabel}>Telefone 2:</span>
-                          <span style={style.mobileValue}>
-                            {formatPhone(user.funcionario.telefone2)}
-                          </span>
-                        </div>
-                      )}
-                      <div style={style.mobileDetailRow}>
-                        <span style={style.mobileLabel}>Admissão:</span>
-                        <span style={style.mobileValue}>
-                          {formatDate(user.funcionario.dataAdmissao)}
-                        </span>
-                      </div>
-                      <div style={style.mobileDetailRow}>
-                        <span style={style.mobileLabel}>Situação:</span>
-                        <span style={style.mobileValue}>
-                          {user.funcionario.situacao === "OK"
-                            ? "Ativo"
-                            : "Desligado"}
-                        </span>
-                      </div>
-                      {user.funcionario.jornadaEscala && (
-                        <div style={style.mobileDetailRow}>
-                          <span style={style.mobileLabel}>Jornada:</span>
-                          <span style={style.mobileValue}>
-                            {user.funcionario.jornadaEscala}
-                          </span>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div style={style.mobileNoData}>
-                      Não associado a um funcionário
-                    </div>
-                  )}
                 </div>
               </div>
             )}
@@ -222,7 +127,6 @@ export default function UserTable({
             <th style={style.th}>ID</th>
             <th style={style.th}>Username</th>
             <th style={style.th}>Email</th>
-            <th style={style.th}>Funcionário</th>
             <th style={style.th}>Permissões</th>
             <th style={style.th}>Ações</th>
           </tr>
@@ -236,9 +140,6 @@ export default function UserTable({
                 </td>
                 <td style={style.td}>{user.username}</td>
                 <td style={style.td}>{user.email || "Não informado"}</td>
-                <td style={style.td}>
-                  {user.funcionario ? user.funcionario.nome : "Não associado"}
-                </td>
                 <td style={style.td}>
                   <div style={style.permissionsCell}>
                     <span style={style.permissionsText}>
@@ -301,95 +202,6 @@ export default function UserTable({
                             </span>
                           </div>
                         </div>
-
-                        {user.funcionario ? (
-                          <div style={style.expandedDetailCard}>
-                            <h5 style={style.expandedCardTitle}>
-                              Dados do Funcionário
-                            </h5>
-                            <div style={style.expandedDetail}>
-                              <span style={style.expandedLabel}>
-                                Nome Completo:
-                              </span>
-                              <span style={style.expandedValue}>
-                                {user.funcionario.nome}
-                              </span>
-                            </div>
-                            <div style={style.expandedDetail}>
-                              <span style={style.expandedLabel}>CPF:</span>
-                              <span style={style.expandedValue}>
-                                {user.funcionario.cpf}
-                              </span>
-                            </div>
-                            <div style={style.expandedDetail}>
-                              <span style={style.expandedLabel}>RG:</span>
-                              <span style={style.expandedValue}>
-                                {user.funcionario.rg}
-                              </span>
-                            </div>
-                            <div style={style.expandedDetail}>
-                              <span style={style.expandedLabel}>
-                                Data de Nascimento:
-                              </span>
-                              <span style={style.expandedValue}>
-                                {formatDate(user.funcionario.dataNascimento)}
-                              </span>
-                            </div>
-                            <div style={style.expandedDetail}>
-                              <span style={style.expandedLabel}>
-                                Telefone Principal:
-                              </span>
-                              <span style={style.expandedValue}>
-                                {formatPhone(user.funcionario.telefone1)}
-                              </span>
-                            </div>
-                            {user.funcionario.telefone2 && (
-                              <div style={style.expandedDetail}>
-                                <span style={style.expandedLabel}>
-                                  Telefone Secundário:
-                                </span>
-                                <span style={style.expandedValue}>
-                                  {formatPhone(user.funcionario.telefone2)}
-                                </span>
-                              </div>
-                            )}
-                            <div style={style.expandedDetail}>
-                              <span style={style.expandedLabel}>
-                                Data de Admissão:
-                              </span>
-                              <span style={style.expandedValue}>
-                                {formatDate(user.funcionario.dataAdmissao)}
-                              </span>
-                            </div>
-                            <div style={style.expandedDetail}>
-                              <span style={style.expandedLabel}>Situação:</span>
-                              <span style={style.expandedValue}>
-                                {user.funcionario.situacao === "OK"
-                                  ? "Ativo"
-                                  : "Desligado"}
-                              </span>
-                            </div>
-                            {user.funcionario.jornadaEscala && (
-                              <div style={style.expandedDetail}>
-                                <span style={style.expandedLabel}>
-                                  Jornada/ Escala:
-                                </span>
-                                <span style={style.expandedValue}>
-                                  {user.funcionario.jornadaEscala}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div style={style.expandedDetailCard}>
-                            <h5 style={style.expandedCardTitle}>
-                              Dados do Funcionário
-                            </h5>
-                            <div style={style.noData}>
-                              Não associado a um funcionário
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </td>
