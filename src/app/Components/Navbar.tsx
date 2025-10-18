@@ -85,7 +85,7 @@ export default function Navbar() {
               )}
             </div>
           ) : (
-            <div>Não logado</div>
+            <></>
           )}
         </div>
       </div>

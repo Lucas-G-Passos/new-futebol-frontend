@@ -304,12 +304,14 @@ export default function CreationFormPage() {
     {
       name: "user.permissions",
       placeholder: "Permissões",
-      type: "SELECT",
+      type: "CHECKBOXGROUP",
       options: [
         { label: "Administrador", value: "ADMIN" },
-        { label: "Funcionário", value: "FUNCIONARIO" },
-        { label: "Professor", value: "PROFESSOR" },
-        { label: "Coordenador", value: "COORDENADOR" },
+        { label: "Gerenciamento de Alunos", value: "ALUNOS" },
+        { label: "Gerenciamento de Turmas", value: "TURMAS" },
+        { label: "Gerenciamento de Funcionarios", value: "FUNCIONARIO" },
+        { label: "Gerenciamento de Pagamentos", value: "PAGAMENTOS" },
+        { label: "Gerenciamento de usuários", value: "USERS" },
       ],
     },
   ];
