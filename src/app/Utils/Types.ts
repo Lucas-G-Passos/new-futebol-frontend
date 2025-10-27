@@ -64,6 +64,11 @@ export interface Aluno {
   url?: string;
   responsavel?: Responsavel;
   turma?: Turma;
+  acordo: string;
+  pagamentos: Pagamento[];
+  valorFatura: number;
+  valorDevido: number;
+  dataPagamento: Date;
 
   [key: string]: any;
 }
@@ -118,3 +123,12 @@ type Section = {
     highlight?: boolean; // se true, mostra em bold
   };
 };
+
+export interface Pagamento {
+  id: number;
+  dataPago: Date;
+  valorPago: number;
+  metodoPagamento: "DINHEIRO" | "PIX" | "CARTAO";
+  isAutomatized: boolean;
+  observacao: string;
+}

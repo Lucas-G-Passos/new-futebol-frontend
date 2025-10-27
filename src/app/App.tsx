@@ -10,6 +10,7 @@ import Search from "./Pages/Search";
 import UserManagement from "./Pages/UserManagement";
 import CreationFormPage from "./Pages/CreationFormPage";
 import Turmas from "./Pages/Turmas";
+import Pagamentos from "./Pages/Pagamentos";
 
 export default function App() {
   const { isLogged, isLoading } = useAuth();
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="turmas" element={<Turmas />} />
         <Route path="users" element={<UserManagement />} />
         <Route path="form" element={<CreationFormPage />} />
+        <Route path="pagamentos" element={<Pagamentos />} />
       </Route>
     </Routes>
   );

@@ -15,7 +15,6 @@ export default function Search() {
   const [selected, setSelected] = useState<any | null>(null);
   const { setError } = useAuth();
 
-  // Create ref for SearchField
   const searchFieldRef = useRef<{
     getValue: () => string;
     setValue: (value: string) => void;
@@ -47,7 +46,6 @@ export default function Search() {
         }
 
         const data = await response.json();
-        console.log(data);
         setResults(data);
         return data;
       }

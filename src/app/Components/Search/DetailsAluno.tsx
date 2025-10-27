@@ -9,9 +9,10 @@ import {
   Trash,
   ArrowCounterClockwise,
   FilePdfIcon,
+  CurrencyDollarIcon,
 } from "@phosphor-icons/react";
+import type { Pagamento } from "../../Utils/Types";
 
-// Masking functions from DynamicForm
 function escapeForRegex(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -270,12 +271,26 @@ export default function DetailsAluno({
   const [formState, setFormState] = useState<Record<string, any>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [id, setId] = useState<number>();
+  const [showPaymentHistory, setShowPaymentHistory] = useState<boolean>(false);
   const [areYouSure, setAreYouSure] = useState<{
     open: boolean;
     label: string;
     options: string[];
     onConfirm: () => Promise<void> | void;
   } | null>(null);
+
+  const formatCurrency = (value: number | undefined) => {
+    if (value === undefined || value === null) return "N/A";
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+  };
+
+  const formatDate = (date: Date | undefined) => {
+    if (!date) return "N/A";
+    return new Date(date).toLocaleDateString("pt-BR");
+  };
 
   useEffect(() => {
     const initialState: Record<string, any> = {};
@@ -295,12 +310,13 @@ export default function DetailsAluno({
       }
     });
 
-    // Handle file separately
     initialState["url"] = data.url || "";
 
     setId(data.id);
     setFormState(initialState);
-    console.log("Initial state:", initialState);
+
+    console.log("Aluno data:", data);
+    console.log("Pagamentos recebidos:", data.pagamento);
   }, [data]);
   const handleFieldChange = (name: string, rawValue: any, mask?: string) => {
     let value = rawValue;
@@ -500,8 +516,6 @@ export default function DetailsAluno({
   };
 
   const handleSaveEdit = async () => {
-    console.log("Saving - starting validation");
-
     const newErrors: Record<string, string> = {};
 
     alunoFields.forEach((field) => {
@@ -521,8 +535,6 @@ export default function DetailsAluno({
         }
       }
     });
-
-    console.log("Validation errors:", newErrors);
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -585,7 +597,6 @@ export default function DetailsAluno({
         })
       );
 
-      console.log("sending...");
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/alunos`,
         {
@@ -711,6 +722,7 @@ export default function DetailsAluno({
     additional: alunoFields.filter((field) =>
       ["time", "indicacao", "observacao", "isAtivo"].includes(field.name)
     ),
+    turma: alunoFields.filter((field) => ["turmaId"].includes(field.name)),
     responsible: alunoFields.filter((field) =>
       field.name.startsWith("responsavel.")
     ),
@@ -727,6 +739,14 @@ export default function DetailsAluno({
           options={areYouSure.options}
           onClose={() => setAreYouSure(null)}
           onConfirm={areYouSure.onConfirm}
+        />
+      )}
+
+      {showPaymentHistory && (
+        <PaymentHistoryModal
+          pagamentos={data.pagamento || []}
+          alunoNome={data.nomeCompleto}
+          onClose={() => setShowPaymentHistory(false)}
         />
       )}
 
@@ -792,6 +812,13 @@ export default function DetailsAluno({
               </button>
             )}
 
+            <button
+              type="button"
+              style={style.pagamentoButton}
+              onClick={() => setShowPaymentHistory(!showPaymentHistory)}
+            >
+              <CurrencyDollarIcon size={22} />
+            </button>
             <button
               type="button"
               onClick={close}
@@ -864,9 +891,52 @@ export default function DetailsAluno({
               </h3>
               <div style={style.fieldsGrid}>
                 {fieldGroups.additional.map((field) => renderField(field))}
+                {fieldGroups.turma.map((field) => renderField(field))}
               </div>
             </div>
 
+            <div style={style.card}>
+              <h3 style={style.cardTitle}>
+                <span style={style.icon}>💰</span>
+                Informações Financeiras
+              </h3>
+              <div style={style.fieldsGrid}>
+                <div style={style.fieldContainer}>
+                  <label style={style.label}>Acordo</label>
+                  <div style={style.value}>
+                    {data.acordo || "Não informado"}
+                  </div>
+                </div>
+                <div style={style.fieldContainer}>
+                  <label style={style.label}>Valor da Fatura</label>
+                  <div style={style.value}>
+                    {formatCurrency(data.valorFatura)}
+                  </div>
+                </div>
+                <div style={style.fieldContainer}>
+                  <label style={style.label}>Valor Devido</label>
+                  <div
+                    style={{
+                      ...style.value,
+                      color:
+                        data.valorDevido > 0 ? Colors.error : Colors.success,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {formatCurrency(data.valorDevido)}
+                  </div>
+                </div>
+                <div style={style.fieldContainer}>
+                  <label style={style.label}>Data de Pagamento</label>
+                  <div style={style.value}>
+                    {formatDate(data.dataPagamento)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style={style.row}>
             {data.responsavel && (
               <div style={style.card}>
                 <h3 style={style.cardTitle}>
@@ -930,6 +1000,113 @@ function AreYouSureDialog({
               {options[1]}
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PaymentHistoryModal({
+  pagamentos,
+  alunoNome,
+  onClose,
+}: {
+  pagamentos: Pagamento[];
+  alunoNome: string;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    console.log(pagamentos);
+  }, []);
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+  };
+
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString("pt-BR");
+  };
+
+  const getMethodBadgeColor = (method: string) => {
+    switch (method) {
+      case "PIX":
+        return "#10b981";
+      case "CARTAO":
+        return "#3b82f6";
+      case "DINHEIRO":
+        return "#f59e0b";
+      default:
+        return Colors.textMuted;
+    }
+  };
+
+  return (
+    <div style={style.paymentHistoryOverlay}>
+      <div style={style.paymentHistoryContainer}>
+        <div style={style.paymentHistoryHeader}>
+          <div>
+            <h2 style={style.paymentHistoryTitle}>Histórico de Pagamentos</h2>
+            <p style={style.paymentHistorySubtitle}>{alunoNome}</p>
+          </div>
+          <button onClick={onClose} style={style.paymentHistoryCloseButton}>
+            <X size={24} />
+          </button>
+        </div>
+
+        <div style={style.paymentHistoryContent}>
+          {pagamentos.length === 0 ? (
+            <div style={style.noPaymentsContainer}>
+              <div style={style.noPaymentsIcon}>💳</div>
+              <p style={style.noPaymentsText}>Nenhum pagamento registrado</p>
+            </div>
+          ) : (
+            <div style={style.paymentsList}>
+              {pagamentos.map((pagamento) => (
+                <div key={pagamento.id} style={style.paymentCard}>
+                  <div style={style.paymentCardHeader}>
+                    <div style={style.paymentDateContainer}>
+                      <span style={style.paymentDateLabel}>Data</span>
+                      <span style={style.paymentDate}>
+                        {formatDate(pagamento.dataPago)}
+                      </span>
+                    </div>
+                    <div style={style.paymentValueContainer}>
+                      <span style={style.paymentValue}>
+                        {formatCurrency(pagamento.valorPago)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div style={style.paymentCardBody}>
+                    <div style={style.paymentMeta}>
+                      <span
+                        style={{
+                          ...style.paymentMethodBadge,
+                          backgroundColor: getMethodBadgeColor(
+                            pagamento.metodoPagamento
+                          ),
+                        }}
+                      >
+                        {pagamento.metodoPagamento}
+                      </span>
+                      {pagamento.isAutomatized && (
+                        <span style={style.automaticBadge}>Automático</span>
+                      )}
+                    </div>
+
+                    {pagamento.observacao && (
+                      <div style={style.paymentObservation}>
+                        <strong>Observação:</strong> {pagamento.observacao}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -1063,6 +1240,20 @@ const style = StyleSheet.create({
     minWidth: "min-content",
   },
   closeButton: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "2.75rem",
+    height: "2.75rem",
+    backgroundColor: "rgba(0, 0, 0, 0.1)",
+    border: `1px solid ${Colors.border}`,
+    borderRadius: "10px",
+    color: Colors.textMuted,
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    flexShrink: 0,
+  },
+  pagamentoButton: {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -1277,5 +1468,171 @@ const style = StyleSheet.create({
     width: "1rem",
     height: "1rem",
     cursor: "pointer",
+  },
+  // Payment History Modal Styles
+  paymentHistoryOverlay: {
+    position: "fixed",
+    inset: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1002,
+    backdropFilter: "blur(8px)",
+    padding: "1rem",
+  },
+  paymentHistoryContainer: {
+    backgroundColor: Colors.surface,
+    borderRadius: "16px",
+    border: `1px solid ${Colors.border}`,
+    boxShadow: "0 20px 60px rgba(0, 0, 0, 0.4)",
+    maxWidth: "700px",
+    width: "90vw",
+    maxHeight: "85vh",
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden",
+  },
+  paymentHistoryHeader: {
+    padding: "1.5rem 2rem",
+    borderBottom: `1px solid ${Colors.border}`,
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    backgroundColor: "rgba(255, 255, 255, 0.02)",
+  },
+  paymentHistoryTitle: {
+    color: Colors.primary,
+    margin: 0,
+    fontSize: "1.5rem",
+    fontWeight: "700",
+    marginBottom: "0.25rem",
+  },
+  paymentHistorySubtitle: {
+    color: Colors.textMuted,
+    margin: 0,
+    fontSize: "0.875rem",
+  },
+  paymentHistoryCloseButton: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "2.5rem",
+    height: "2.5rem",
+    backgroundColor: "rgba(0, 0, 0, 0.1)",
+    border: `1px solid ${Colors.border}`,
+    borderRadius: "10px",
+    color: Colors.textMuted,
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    flexShrink: 0,
+  },
+  paymentHistoryContent: {
+    flex: 1,
+    overflowY: "auto",
+    padding: "1.5rem 2rem",
+  },
+  noPaymentsContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "3rem 1rem",
+    textAlign: "center",
+  },
+  noPaymentsIcon: {
+    fontSize: "4rem",
+    marginBottom: "1rem",
+    opacity: 0.5,
+  },
+  noPaymentsText: {
+    color: Colors.textMuted,
+    fontSize: "1rem",
+    margin: 0,
+  },
+  paymentsList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
+  },
+  paymentCard: {
+    backgroundColor: Colors.surfaceAlt,
+    border: `1px solid ${Colors.border}`,
+    borderRadius: "12px",
+    overflow: "hidden",
+    transition: "all 0.2s ease",
+  },
+  paymentCardHeader: {
+    padding: "1rem 1.25rem",
+    backgroundColor: "rgba(255, 255, 255, 0.02)",
+    borderBottom: `1px solid ${Colors.border}`,
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  paymentDateContainer: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.25rem",
+  },
+  paymentDateLabel: {
+    fontSize: "0.75rem",
+    color: Colors.textMuted,
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+    fontWeight: 600,
+  },
+  paymentDate: {
+    fontSize: "0.9375rem",
+    color: Colors.text,
+    fontWeight: 500,
+  },
+  paymentValueContainer: {
+    textAlign: "right",
+  },
+  paymentValue: {
+    fontSize: "1.25rem",
+    fontWeight: 700,
+    color: Colors.success,
+  },
+  paymentCardBody: {
+    padding: "1rem 1.25rem",
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.75rem",
+  },
+  paymentMeta: {
+    display: "flex",
+    gap: "0.5rem",
+    alignItems: "center",
+    flexWrap: "wrap",
+  },
+  paymentMethodBadge: {
+    padding: "0.375rem 0.75rem",
+    borderRadius: "6px",
+    fontSize: "0.75rem",
+    fontWeight: 600,
+    color: "white",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+  },
+  automaticBadge: {
+    padding: "0.375rem 0.75rem",
+    borderRadius: "6px",
+    fontSize: "0.75rem",
+    fontWeight: 600,
+    backgroundColor: Colors.info,
+    color: "white",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+  },
+  paymentObservation: {
+    fontSize: "0.875rem",
+    color: Colors.text,
+    lineHeight: "1.5",
+    padding: "0.75rem",
+    backgroundColor: "rgba(0, 0, 0, 0.1)",
+    borderRadius: "6px",
+    borderLeft: `3px solid ${Colors.borderFocus}`,
   },
 });
