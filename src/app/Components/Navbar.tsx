@@ -6,6 +6,9 @@ import { UserCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import {
+  BuildingApartmentIcon,
+  CurrencyDollarSimpleIcon,
+  HouseIcon,
   MagnifyingGlassIcon,
   PencilSimpleLineIcon,
   UsersFourIcon,
@@ -40,6 +43,11 @@ export default function Navbar() {
         {!isMobile && (
           <div style={style.buttonContainer}>
             <NavButton
+              path="/app/home"
+              label="Home"
+              icon={<HouseIcon size={32} />}
+            />
+            <NavButton
               path="/app/search"
               label="Pesquisa"
               icon={<MagnifyingGlassIcon size={32} />}
@@ -55,9 +63,19 @@ export default function Navbar() {
               icon={<UsersFourIcon size={32} />}
             />
             <NavButton
+              path="/app/filiais"
+              label="Filiais"
+              icon={<BuildingApartmentIcon size={32} />}
+            />
+            <NavButton
               path="/app/users"
               label="Usuários"
               icon={<UserCircleIcon size={32} />}
+            />
+            <NavButton
+              path="/app/pagamentos"
+              label="Pagamento"
+              icon={<CurrencyDollarSimpleIcon size={32} />}
             />
           </div>
         )}
@@ -85,12 +103,17 @@ export default function Navbar() {
               )}
             </div>
           ) : (
-            <div>Não logado</div>
+            <></>
           )}
         </div>
       </div>
       {isMobile && menuOpen && (
         <div style={{ ...style.mobileMenuRow, padding: 0 }}>
+          <NavButton
+            path="/app/home"
+            label="Home"
+            icon={<HouseIcon size={32} />}
+          />
           <NavButton
             path="/app/search"
             label="Pesquisa"
@@ -110,6 +133,11 @@ export default function Navbar() {
             path="/app/users"
             label="Usuários"
             icon={<UserCircleIcon size={32} />}
+          />
+          <NavButton
+            path="/app/pagamentos"
+            label="Pagamentos"
+            icon={<CurrencyDollarSimpleIcon size={32} />}
           />
         </div>
       )}
@@ -212,7 +240,7 @@ const style = StyleSheet.create({
     margin: 5,
     padding: 5,
     border: "1px solid",
-    maxWidth: "5em",
+    minWidth: "5em",
     minHeight: "70%",
     display: "flex",
     justifyContent: "center",
@@ -228,10 +256,11 @@ const style = StyleSheet.create({
     justifyContent: "space-around",
     backgroundColor: Colors.backgroundAlt,
     borderBottom: `1px solid ${Colors.border}`,
-    padding: 10,
-    marginTop: "10vh", // ensures it appears under the navbar
+    padding: 15,
+    marginTop: "10vh",
     position: "fixed",
     width: "100vw",
     zIndex: 1,
+    overflowX: "auto",
   },
 });

@@ -10,9 +10,11 @@ import Search from "./Pages/Search";
 import UserManagement from "./Pages/UserManagement";
 import CreationFormPage from "./Pages/CreationFormPage";
 import Turmas from "./Pages/Turmas";
+import Pagamentos from "./Pages/Pagamentos";
+import Filial from "./Pages/Filial";
 
 export default function App() {
-  const { isLogged, isLoading, setUserG } = useAuth();
+  const { isLogged, isLoading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -23,19 +25,19 @@ export default function App() {
     if (!isLogged && isInProtected) navigate("/");
 
     if (isLogged && location?.pathname === "/") navigate("/app/home");
-    const getUser = async () => {
-      if (isLogged) {
-        const userCharacteristics = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/user/get`,
-          {
-            credentials: "include",
-          }
-        );
-        const user = await userCharacteristics.json();
-        setUserG(user);
-      }
-    };
-    getUser();
+    // const getUser = async () => {
+    //   if (isLogged) {
+    //     const userCharacteristics = await fetch(
+    //       `${import.meta.env.VITE_BACKEND_URL}/user/get`,
+    //       {
+    //         credentials: "include",
+    //       }
+    //     );
+    //     const user = await userCharacteristics.json();
+    //     setUserG(user);
+    //   }
+    // };
+    // getUser();
   }, [isLogged, isLoading]);
   if (isLoading) return null;
   return (
@@ -47,6 +49,8 @@ export default function App() {
         <Route path="turmas" element={<Turmas />} />
         <Route path="users" element={<UserManagement />} />
         <Route path="form" element={<CreationFormPage />} />
+        <Route path="pagamentos" element={<Pagamentos />} />
+        <Route path="filiais" element={<Filial />} />
       </Route>
     </Routes>
   );

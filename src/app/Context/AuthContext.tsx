@@ -96,26 +96,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
 
-      const resToken = await response.text();
+      const resToken = await response.json();
       setToken(resToken);
-      // const userCharacteristics = await fetch(
-      //   `${import.meta.env.VITE_BACKEND_URL}/user/get`,
-      //   {
-      //     credentials: "include",
-      //   }
-      // );
+      const userCharacteristics = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/user/get`,
+        {
+          headers: { Authorization: `Bearer ${resToken.token}` },
+          credentials: "include",
+        }
+      );
 
-      // if (!userCharacteristics.ok) {
-      //   if (userCharacteristics.status === 401) {
-      //     throw new Error("Username ou senha inválidos");
-      //   } else if (response.status >= 500) {
-      //     throw new Error("Erro no servidor, tente novamente mais tarde");
-      //   } else {
-      //     throw new Error("Erro ao fazer login");
-      //   }
-      // }
-      // const user = await userCharacteristics.json();
-      // setUser(user);
+      if (!userCharacteristics.ok) {
+        if (userCharacteristics.status === 401) {
+          throw new Error("Username ou senha inválidos");
+        } else if (response.status >= 500) {
+          throw new Error("Erro no servidor, tente novamente mais tarde");
+        } else {
+          throw new Error("Erro ao fazer login");
+        }
+      }
+      const user = await userCharacteristics.json();
+      setUser(user);
       setLogged(true);
     } catch (error: any) {
       console.error("Erro ao fazer login: ", error);
