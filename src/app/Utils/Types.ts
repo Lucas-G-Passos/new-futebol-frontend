@@ -41,7 +41,19 @@ export interface Turma {
   horaInicio?: string; // LocalTime → string (HH:mm:ss)
   horaTermino?: string; // LocalTime → string (HH:mm:ss)
   local?: string;
+  filialNome?: string;
+  filialId?: number;
   alunos?: Aluno[];
+}
+export interface Filial {
+  id: number;
+  nome: string;
+  cep: number;
+  rua: string;
+  enderecoNumero: string;
+  cidade: string;
+  estado: string;
+  turmas: Turma[];
 }
 
 export interface Aluno {
@@ -73,7 +85,6 @@ export interface Aluno {
   [key: string]: any;
 }
 
-// Optional enum for Java DayOfWeek
 export enum DayOfWeek {
   MONDAY = "MONDAY",
   TUESDAY = "TUESDAY",
@@ -112,7 +123,7 @@ export type FieldConfig = {
 
 export type Campos = {
   sections: Section[];
-  image?: string; // foto ou url
+  image?: string;
 };
 
 type Section = {
@@ -120,7 +131,7 @@ type Section = {
   value: string | number | boolean;
   field: {
     type: string;
-    highlight?: boolean; // se true, mostra em bold
+    highlight?: boolean;
   };
 };
 

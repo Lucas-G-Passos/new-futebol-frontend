@@ -6,6 +6,7 @@ import { UserCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import {
+  BuildingApartmentIcon,
   CurrencyDollarSimpleIcon,
   HouseIcon,
   MagnifyingGlassIcon,
@@ -60,6 +61,11 @@ export default function Navbar() {
               path="/app/turmas"
               label="Turmas"
               icon={<UsersFourIcon size={32} />}
+            />
+            <NavButton
+              path="/app/filiais"
+              label="Filiais"
+              icon={<BuildingApartmentIcon size={32} />}
             />
             <NavButton
               path="/app/users"

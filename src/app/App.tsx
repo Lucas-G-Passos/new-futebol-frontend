@@ -11,6 +11,7 @@ import UserManagement from "./Pages/UserManagement";
 import CreationFormPage from "./Pages/CreationFormPage";
 import Turmas from "./Pages/Turmas";
 import Pagamentos from "./Pages/Pagamentos";
+import Filial from "./Pages/Filial";
 
 export default function App() {
   const { isLogged, isLoading } = useAuth();
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="users" element={<UserManagement />} />
         <Route path="form" element={<CreationFormPage />} />
         <Route path="pagamentos" element={<Pagamentos />} />
+        <Route path="filiais" element={<Filial />} />
       </Route>
     </Routes>
   );

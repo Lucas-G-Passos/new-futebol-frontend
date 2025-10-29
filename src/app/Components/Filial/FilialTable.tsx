@@ -1,18 +1,16 @@
 import { useEffect, useState } from "react";
-import type { Turma, Aluno } from "../../Utils/Types";
+import type { Filial } from "../../Utils/Types";
 import { StyleSheet } from "../../Utils/Stylesheet";
 import Colors from "../../Utils/Colors";
-import DetailsAluno from "../Search/DetailsAluno";
 
-export default function TurmaTable({
+export default function FilialTable({
   data,
   onEdit,
 }: {
-  data: { turmas: Turma[] };
+  data: { filiais: Filial[] };
   onEdit: (formData: Record<string, any>) => Promise<any> | void;
 }) {
-  const [selectedAluno, setSelectedAluno] = useState<Aluno | null>(null);
-  const [expandedTurma, setExpandedTurma] = useState<string | null>(null);
+  const [expandedFilial, setExpandedFilial] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -26,147 +24,98 @@ export default function TurmaTable({
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  const toggleTurmaExpansion = (codigoTurma: string) => {
-    setExpandedTurma(expandedTurma === codigoTurma ? null : codigoTurma);
+  const toggleFilialExpansion = (id: number) => {
+    setExpandedFilial(expandedFilial === id ? null : id);
   };
 
-  const handleAlunoClick = (aluno: Aluno) => {
-    setSelectedAluno(aluno);
-  };
-
-  const handleCloseAlunoDetails = () => {
-    setSelectedAluno(null);
-  };
-
-  const handleEditTurma = (turma: Turma) => {
+  const handleEditFilial = (filial: Filial) => {
     const formData = {
-      id: turma.id,
-      codigoTurma: turma.codigoTurma,
-      nome: turma.nome,
-      descricao: turma.descricao,
-      filialId: turma.filialId,
-      diaSemana: turma.diaSemana,
-      horaInicio: turma.horaInicio,
-      horaTermino: turma.horaTermino,
-      local: turma.local,
-      alunos: turma.alunos?.map((a) => a.id) || [],
+      id: filial.id,
+      nome: filial.nome,
+      cep: filial.cep,
+      rua: filial.rua,
+      enderecoNumero: filial.enderecoNumero,
+      cidade: filial.cidade,
+      estado: filial.estado,
     };
 
     onEdit(formData);
   };
 
-  const formatDaysOfWeek = (days: string[]) => {
-    const dayMap: { [key: string]: string } = {
-      MONDAY: "Seg",
-      TUESDAY: "Ter",
-      WEDNESDAY: "Qua",
-      THURSDAY: "Qui",
-      FRIDAY: "Sex",
-      SATURDAY: "Sáb",
-      SUNDAY: "Dom",
-    };
-
-    return days.map((day) => dayMap[day] || day).join(", ");
-  };
-
-  const formatTime = (timeString: string) => {
-    return timeString?.substring(0, 5) || "";
-  };
-
   const renderMobileView = () => {
     return (
       <div style={style.mobileContainer}>
-        {data.turmas.map((turma) => (
-          <div key={turma.codigoTurma} style={style.mobileCard}>
-            {/* Turma Header */}
+        {data.filiais.map((filial) => (
+          <div key={filial.id} style={style.mobileCard}>
+            {/* Filial Header */}
             <div style={style.mobileCardHeader}>
               <div style={style.mobileCardTitle}>
-                <h3 style={style.mobileTurmaName}>{turma.nome}</h3>
-                <div style={style.mobileTurmaCode}>{turma.codigoTurma}</div>
+                <h3 style={style.mobileFilialName}>{filial.nome}</h3>
               </div>
               <button
-                onClick={() => toggleTurmaExpansion(turma.codigoTurma!)}
+                onClick={() => toggleFilialExpansion(filial.id)}
                 style={style.mobileToggleButton}
               >
-                {expandedTurma === turma.codigoTurma ? "▲" : "▼"}
+                {expandedFilial === filial.id ? "▲" : "▼"}
               </button>
             </div>
 
-            {/* Turma Details */}
+            {/* Filial Details */}
             <div style={style.mobileDetails}>
               <div style={style.mobileDetailRow}>
-                <span style={style.mobileLabel}>Descrição:</span>
+                <span style={style.mobileLabel}>CEP:</span>
+                <span style={style.mobileValue}>{filial.cep || "N/A"}</span>
+              </div>
+              <div style={style.mobileDetailRow}>
+                <span style={style.mobileLabel}>Rua:</span>
+                <span style={style.mobileValue}>{filial.rua || "N/A"}</span>
+              </div>
+              <div style={style.mobileDetailRow}>
+                <span style={style.mobileLabel}>Número:</span>
                 <span style={style.mobileValue}>
-                  {turma.descricao || "N/A"}
+                  {filial.enderecoNumero || "N/A"}
                 </span>
               </div>
               <div style={style.mobileDetailRow}>
-                <span style={style.mobileLabel}>Dias:</span>
+                <span style={style.mobileLabel}>Cidade:</span>
+                <span style={style.mobileValue}>{filial.cidade || "N/A"}</span>
+              </div>
+              <div style={style.mobileDetailRow}>
+                <span style={style.mobileLabel}>Estado:</span>
+                <span style={style.mobileValue}>{filial.estado || "N/A"}</span>
+              </div>
+              <div style={style.mobileDetailRow}>
+                <span style={style.mobileLabel}>Turmas:</span>
                 <span style={style.mobileValue}>
-                  {turma.diaSemana ? formatDaysOfWeek(turma.diaSemana) : "N/A"}
-                </span>
-              </div>
-              <div style={style.mobileDetailRow}>
-                <span style={style.mobileLabel}>Horário:</span>
-                <span style={style.mobileValue}>
-                  {turma.horaInicio && turma.horaTermino
-                    ? `${formatTime(turma.horaInicio)} - ${formatTime(
-                        turma.horaTermino
-                      )}`
-                    : "N/A"}
-                </span>
-              </div>
-              <div style={style.mobileDetailRow}>
-                <span style={style.mobileLabel}>Local:</span>
-                <span style={style.mobileValue}>{turma.local || "N/A"}</span>
-              </div>
-              <div style={style.mobileDetailRow}>
-                <span style={style.mobileLabel}>Filial:</span>
-                <span style={style.mobileValue}>{turma.filialNome || "N/A"}</span>
-              </div>
-              <div style={style.mobileDetailRow}>
-                <span style={style.mobileLabel}>Alunos:</span>
-                <span style={style.mobileValue}>
-                  {turma.alunos?.length || 0} aluno(s)
+                  {filial.turmas?.length || 0} turma(s)
                 </span>
               </div>
             </div>
 
             {/* Actions */}
             <div style={style.mobileActions}>
-              <button onClick={onEdit} style={style.mobileEditButton}>
-                Editar Turma
+              <button
+                onClick={() => handleEditFilial(filial)}
+                style={style.mobileEditButton}
+              >
+                Editar Filial
               </button>
             </div>
 
-            {/* Expanded Alunos Section */}
-            {expandedTurma === turma.codigoTurma &&
-              turma.alunos &&
-              turma.alunos.length > 0 && (
-                <div style={style.mobileAlunosSection}>
-                  <h4 style={style.mobileAlunosTitle}>Alunos</h4>
-                  <div style={style.mobileAlunosList}>
-                    {turma.alunos.map((aluno) => (
-                      <div
-                        key={aluno.id}
-                        style={style.mobileAlunoCard}
-                        onClick={() => handleAlunoClick(aluno)}
-                      >
-                        <div style={style.mobileAlunoAvatar}>
-                          {aluno.nomeCompleto?.charAt(0).toUpperCase() || "A"}
-                        </div>
-                        <div style={style.mobileAlunoInfo}>
-                          <div style={style.mobileAlunoName}>
-                            {aluno.nomeCompleto}
+            {/* Expanded Turmas Section */}
+            {expandedFilial === filial.id &&
+              filial.turmas &&
+              filial.turmas.length > 0 && (
+                <div style={style.mobileTurmasSection}>
+                  <h4 style={style.mobileTurmasTitle}>Turmas</h4>
+                  <div style={style.mobileTurmasList}>
+                    {filial.turmas.map((turma) => (
+                      <div key={turma.id} style={style.mobileTurmaCard}>
+                        <div style={style.mobileTurmaInfo}>
+                          <div style={style.mobileTurmaName}>{turma.nome}</div>
+                          <div style={style.mobileTurmaDetails}>
+                            {turma.codigoTurma} • {turma.local}
                           </div>
-                          <div style={style.mobileAlunoDetails}>
-                            {aluno.colegio} • {aluno.colegioAno}
-                          </div>
-                          {aluno.telefone1 && (
-                            <div style={style.mobileAlunoPhone}>
-                              {aluno.telefone1}
-                            </div>
-                          )}
                         </div>
                       </div>
                     ))}
@@ -185,54 +134,44 @@ export default function TurmaTable({
       <table style={style.table}>
         <thead>
           <tr style={style.headerRow}>
-            <th style={style.th}>Código</th>
             <th style={style.th}>Nome</th>
-            <th style={style.th}>Descrição</th>
-            <th style={style.th}>Dias</th>
-            <th style={style.th}>Horário</th>
-            <th style={style.th}>Local</th>
-            <th style={style.th}>Filial</th>
-            <th style={style.th}>Alunos</th>
+            <th style={style.th}>CEP</th>
+            <th style={style.th}>Rua</th>
+            <th style={style.th}>Número</th>
+            <th style={style.th}>Cidade</th>
+            <th style={style.th}>Estado</th>
+            <th style={style.th}>Turmas</th>
             <th style={style.th}>Ações</th>
           </tr>
         </thead>
         <tbody>
-          {data.turmas.map((turma) => (
+          {data.filiais.map((filial) => (
             <>
-              <tr key={turma.codigoTurma} style={style.tableRow}>
-                <td style={style.td}>{turma.codigoTurma}</td>
-                <td style={style.td}>{turma.nome}</td>
-                <td style={style.td}>{turma.descricao}</td>
+              <tr key={filial.id} style={style.tableRow}>
+                <td style={style.td}>{filial.nome}</td>
+                <td style={style.td}>{filial.cep}</td>
+                <td style={style.td}>{filial.rua}</td>
+                <td style={style.td}>{filial.enderecoNumero}</td>
+                <td style={style.td}>{filial.cidade}</td>
+                <td style={style.td}>{filial.estado}</td>
                 <td style={style.td}>
-                  {turma.diaSemana ? formatDaysOfWeek(turma.diaSemana) : ""}
-                </td>
-                <td style={style.td}>
-                  {turma.horaInicio && turma.horaTermino
-                    ? `${formatTime(turma.horaInicio)} - ${formatTime(
-                        turma.horaTermino
-                      )}`
-                    : ""}
-                </td>
-                <td style={style.td}>{turma.local}</td>
-                <td style={style.td}>{turma.filialNome || "N/A"}</td>
-                <td style={style.td}>
-                  <div style={style.alunosCell}>
-                    <span style={style.alunoCount}>
-                      {turma.alunos?.length || 0} aluno(s)
+                  <div style={style.turmasCell}>
+                    <span style={style.turmaCount}>
+                      {filial.turmas?.length || 0} turma(s)
                     </span>
-                    {turma.alunos && turma.alunos.length > 0 && (
+                    {filial.turmas && filial.turmas.length > 0 && (
                       <button
-                        onClick={() => toggleTurmaExpansion(turma.codigoTurma!)}
+                        onClick={() => toggleFilialExpansion(filial.id)}
                         style={style.toggleButton}
                       >
-                        {expandedTurma === turma.codigoTurma ? "▲" : "▼"}
+                        {expandedFilial === filial.id ? "▲" : "▼"}
                       </button>
                     )}
                   </div>
                 </td>
                 <td style={style.td}>
                   <button
-                    onClick={() => handleEditTurma(turma)}
+                    onClick={() => handleEditFilial(filial)}
                     style={style.editButton}
                   >
                     Editar
@@ -240,36 +179,27 @@ export default function TurmaTable({
                 </td>
               </tr>
 
-              {expandedTurma === turma.codigoTurma &&
-                turma.alunos &&
-                turma.alunos.length > 0 && (
+              {expandedFilial === filial.id &&
+                filial.turmas &&
+                filial.turmas.length > 0 && (
                   <tr style={style.expandedRow}>
-                    <td colSpan={9} style={style.expandedCell}>
-                      <div style={style.alunosContainer}>
-                        <h4 style={style.alunosTitle}>Alunos da Turma</h4>
-                        <div style={style.alunosGrid}>
-                          {turma.alunos.map((aluno) => (
-                            <div
-                              key={aluno.id}
-                              style={style.alunoCard}
-                              onClick={() => handleAlunoClick(aluno)}
-                            >
-                              <div style={style.alunoAvatar}>
-                                {aluno.nomeCompleto?.charAt(0).toUpperCase() ||
-                                  "A"}
+                    <td colSpan={8} style={style.expandedCell}>
+                      <div style={style.turmasContainer}>
+                        <h4 style={style.turmasTitle}>Turmas da Filial</h4>
+                        <div style={style.turmasGrid}>
+                          {filial.turmas.map((turma) => (
+                            <div key={turma.id} style={style.turmaCard}>
+                              <div style={style.turmaAvatar}>
+                                {turma.nome?.charAt(0).toUpperCase() || "T"}
                               </div>
-                              <div style={style.alunoInfo}>
-                                <div style={style.alunoName}>
-                                  {aluno.nomeCompleto}
+                              <div style={style.turmaInfo}>
+                                <div style={style.turmaName}>{turma.nome}</div>
+                                <div style={style.turmaDetails}>
+                                  {turma.codigoTurma}
                                 </div>
-                                <div style={style.alunoDetails}>
-                                  {aluno.colegio} • {aluno.colegioAno}
+                                <div style={style.turmaLocal}>
+                                  {turma.local}
                                 </div>
-                                {aluno.telefone1 && (
-                                  <div style={style.alunoPhone}>
-                                    {aluno.telefone1}
-                                  </div>
-                                )}
                               </div>
                             </div>
                           ))}
@@ -287,10 +217,6 @@ export default function TurmaTable({
 
   return (
     <div style={style.mainContainer}>
-      {selectedAluno && (
-        <DetailsAluno data={selectedAluno} close={handleCloseAlunoDetails} />
-      )}
-
       {isMobile ? renderMobileView() : renderDesktopView()}
     </div>
   );
@@ -361,12 +287,12 @@ const style = StyleSheet.create({
       transform: "translateY(-1px)",
     },
   },
-  alunosCell: {
+  turmasCell: {
     display: "flex",
     alignItems: "center",
     gap: "8px",
   },
-  alunoCount: {
+  turmaCount: {
     fontSize: "14px",
     color: Colors.textLight,
   },
@@ -382,30 +308,29 @@ const style = StyleSheet.create({
       color: Colors.secondaryLight,
     },
   },
-  alunosContainer: {
+  turmasContainer: {
     padding: "20px",
     backgroundColor: Colors.backgroundAlt,
     borderLeft: `4px solid ${Colors.primary}`,
   },
-  alunosTitle: {
+  turmasTitle: {
     margin: "0 0 16px 0",
     color: Colors.text,
     fontSize: "16px",
     fontWeight: "600",
   },
-  alunosGrid: {
+  turmasGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
     gap: "12px",
   },
-  alunoCard: {
+  turmaCard: {
     display: "flex",
     alignItems: "center",
     padding: "12px",
     backgroundColor: Colors.surface,
     border: `1px solid ${Colors.border}`,
     borderRadius: "8px",
-    cursor: "pointer",
     transition: "all 0.2s ease",
     ":hover": {
       backgroundColor: Colors.surfaceAlt,
@@ -414,7 +339,7 @@ const style = StyleSheet.create({
       boxShadow: `0 4px 12px rgba(250, 231, 77, 0.2)`,
     },
   },
-  alunoAvatar: {
+  turmaAvatar: {
     width: "40px",
     height: "40px",
     borderRadius: "50%",
@@ -428,11 +353,11 @@ const style = StyleSheet.create({
     marginRight: "12px",
     flexShrink: 0,
   },
-  alunoInfo: {
+  turmaInfo: {
     flex: 1,
     minWidth: 0,
   },
-  alunoName: {
+  turmaName: {
     fontWeight: "600",
     color: Colors.text,
     fontSize: "14px",
@@ -441,7 +366,7 @@ const style = StyleSheet.create({
     overflow: "hidden",
     textOverflow: "ellipsis",
   },
-  alunoDetails: {
+  turmaDetails: {
     fontSize: "12px",
     color: Colors.textLight,
     marginBottom: "2px",
@@ -449,7 +374,7 @@ const style = StyleSheet.create({
     overflow: "hidden",
     textOverflow: "ellipsis",
   },
-  alunoPhone: {
+  turmaLocal: {
     fontSize: "11px",
     color: Colors.textMuted,
     whiteSpace: "nowrap",
@@ -479,15 +404,11 @@ const style = StyleSheet.create({
   mobileCardTitle: {
     flex: 1,
   },
-  mobileTurmaName: {
+  mobileFilialName: {
     margin: "0 0 4px 0",
     color: Colors.text,
     fontSize: "18px",
     fontWeight: "600",
-  },
-  mobileTurmaCode: {
-    color: Colors.textLight,
-    fontSize: "14px",
   },
   mobileToggleButton: {
     background: "none",
@@ -543,51 +464,35 @@ const style = StyleSheet.create({
       backgroundColor: "#45a049",
     },
   },
-  mobileAlunosSection: {
+  mobileTurmasSection: {
     marginTop: "16px",
     paddingTop: "16px",
     borderTop: `1px solid ${Colors.border}`,
   },
-  mobileAlunosTitle: {
+  mobileTurmasTitle: {
     margin: "0 0 12px 0",
     color: Colors.text,
     fontSize: "16px",
     fontWeight: "600",
   },
-  mobileAlunosList: {
+  mobileTurmasList: {
     display: "flex",
     flexDirection: "column",
     gap: "8px",
   },
-  mobileAlunoCard: {
+  mobileTurmaCard: {
     display: "flex",
     alignItems: "center",
     padding: "12px",
     backgroundColor: Colors.surfaceAlt,
     border: `1px solid ${Colors.border}`,
     borderRadius: "8px",
-    cursor: "pointer",
-    transition: "all 0.2s ease",
   },
-  mobileAlunoAvatar: {
-    width: "36px",
-    height: "36px",
-    borderRadius: "50%",
-    backgroundColor: Colors.primary,
-    color: Colors.black,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: "bold",
-    fontSize: "14px",
-    marginRight: "12px",
-    flexShrink: 0,
-  },
-  mobileAlunoInfo: {
+  mobileTurmaInfo: {
     flex: 1,
     minWidth: 0,
   },
-  mobileAlunoName: {
+  mobileTurmaName: {
     fontWeight: "600",
     color: Colors.text,
     fontSize: "14px",
@@ -596,17 +501,10 @@ const style = StyleSheet.create({
     overflow: "hidden",
     textOverflow: "ellipsis",
   },
-  mobileAlunoDetails: {
+  mobileTurmaDetails: {
     fontSize: "12px",
     color: Colors.textLight,
     marginBottom: "2px",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-  },
-  mobileAlunoPhone: {
-    fontSize: "11px",
-    color: Colors.textMuted,
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",

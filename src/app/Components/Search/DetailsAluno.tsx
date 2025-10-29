@@ -10,8 +10,10 @@ import {
   ArrowCounterClockwise,
   FilePdfIcon,
   CurrencyDollarIcon,
+  PlusIcon,
 } from "@phosphor-icons/react";
 import type { Pagamento } from "../../Utils/Types";
+import PagamentoManual from "../Pagamentos/pagManual";
 
 function escapeForRegex(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -314,9 +316,6 @@ export default function DetailsAluno({
 
     setId(data.id);
     setFormState(initialState);
-
-    console.log("Aluno data:", data);
-    console.log("Pagamentos recebidos:", data.pagamento);
   }, [data]);
   const handleFieldChange = (name: string, rawValue: any, mask?: string) => {
     let value = rawValue;
@@ -342,7 +341,6 @@ export default function DetailsAluno({
     return cleaned.length > 0 ? cleaned : value;
   };
 
-  // Helper function to format display values (for view mode)
   const formatDisplayValue = (value: any, field: FieldConfig): string => {
     if (!value) return "Não informado";
 
@@ -615,7 +613,6 @@ export default function DetailsAluno({
       onUpdate?.();
       setEditMode(false);
     } catch (error: any) {
-      console.error("Error updating student:", error);
       alert("Erro ao atualizar aluno: " + error.message);
     }
   };
@@ -640,7 +637,6 @@ export default function DetailsAluno({
           onUpdate?.();
           close(false);
         } catch (error) {
-          console.error("Error deleting student:", error);
           setAreYouSure(null);
         }
       },
@@ -696,7 +692,6 @@ export default function DetailsAluno({
         window.location.href = url;
       }
     } catch (error) {
-      console.error("Error loading PDF:", error);
       alert("Erro ao carregar o PDF");
     }
   };
@@ -744,6 +739,7 @@ export default function DetailsAluno({
 
       {showPaymentHistory && (
         <PaymentHistoryModal
+          valorDevido={data.valorDevido}
           pagamentos={data.pagamento || []}
           alunoNome={data.nomeCompleto}
           onClose={() => setShowPaymentHistory(false)}
@@ -949,15 +945,13 @@ export default function DetailsAluno({
               </div>
             )}
           </div>
-          <div style={style.row}>
-            <div style={style.card}>
-              <h3 style={style.cardTitle}>
-                <span style={style.icon}>🏠</span>
-                Endereço
-              </h3>
-              <div style={style.fieldsGrid}>
-                {fieldGroups.endereco.map((field) => renderField(field))}
-              </div>
+          <div style={style.card}>
+            <h3 style={style.cardTitle}>
+              <span style={style.icon}>🏠</span>
+              Endereço
+            </h3>
+            <div style={style.fieldsGrid}>
+              {fieldGroups.endereco.map((field) => renderField(field))}
             </div>
           </div>
         </div>
@@ -1010,14 +1004,19 @@ function PaymentHistoryModal({
   pagamentos,
   alunoNome,
   onClose,
+  valorDevido,
 }: {
+  valorDevido: number;
   pagamentos: Pagamento[];
   alunoNome: string;
   onClose: () => void;
 }) {
-  useEffect(() => {
-    console.log(pagamentos);
-  }, []);
+  const [showNewPaymentModal, setShowNewPaymentModal] =
+    useState<boolean>(false);
+
+  const handlePaymentModal = () => {
+    setShowNewPaymentModal(!showNewPaymentModal);
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -1048,12 +1047,22 @@ function PaymentHistoryModal({
       <div style={style.paymentHistoryContainer}>
         <div style={style.paymentHistoryHeader}>
           <div>
-            <h2 style={style.paymentHistoryTitle}>Histórico de Pagamentos</h2>
+            <h2 style={style.paymentHistoryTitle}>
+              Histórico de Pagamentos | Valor devido: R${valorDevido}
+            </h2>
             <p style={style.paymentHistorySubtitle}>{alunoNome}</p>
           </div>
-          <button onClick={onClose} style={style.paymentHistoryCloseButton}>
-            <X size={24} />
-          </button>
+          <div style={{ flexDirection: "row", display: "flex", gap: 8 }}>
+            <button
+              onClick={handlePaymentModal}
+              style={style.paymentHistoryCloseButton}
+            >
+              <PlusIcon size={24} />
+            </button>
+            <button onClick={onClose} style={style.paymentHistoryCloseButton}>
+              <X size={24} />
+            </button>
+          </div>
         </div>
 
         <div style={style.paymentHistoryContent}>
@@ -1109,6 +1118,11 @@ function PaymentHistoryModal({
           )}
         </div>
       </div>
+      {showNewPaymentModal && (
+        <div style={style.paymentNewModalOverlay}>
+          <PagamentoManual onClose={handlePaymentModal} showClose={true} />
+        </div>
+      )}
     </div>
   );
 }
@@ -1477,7 +1491,7 @@ const style = StyleSheet.create({
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 1002,
+    zIndex: 15,
     backdropFilter: "blur(8px)",
     padding: "1rem",
   },
@@ -1486,12 +1500,11 @@ const style = StyleSheet.create({
     borderRadius: "16px",
     border: `1px solid ${Colors.border}`,
     boxShadow: "0 20px 60px rgba(0, 0, 0, 0.4)",
-    maxWidth: "700px",
     width: "90vw",
-    maxHeight: "85vh",
+    minHeight: "85vh",
     display: "flex",
     flexDirection: "column",
-    overflow: "hidden",
+    overflowY: "auto",
   },
   paymentHistoryHeader: {
     padding: "1.5rem 2rem",
@@ -1634,5 +1647,17 @@ const style = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.1)",
     borderRadius: "6px",
     borderLeft: `3px solid ${Colors.borderFocus}`,
+  },
+  paymentNewModalOverlay: {
+    position: "fixed",
+    inset: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 18,
+    backdropFilter: "blur(8px)",
+    padding: "1rem",
+    width: "100vw",
   },
 });

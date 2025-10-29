@@ -4,8 +4,15 @@ import { StyleSheet } from "../../Utils/Stylesheet";
 import Colors from "../../Utils/Colors";
 import DynamicForm from "../CreationForm/DynamicForm";
 import GenericSearcher from "../Home/GenericSearcher";
+import { XIcon } from "@phosphor-icons/react";
 
-export default function PagamentoManual({}: {}) {
+export default function PagamentoManual({
+  onClose,
+  showClose,
+}: {
+  onClose?: () => void;
+  showClose: boolean;
+}) {
   const [alunos, setAlunos] = useState<Array<Aluno> | null>(null);
   const [selectedAluno, setSelected] = useState<Aluno | null>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -20,10 +27,6 @@ export default function PagamentoManual({}: {}) {
 
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
-
-  useEffect(() => {
-    console.log("alunos atualizado:", alunos);
-  }, [alunos]);
 
   const handleGetRespWithAluno = async (nomeAluno: string) => {
     try {
@@ -158,6 +161,11 @@ export default function PagamentoManual({}: {}) {
     <div style={styles.mainContainer}>
       <div style={styles.header}>
         <h3 style={styles.title}>Pagamento Manual</h3>
+        {showClose && (
+          <button style={style.closeButton} onClick={onClose}>
+            <XIcon size={22} />
+          </button>
+        )}
       </div>
 
       <div style={styles.content}>
@@ -238,6 +246,9 @@ const style = StyleSheet.create({
     marginBottom: 20,
     paddingBottom: 15,
     borderBottom: `2px solid ${Colors.border}`,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   title: {
     color: Colors.text,
@@ -323,6 +334,20 @@ const style = StyleSheet.create({
     fontSize: 14,
     fontWeight: 500,
     transition: "opacity 0.2s",
+  },
+  closeButton: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "2.5rem",
+    height: "2.5rem",
+    backgroundColor: "rgba(0, 0, 0, 0.1)",
+    border: `1px solid ${Colors.border}`,
+    borderRadius: "10px",
+    color: Colors.textMuted,
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    flexShrink: 0,
   },
 });
 

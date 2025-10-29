@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { StyleSheet } from "../Utils/Stylesheet";
 import TurmaTable from "../Components/Turma/TurmaTable";
 import DynamicForm from "../Components/CreationForm/DynamicForm";
 import type { FieldConfig } from "../Utils/Types";
 import Colors from "../Utils/Colors";
+import { XIcon } from "@phosphor-icons/react";
 
 export default function Turmas() {
   const [turmas, setTurmas] = useState(null);
+  const [filiais, setFiliais] = useState<{ id: number; nome: string }[]>([]);
   const [refresh, setRefresh] = useState<boolean>(false);
   const [showForm, setShowForm] = useState<boolean>(false);
   const [editForm, setEditForm] = useState<boolean>(false);
@@ -32,59 +34,89 @@ export default function Turmas() {
     getTurmas();
   }, [refresh]);
 
-  const turmaFields: FieldConfig[] = [
-    {
-      name: "codigoTurma",
-      placeholder: "Código da Turma",
-      type: "TEXT",
-      required: true,
-    },
-    {
-      name: "nome",
-      placeholder: "Nome da Turma",
-      type: "TEXT",
-      required: true,
-    },
-    {
-      name: "descricao",
-      placeholder: "Descrição",
-      type: "TEXT",
-      required: false,
-    },
-    {
-      name: "diaSemana",
-      placeholder: "Dias da Semana",
-      type: "CHECKBOXGROUP",
-      required: true,
-      options: [
-        { label: "Segunda-feira", value: "MONDAY" },
-        { label: "Terça-feira", value: "TUESDAY" },
-        { label: "Quarta-feira", value: "WEDNESDAY" },
-        { label: "Quinta-feira", value: "THURSDAY" },
-        { label: "Sexta-feira", value: "FRIDAY" },
-        { label: "Sábado", value: "SATURDAY" },
-        { label: "Domingo", value: "SUNDAY" },
-      ],
-    },
-    {
-      name: "horaInicio",
-      placeholder: "Hora de Início",
-      type: "TIME",
-      required: true,
-    },
-    {
-      name: "horaTermino",
-      placeholder: "Hora de Término",
-      type: "TIME",
-      required: true,
-    },
-    {
-      name: "local",
-      placeholder: "Local",
-      type: "TEXT",
-      required: true,
-    },
-  ];
+  useEffect(() => {
+    const getFiliais = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/filiais/all`,
+          { credentials: "include" }
+        );
+        if (!response.ok) throw new Error("Erro ao pegar filiais");
+        const data = await response.json();
+        setFiliais(data.filiais || []);
+      } catch (error) {
+        console.error("Error fetching filiais:", error);
+      }
+    };
+    getFiliais();
+  }, []);
+
+  const turmaFields: FieldConfig[] = useMemo(
+    () => [
+      {
+        name: "codigoTurma",
+        placeholder: "Código da Turma",
+        type: "TEXT",
+        required: true,
+      },
+      {
+        name: "nome",
+        placeholder: "Nome da Turma",
+        type: "TEXT",
+        required: true,
+      },
+      {
+        name: "descricao",
+        placeholder: "Descrição",
+        type: "TEXT",
+        required: false,
+      },
+      {
+        name: "filialId",
+        placeholder: "Filial",
+        type: "SELECT",
+        required: true,
+        options: filiais.map((filial) => ({
+          label: filial.nome,
+          value: filial.id,
+        })),
+      },
+      {
+        name: "diaSemana",
+        placeholder: "Dias da Semana",
+        type: "CHECKBOXGROUP",
+        required: true,
+        options: [
+          { label: "Segunda-feira", value: "MONDAY" },
+          { label: "Terça-feira", value: "TUESDAY" },
+          { label: "Quarta-feira", value: "WEDNESDAY" },
+          { label: "Quinta-feira", value: "THURSDAY" },
+          { label: "Sexta-feira", value: "FRIDAY" },
+          { label: "Sábado", value: "SATURDAY" },
+          { label: "Domingo", value: "SUNDAY" },
+        ],
+      },
+      {
+        name: "horaInicio",
+        placeholder: "Hora de Início",
+        type: "TIME",
+        required: true,
+      },
+      {
+        name: "horaTermino",
+        placeholder: "Hora de Término",
+        type: "TIME",
+        required: true,
+      },
+      {
+        name: "local",
+        placeholder: "Local",
+        type: "TEXT",
+        required: true,
+      },
+    ],
+    [filiais]
+  );
 
   const handleCreateTurma = async (formData: Record<string, any>) => {
     try {
@@ -92,6 +124,7 @@ export default function Turmas() {
         codigoTurma: formData.codigoTurma,
         nome: formData.nome,
         descricao: formData.descricao || "",
+        filialId: formData.filialId ? Number(formData.filialId) : null,
         diaSemana: formData.diaSemana,
         horaInicio: formData.horaInicio ? `${formData.horaInicio}:00` : null,
         horaTermino: formData.horaTermino ? `${formData.horaTermino}:00` : null,
@@ -137,6 +170,7 @@ export default function Turmas() {
         codigoTurma: formData.codigoTurma,
         nome: formData.nome,
         descricao: formData.descricao || "",
+        filialId: formData.filialId ? Number(formData.filialId) : null,
         diaSemana: formData.diaSemana,
         horaInicio: formData.horaInicio ? formData.horaInicio : null,
         horaTermino: formData.horaTermino ? formData.horaTermino : null,
@@ -185,6 +219,13 @@ export default function Turmas() {
 
       {showForm && (
         <div style={style.formOverlay}>
+          <button
+            onClick={() => setShowForm(false)}
+            style={style.closeButton}
+            aria-label="Fechar"
+          >
+            <XIcon size={22} />
+          </button>
           <div style={style.formContainer}>
             <DynamicForm
               onSubmit={handleCreateTurma}
@@ -216,6 +257,13 @@ export default function Turmas() {
 
           return (
             <div style={style.formOverlay}>
+              <button
+                onClick={() => setEditForm(false)}
+                style={style.closeButton}
+                aria-label="Fechar"
+              >
+                <XIcon size={22} />
+              </button>
               <div style={style.formContainer}>
                 <DynamicForm
                   onSubmit={handleEditTurma}
@@ -287,5 +335,27 @@ const style = StyleSheet.create({
     width: "100%",
     minHeight: "50vh",
     overflow: "auto",
+  },
+  closeButton: {
+    position: "absolute",
+    top: "20px",
+    right: "20px",
+    backgroundColor: Colors.surface,
+    border: `1px solid ${Colors.border}`,
+    borderRadius: "50%",
+    width: "40px",
+    height: "40px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    color: Colors.text,
+    transition: "all 0.2s ease",
+    zIndex: 1001,
+    ":hover": {
+      backgroundColor: Colors.primary,
+      color: Colors.black,
+      transform: "scale(1.1)",
+    },
   },
 });
