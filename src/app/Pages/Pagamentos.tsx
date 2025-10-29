@@ -29,11 +29,15 @@ export default function Pagamentos() {
           onClick={() => setShowManual(!showManual)}
         >
           {showManual
-            ? isMobile ? "Ocultar" : "Ocultar Pagamento Manual"
-            : isMobile ? "Pagar" : "Realizar Pagamento Manual"}
+            ? isMobile
+              ? "Ocultar"
+              : "Ocultar Pagamento Manual"
+            : isMobile
+            ? "Pagar"
+            : "Realizar Pagamento Manual"}
         </button>
       </div>
-      {showManual && <PagamentoManual />}
+      {showManual && <PagamentoManual showClose={false} />}
     </div>
   );
 }
