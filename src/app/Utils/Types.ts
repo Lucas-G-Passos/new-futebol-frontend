@@ -81,6 +81,7 @@ export interface Aluno {
   valorFatura: number;
   valorDevido: number;
   dataPagamento: Date;
+  turmaNome: string;
 
   [key: string]: any;
 }
@@ -142,4 +143,10 @@ export interface Pagamento {
   metodoPagamento: "DINHEIRO" | "PIX" | "CARTAO";
   isAutomatized: boolean;
   observacao: string;
+}
+
+export interface ConciliacaoResponse {
+  alunosToUpdate: Aluno[];
+  pagamentosToCreate: Pagamento[];
+  failedFields: Map<String, String>;
 }

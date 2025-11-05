@@ -93,7 +93,12 @@ export default function DynamicForm({
     let value = rawValue;
     let errorMsg = "";
 
-    if (mask && typeof rawValue === "string") {
+    if (mask === "numberOnly" && typeof rawValue === "string") {
+      value = rawValue.replace(/[^0-9.,]/g, "");
+      if (value !== rawValue) {
+        errorMsg = "Apenas números são permitidos";
+      }
+    } else if (mask && typeof rawValue === "string") {
       const digits = rawValue.replace(/\D/g, "");
       value = applyMask(digits, mask);
 
@@ -103,37 +108,36 @@ export default function DynamicForm({
       }
     }
 
+    if (name === "dataPagamento") {
+      const num = parseInt(value, 10);
+      if (isNaN(num) || num < 1 || num > 31) {
+        errorMsg = "Dia deve estar entre 1 e 31";
+      }
+    }
+
     setFormState((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: errorMsg }));
 
-    // If the user is typing the CEP, debounce a lookup and autofill address fields
     if (name === "cep" && typeof value === "string") {
       const digits = value.replace(/\D/g, "");
-
-      // clear existing timer
       if (cepTimerRef.current) {
         window.clearTimeout(cepTimerRef.current);
         cepTimerRef.current = null;
       }
-
       if (digits.length >= 8) {
-        // debounce API call by 500ms
         cepTimerRef.current = window.setTimeout(async () => {
           try {
             const res = await fetch(`https://opencep.com/v1/${digits}.json`);
             if (!res.ok) throw new Error("CEP não encontrado");
             const data: any = await res.json();
-
-            // Map API fields to our form fields: logradouro -> rua, localidade -> cidade, uf -> estado
             setFormState((prev) => ({
               ...prev,
               rua: data.logradouro ?? prev.rua,
               cidade: data.localidade ?? prev.cidade,
               estado: data.uf ?? prev.estado,
             }));
-
             setErrors((prev) => ({ ...prev, cep: "" }));
-          } catch (err: any) {
+          } catch {
             setErrors((prev) => ({ ...prev, cep: "CEP não encontrado" }));
           } finally {
             cepTimerRef.current = null;
@@ -198,7 +202,12 @@ export default function DynamicForm({
           }
         }
 
-        if (field.mask && value && typeof value === "string") {
+        if (
+          field.mask &&
+          field.mask !== "numberOnly" &&
+          value &&
+          typeof value === "string"
+        ) {
           const regex = maskToRegex(field.mask);
           if (!regex.test(value)) {
             newErrors[field.name] = "Formato inválido";
@@ -230,7 +239,11 @@ export default function DynamicForm({
 
         if (value instanceof File) {
           data.append(key, value);
-        } else if (fieldConfig?.mask && typeof value === "string") {
+        } else if (
+          fieldConfig?.mask &&
+          fieldConfig.mask !== "numberOnly" &&
+          typeof value === "string"
+        ) {
           const cleanedValue = cleanValueForSubmission(value, fieldConfig.mask);
           data.append(key, cleanedValue);
         } else if (Array.isArray(value)) {
@@ -259,7 +272,11 @@ export default function DynamicForm({
         // Skip undefined values
         if (value === undefined) continue;
 
-        if (fieldConfig?.mask && typeof value === "string") {
+        if (
+          fieldConfig?.mask &&
+          fieldConfig.mask !== "numberOnly" &&
+          typeof value === "string"
+        ) {
           jsonData[key] = cleanValueForSubmission(value, fieldConfig.mask);
         } else {
           jsonData[key] = value;
@@ -419,8 +436,10 @@ export default function DynamicForm({
           case "TEXTIFCHECKBOXOK":
             const checkboxStateName = `${field.name}_enabled`;
             const isCheckboxChecked = !!formState[checkboxStateName];
-            const checkboxLabel = field.ifCheckboxOk?.checkBoxLabel || field.placeholder;
-            const inputRequired = field.ifCheckboxOk?.required || field.required;
+            const checkboxLabel =
+              field.ifCheckboxOk?.checkBoxLabel || field.placeholder;
+            const inputRequired =
+              field.ifCheckboxOk?.required || field.required;
             const inputMask = field.ifCheckboxOk?.mask || field.mask;
 
             return (
@@ -437,7 +456,11 @@ export default function DynamicForm({
                           ...prev,
                           [checkboxStateName]: checked,
                           // Limpa o valor quando desmarca
-                          [field.name]: checked ? prev[field.name] || field.ifCheckboxOk?.defaultValue || "" : undefined,
+                          [field.name]: checked
+                            ? prev[field.name] ||
+                              field.ifCheckboxOk?.defaultValue ||
+                              ""
+                            : undefined,
                         }));
                       }}
                       style={style.checkbox}
@@ -453,7 +476,9 @@ export default function DynamicForm({
                       type="text"
                       placeholder={field.placeholder}
                       value={formState[field.name] ?? ""}
-                      onChange={(e) => handleChange(field.name, e.target.value, inputMask)}
+                      onChange={(e) =>
+                        handleChange(field.name, e.target.value, inputMask)
+                      }
                       style={{
                         ...style.input,
                         borderColor: error
@@ -468,7 +493,13 @@ export default function DynamicForm({
                       onMouseEnter={() => setHoveredField(true)}
                       onMouseLeave={() => setHoveredField(false)}
                     />
-                    {inputRequired && <span style={{ color: "red", fontSize: 12, marginLeft: 4 }}>*</span>}
+                    {inputRequired && (
+                      <span
+                        style={{ color: "red", fontSize: 12, marginLeft: 4 }}
+                      >
+                        *
+                      </span>
+                    )}
                   </div>
                 )}
                 {error && <span style={style.error}>{error}</span>}

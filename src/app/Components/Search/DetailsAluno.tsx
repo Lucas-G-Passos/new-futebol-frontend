@@ -14,6 +14,7 @@ import {
 } from "@phosphor-icons/react";
 import type { Pagamento } from "../../Utils/Types";
 import PagamentoManual from "../Pagamentos/pagManual";
+import AdicionarDivida from "../Pagamentos/AdicionarDivida";
 
 function escapeForRegex(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -343,6 +344,11 @@ export default function DetailsAluno({
 
   const formatDisplayValue = (value: any, field: FieldConfig): string => {
     if (!value) return "Não informado";
+
+    // Special handling for turmaId - display turma name instead
+    if (field.name === "turmaId") {
+      return (data as any).turmaNome || "Não informado";
+    }
 
     switch (field.type) {
       case "DATE":
@@ -743,6 +749,7 @@ export default function DetailsAluno({
           pagamentos={data.pagamento || []}
           alunoNome={data.nomeCompleto}
           onClose={() => setShowPaymentHistory(false)}
+          aluno={data}
         />
       )}
 
@@ -1005,17 +1012,24 @@ function PaymentHistoryModal({
   alunoNome,
   onClose,
   valorDevido,
+  aluno,
 }: {
   valorDevido: number;
   pagamentos: Pagamento[];
   alunoNome: string;
+  aluno?: Aluno;
   onClose: () => void;
 }) {
   const [showNewPaymentModal, setShowNewPaymentModal] =
     useState<boolean>(false);
+  const [showDividaModal, setShowDividaModal] = useState<boolean>(false);
 
   const handlePaymentModal = () => {
     setShowNewPaymentModal(!showNewPaymentModal);
+  };
+
+  const handleDividaModal = () => {
+    setShowDividaModal(!showDividaModal);
   };
 
   const formatCurrency = (value: number) => {
@@ -1057,6 +1071,14 @@ function PaymentHistoryModal({
               onClick={handlePaymentModal}
               style={style.paymentHistoryCloseButton}
             >
+              Novo Pagamento
+              <PlusIcon size={24} />
+            </button>
+            <button
+              onClick={handleDividaModal}
+              style={style.paymentHistoryCloseButton}
+            >
+              Nova Dívida
               <PlusIcon size={24} />
             </button>
             <button onClick={onClose} style={style.paymentHistoryCloseButton}>
@@ -1120,7 +1142,20 @@ function PaymentHistoryModal({
       </div>
       {showNewPaymentModal && (
         <div style={style.paymentNewModalOverlay}>
-          <PagamentoManual onClose={handlePaymentModal} showClose={true} />
+          <PagamentoManual
+            onClose={handlePaymentModal}
+            showClose={true}
+            defaultAluno={aluno}
+          />
+        </div>
+      )}
+      {showDividaModal && (
+        <div style={style.paymentNewModalOverlay}>
+          <AdicionarDivida
+            onClose={handleDividaModal}
+            showClose={true}
+            defaultAluno={aluno}
+          />
         </div>
       )}
     </div>
@@ -1530,7 +1565,7 @@ const style = StyleSheet.create({
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    width: "2.5rem",
+    minWidth: "2.5rem",
     height: "2.5rem",
     backgroundColor: "rgba(0, 0, 0, 0.1)",
     border: `1px solid ${Colors.border}`,
@@ -1539,6 +1574,7 @@ const style = StyleSheet.create({
     cursor: "pointer",
     transition: "all 0.2s ease",
     flexShrink: 0,
+    gap: 4,
   },
   paymentHistoryContent: {
     flex: 1,

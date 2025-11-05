@@ -6,7 +6,7 @@ import DynamicForm from "../CreationForm/DynamicForm";
 import GenericSearcher from "../Home/GenericSearcher";
 import { XIcon } from "@phosphor-icons/react";
 
-export default function PagamentoManual({
+export default function AdicionarDivida({
   onClose,
   showClose,
   defaultAluno,
@@ -67,48 +67,6 @@ export default function PagamentoManual({
     setSelected(null);
   };
 
-  const handleSubmit = async (formData: Record<string, any>) => {
-    if (!selectedAluno) {
-      alert("Por favor, selecione um aluno");
-      return;
-    }
-
-    try {
-      const pagamentoData = {
-        dataPagamento: new Date(formData.dataPago).toISOString().split("T")[0],
-        valorPagamento: formData.valorPago,
-        metodoPagamento: formData.metodoPagamento,
-        isAutomatized: false,
-        observacao: formData.observacao,
-
-        comprovanteCpf: selectedAluno.responsavel?.cpf,
-        nomeResponsavel: formData.nomeResponsavel,
-        responsavelId: selectedAluno.responsavel?.id,
-      };
-
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/pagamentos`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(pagamentoData),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Erro ao registrar pagamento");
-      }
-
-      alert("Pagamento registrado com sucesso!");
-      setSelected(null);
-    } catch (error: any) {
-      alert(error.message);
-    }
-  };
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (value.length >= 3) {
@@ -121,38 +79,21 @@ export default function PagamentoManual({
   const fields = useMemo<FieldConfig[]>(
     () => [
       {
-        name: "nomeResponsavel",
-        placeholder: "Nome do Pagador",
+        name: "nomeAluno",
+        placeholder: "Nome do Aluno",
         type: "TEXT",
         required: true,
-        defaultValue: selectedAluno?.responsavel?.nomeCompleto || "",
+        defaultValue: selectedAluno?.nomeCompleto || null,
       },
       {
-        name: "dataPago",
-        placeholder: "Data do Pagamento",
-        type: "DATE",
-        required: true,
-      },
-      {
-        name: "valorPago",
-        placeholder: "Valor do Pagamento",
+        name: "divida",
+        placeholder: "Valor da Dívida",
         type: "NUMBER",
         required: true,
       },
       {
-        name: "metodoPagamento",
-        placeholder: "Metodo de pagamento",
-        type: "SELECT",
-        required: true,
-        options: [
-          { label: "Cartão", value: "CARTAO" },
-          { label: "PIX", value: "PIX" },
-          { label: "Dinheiro", value: "DINHEIRO" },
-        ],
-      },
-      {
         name: "observacao",
-        placeholder: "Observação",
+        placeholder: "Observação/Razão",
         type: "TEXT",
         required: true,
       },
@@ -160,12 +101,47 @@ export default function PagamentoManual({
     [selectedAluno]
   );
 
+  const handleSubmit = async (formData: Record<string, any>) => {
+    if (!selectedAluno) {
+      alert("Por favor, selecione um aluno");
+      return;
+    }
+
+    try {
+      const data = {
+        id: selectedAluno.id,
+        divida: formData.divida,
+        observacao: formData.observacao,
+      };
+
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/pagamentos/divida`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(data),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Erro ao registrar dívida");
+      }
+      alert("Dívida registrada com sucesso!");
+      setSelected(null);
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
+
   const styles = isMobile ? mobileStyle : style;
 
   return (
     <div style={styles.mainContainer}>
       <div style={styles.header}>
-        <h3 style={styles.title}>Pagamento Manual</h3>
+        <h3 style={styles.title}>Adicionar dívida</h3>
         {showClose && (
           <button style={style.closeButton} onClick={onClose}>
             <XIcon size={22} />
@@ -176,7 +152,7 @@ export default function PagamentoManual({
       <div style={styles.content}>
         <div>
           <DynamicForm
-            title="Dados do Pagamento"
+            title="Dados da dívida"
             sendAs="JSON"
             onSubmit={handleSubmit}
             fields={fields}
