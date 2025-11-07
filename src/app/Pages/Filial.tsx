@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { StyleSheet } from "../Utils/Stylesheet";
 import FilialTable from "../Components/Filial/FilialTable";
 import DynamicForm from "../Components/CreationForm/DynamicForm";
-import type { FieldConfig } from "../Utils/Types";
+import type { FieldConfig, Filial } from "../Utils/Types";
 import Colors from "../Utils/Colors";
+import mockAPI from "../Utils/mockData";
 
 export default function Filial() {
-  const [filiais, setFiliais] = useState(null);
+  const [filiais, setFiliais] = useState<{ filiais: Filial[] } | null>(null);
   const [refresh, setRefresh] = useState<boolean>(false);
   const [showForm, setShowForm] = useState<boolean>(false);
   const [editForm, setEditForm] = useState<boolean>(false);
@@ -18,12 +19,7 @@ export default function Filial() {
   useEffect(() => {
     const getFiliais = async () => {
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/filiais/all`,
-          { credentials: "include" }
-        );
-        if (!response.ok) throw new Error("Erro ao pegar filiais");
-        const data = await response.json();
+        const data = await mockAPI.getAllFiliais();
         setFiliais(data);
       } catch (error) {
         alert(error);
@@ -85,24 +81,7 @@ export default function Filial() {
 
       console.log("Creating filial:", filialData);
 
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/filiais`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(filialData),
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Erro ao criar filial");
-      }
-
-      const result = await response.json();
+      const result = await mockAPI.createFilial(filialData);
       console.log("Filial created:", result);
 
       setShowForm(false);
@@ -125,22 +104,7 @@ export default function Filial() {
         estado: formData.estado,
       };
 
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/filiais?id=${formData.id}`,
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(filialData),
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Erro ao editar filial");
-      }
+      await mockAPI.updateFilial(formData.id, filialData);
 
       console.log(filialData);
       setEditForm(false);

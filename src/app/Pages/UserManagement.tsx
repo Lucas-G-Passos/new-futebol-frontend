@@ -4,6 +4,7 @@ import { StyleSheet } from "../Utils/Stylesheet";
 import { type FieldConfig, type User } from "../Utils/Types";
 import DynamicForm from "../Components/CreationForm/DynamicForm";
 import Colors from "../Utils/Colors";
+import mockAPI from "../Utils/mockData";
 
 const fields: FieldConfig[] = [
   {
@@ -80,23 +81,7 @@ export default function UserManagement() {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/user/all`,
-          { credentials: "include" }
-        );
-        if (!response.ok) throw new Error("Erro ao pegar usuários");
-        const data = await response.json();
-
-        // const func = await fetch(
-        //   `${import.meta.env.VITE_BACKEND_URL}/funcionarios/all`,
-        //   { credentials: "include" }
-        // );
-
-        // if (!func.ok) throw new Error("Erro ao pegar funcionários");
-
-        // const funcData = await func.json();
-
-        // setFuncionarios(funcData);
+        const data = await mockAPI.getAllUsers();
         setUsers(data);
       } catch (e) {
         alert(e);
@@ -115,22 +100,7 @@ export default function UserManagement() {
       };
       console.log("Userdata: " + userData);
 
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/user/create`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(userData),
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Erro ao criar usuário");
-      }
-
-      const result = await response.json();
+      const result = await mockAPI.createUser(userData);
 
       console.log("Usuario Criado!" + result);
 
@@ -155,22 +125,7 @@ export default function UserManagement() {
         funcionarioId: formData.funcionarioId,
       };
 
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/user/update`,
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(userData),
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Erro ao editar usuário");
-      }
+      await mockAPI.updateUser(userData);
 
       console.log("User edit data prepared:", userData);
 

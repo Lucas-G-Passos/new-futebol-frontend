@@ -3,6 +3,7 @@ import { StyleSheet } from "../../Utils/Stylesheet";
 import { type ConciliacaoResponse, type Aluno } from "../../Utils/Types";
 import Colors from "../../Utils/Colors";
 import DetailsAluno from "../Search/DetailsAluno";
+import mockAPI from "../../Utils/mockData";
 
 export default function Conciliacao() {
   const [file, setFile] = useState<Blob | null>(null);
@@ -40,7 +41,6 @@ export default function Conciliacao() {
     try {
       let isCard: boolean = false;
       let isPix: boolean = false;
-      let response: Response | undefined;
 
       if (!file) {
         alert("Por favor, selecione um arquivo CSV antes de enviar.");
@@ -52,33 +52,18 @@ export default function Conciliacao() {
         isCard = true;
       else isPix = true;
 
-      const formdata = new FormData();
-      formdata.append("file", file);
-
       if (isCard) {
-        response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/pagamentos/conciliacao/cartao`,
-          {
-            method: "POST",
-            credentials: "include",
-            body: formdata,
-          }
-        );
+        const result = await mockAPI.conciliacaoCartao(file as File);
+        setData(result);
       } else if (isPix) {
-        response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/pagamentos/conciliacao/pix`,
-          {
-            method: "POST",
-            credentials: "include",
-            body: formdata,
-          }
-        );
+        const result = await mockAPI.conciliacaoPix(file as File);
+        setData(result);
       } else {
         throw new Error("Erro ao identificar tipo de arquivo");
       }
 
-      if (!response.ok) {
-        const errorText = await response.text();
+      if (false) { // Mock API always succeeds
+        const errorText = '';
 
         if (errorText.includes("não é um csv")) {
           throw new Error("O arquivo enviado não é um CSV válido.");
@@ -94,10 +79,6 @@ export default function Conciliacao() {
           throw new Error(errorText || "Erro ao enviar arquivo");
         }
       }
-
-      const data = await response.json();
-      console.log(data);
-      setData(data);
     } catch (error: any) {
       alert(error.message);
     }

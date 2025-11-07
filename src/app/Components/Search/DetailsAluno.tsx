@@ -17,6 +17,7 @@ import type { Pagamento } from "../../Utils/Types";
 import PagamentoManual from "../Pagamentos/pagManual";
 import AdicionarDivida from "../Pagamentos/AdicionarDivida";
 import Calendar from "./Calendar/Calendar";
+import mockAPI from "../../Utils/mockData";
 
 function escapeForRegex(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -602,19 +603,17 @@ export default function DetailsAluno({
         })
       );
 
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/alunos`,
-        {
-          method: "PATCH",
-          credentials: "include",
-          body: formData,
+      // Convert FormData to object for mockAPI
+      const alunoUpdateData: any = {};
+      formData.forEach((value, key) => {
+        if (key !== "dto") {
+          alunoUpdateData[key] = value;
         }
-      );
+      });
+      // Merge with the structured alunoData
+      Object.assign(alunoUpdateData, alunoData);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || `HTTP error! status: ${response.status}`);
-      }
+      await mockAPI.updateAluno(alunoUpdateData);
 
       alert("Aluno atualizado com sucesso!");
       onUpdate?.();
@@ -631,15 +630,7 @@ export default function DetailsAluno({
       options: ["Cancelar", "Excluir"],
       onConfirm: async () => {
         try {
-          await fetch(
-            `${import.meta.env.VITE_BACKEND_URL}/alunos?id=${encodeURIComponent(
-              data.id
-            )}`,
-            {
-              method: "DELETE",
-              credentials: "include",
-            }
-          );
+          await mockAPI.deleteAluno(data.id);
           setAreYouSure(null);
           onUpdate?.();
           close(false);
@@ -675,18 +666,7 @@ export default function DetailsAluno({
   };
   const handlePdf = async (id: number) => {
     try {
-      const response = await fetch(
-        `${
-          import.meta.env.VITE_BACKEND_URL
-        }/alunos/contrato?id=${encodeURIComponent(id)}`,
-        { credentials: "include" }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch PDF");
-      }
-
-      const blob = await response.blob();
+      const blob = await mockAPI.getContratoBlob(id);
       const url = URL.createObjectURL(blob);
 
       const newWindow = window.open(url, "_blank");
@@ -1029,7 +1009,9 @@ function PaymentHistoryModal({
     useState<boolean>(false);
   const [showDividaModal, setShowDividaModal] = useState<boolean>(false);
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
-  const [selectedPagamento, setSelectedPagamento] = useState<Pagamento | null>(null);
+  const [selectedPagamento, setSelectedPagamento] = useState<Pagamento | null>(
+    null
+  );
 
   const handlePaymentModal = () => {
     setShowNewPaymentModal(!showNewPaymentModal);
@@ -1184,19 +1166,42 @@ function PaymentHistoryModal({
         </div>
       )}
 
-      {showCalendar && aluno?.dataMatricula && aluno?.intervalosInadimplencia && (
-        <div style={style.paymentNewModalOverlay}>
-          <Calendar
-            startDate={aluno.dataMatricula}
-            intervalos={aluno.intervalosInadimplencia}
-            eventos={mapPagamentosToEventos(pagamentos)}
-          />
-        </div>
-      )}
+      {showCalendar &&
+        aluno?.dataMatricula &&
+        aluno?.intervalosInadimplencia && (
+          <div
+            style={style.paymentNewModalOverlay}
+            onClick={() => setShowCalendar(false)}
+          >
+            <button
+              onClick={() => setShowCalendar(false)}
+              style={style.calendarCloseButton}
+              aria-label="Fechar calendário"
+            >
+              <X size={24} weight="bold" />
+            </button>
+            <div
+              style={style.calendarModalContainer}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Calendar
+                startDate={aluno.dataMatricula}
+                intervalos={aluno.intervalosInadimplencia}
+                eventos={mapPagamentosToEventos(pagamentos)}
+              />
+            </div>
+          </div>
+        )}
 
       {selectedPagamento && (
-        <div style={style.paymentNewModalOverlay} onClick={() => setSelectedPagamento(null)}>
-          <div style={style.paymentDetailsModal} onClick={(e) => e.stopPropagation()}>
+        <div
+          style={style.paymentNewModalOverlay}
+          onClick={() => setSelectedPagamento(null)}
+        >
+          <div
+            style={style.paymentDetailsModal}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div style={style.paymentDetailsHeader}>
               <h3 style={{ margin: 0, fontSize: "1.2rem", color: Colors.text }}>
                 Detalhes do Pagamento
@@ -1222,11 +1227,15 @@ function PaymentHistoryModal({
                 </span>
               </div>
               <div style={style.paymentDetailRow}>
-                <span style={style.paymentDetailLabel}>Método de Pagamento:</span>
+                <span style={style.paymentDetailLabel}>
+                  Método de Pagamento:
+                </span>
                 <span
                   style={{
                     ...style.methodBadge,
-                    backgroundColor: getMethodBadgeColor(selectedPagamento.metodoPagamento),
+                    backgroundColor: getMethodBadgeColor(
+                      selectedPagamento.metodoPagamento
+                    ),
                   }}
                 >
                   {selectedPagamento.metodoPagamento}
@@ -1621,6 +1630,8 @@ const style = StyleSheet.create({
     zIndex: 15,
     backdropFilter: "blur(8px)",
     padding: "1rem",
+    paddingTop: "65rem",
+    overflow: "auto",
   },
   paymentHistoryContainer: {
     backgroundColor: Colors.surface,
@@ -1782,20 +1793,45 @@ const style = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.85)",
     display: "flex",
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "flex-start",
     zIndex: 18,
     backdropFilter: "blur(8px)",
-    padding: "1rem",
+    padding: "2rem 1rem",
     width: "100vw",
+    height: "100vh",
+    overflow: "auto",
+    boxSizing: "border-box",
   },
   paymentDetailsModal: {
     backgroundColor: Colors.surface,
     borderRadius: "12px",
     padding: "1.5rem",
-    maxWidth: "500px",
     width: "90%",
     boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
     border: `1px solid ${Colors.borderLight}`,
+  },
+  calendarModalContainer: {
+    position: "relative",
+    width: "90%",
+    marginTop: "3rem",
+  },
+  calendarCloseButton: {
+    position: "fixed",
+    top: "2rem",
+    right: "2rem",
+    backgroundColor: Colors.surface,
+    border: `2px solid ${Colors.border}`,
+    borderRadius: "50%",
+    width: "48px",
+    height: "48px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    color: Colors.text,
+    transition: "all 0.2s ease",
+    zIndex: 20,
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
   },
   paymentDetailsHeader: {
     display: "flex",

@@ -5,6 +5,7 @@ import Colors from "../../Utils/Colors";
 import DynamicForm from "../CreationForm/DynamicForm";
 import GenericSearcher from "../Home/GenericSearcher";
 import { XIcon } from "@phosphor-icons/react";
+import mockAPI from "../../Utils/mockData";
 
 export default function PagamentoManual({
   onClose,
@@ -36,19 +37,7 @@ export default function PagamentoManual({
 
   const handleGetRespWithAluno = async (nomeAluno: string) => {
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/alunos/search?nome=${nomeAluno}`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Erro ao buscar aluno");
-      }
-
-      const data = await response.json();
+      const data = await mockAPI.searchAlunos(nomeAluno);
       setAlunos(data);
 
       console.log(alunos);
@@ -86,21 +75,7 @@ export default function PagamentoManual({
         responsavelId: selectedAluno.responsavel?.id,
       };
 
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/pagamentos`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(pagamentoData),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Erro ao registrar pagamento");
-      }
+      await mockAPI.createPagamento(pagamentoData);
 
       alert("Pagamento registrado com sucesso!");
       setSelected(null);

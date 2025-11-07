@@ -2,12 +2,13 @@ import { useEffect, useState, useMemo } from "react";
 import { StyleSheet } from "../Utils/Stylesheet";
 import TurmaTable from "../Components/Turma/TurmaTable";
 import DynamicForm from "../Components/CreationForm/DynamicForm";
-import type { FieldConfig } from "../Utils/Types";
+import type { FieldConfig, Turma } from "../Utils/Types";
 import Colors from "../Utils/Colors";
 import { XIcon } from "@phosphor-icons/react";
+import mockAPI from "../Utils/mockData";
 
 export default function Turmas() {
-  const [turmas, setTurmas] = useState(null);
+  const [turmas, setTurmas] = useState<{ turmas: Turma[] } | null>(null);
   const [filiais, setFiliais] = useState<{ id: number; nome: string }[]>([]);
   const [refresh, setRefresh] = useState<boolean>(false);
   const [showForm, setShowForm] = useState<boolean>(false);
@@ -20,13 +21,8 @@ export default function Turmas() {
   useEffect(() => {
     const getTurmas = async () => {
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/turmas/all`,
-          { credentials: "include" }
-        );
-        if (!response.ok) throw new Error("Erro ao pegar turmas");
-        const data = await response.json();
-        setTurmas(data); // Handle both response formats
+        const data = await mockAPI.getAllTurmas();
+        setTurmas(data);
       } catch (error) {
         alert(error);
       }
@@ -37,12 +33,7 @@ export default function Turmas() {
   useEffect(() => {
     const getFiliais = async () => {
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/filiais/all`,
-          { credentials: "include" }
-        );
-        if (!response.ok) throw new Error("Erro ao pegar filiais");
-        const data = await response.json();
+        const data = await mockAPI.getAllFiliais();
         setFiliais(data.filiais || []);
       } catch (error) {
         console.error("Error fetching filiais:", error);
@@ -124,33 +115,16 @@ export default function Turmas() {
         codigoTurma: formData.codigoTurma,
         nome: formData.nome,
         descricao: formData.descricao || "",
-        filialId: formData.filialId ? Number(formData.filialId) : null,
+        filialId: formData.filialId ? Number(formData.filialId) : undefined,
         diaSemana: formData.diaSemana,
-        horaInicio: formData.horaInicio ? `${formData.horaInicio}:00` : null,
-        horaTermino: formData.horaTermino ? `${formData.horaTermino}:00` : null,
+        horaInicio: formData.horaInicio ? `${formData.horaInicio}:00` : undefined,
+        horaTermino: formData.horaTermino ? `${formData.horaTermino}:00` : undefined,
         local: formData.local,
       };
 
       console.log("Creating turma:", turmaData);
 
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/turmas`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(turmaData),
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Erro ao criar turma");
-      }
-
-      const result = await response.json();
+      const result = await mockAPI.createTurma(turmaData);
       console.log("Turma created:", result);
 
       setShowForm(false);
@@ -170,27 +144,14 @@ export default function Turmas() {
         codigoTurma: formData.codigoTurma,
         nome: formData.nome,
         descricao: formData.descricao || "",
-        filialId: formData.filialId ? Number(formData.filialId) : null,
+        filialId: formData.filialId ? Number(formData.filialId) : undefined,
         diaSemana: formData.diaSemana,
-        horaInicio: formData.horaInicio ? formData.horaInicio : null,
-        horaTermino: formData.horaTermino ? formData.horaTermino : null,
+        horaInicio: formData.horaInicio ? formData.horaInicio : undefined,
+        horaTermino: formData.horaTermino ? formData.horaTermino : undefined,
         local: formData.local,
       };
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/turmas`,
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(turmaData),
-        }
-      );
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Erro ao editar turma");
-      }
+
+      await mockAPI.updateTurma(turmaData);
 
       console.log(turmaData);
       setEditForm(false);

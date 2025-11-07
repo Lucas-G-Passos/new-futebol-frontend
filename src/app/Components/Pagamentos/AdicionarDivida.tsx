@@ -5,6 +5,7 @@ import Colors from "../../Utils/Colors";
 import DynamicForm from "../CreationForm/DynamicForm";
 import GenericSearcher from "../Home/GenericSearcher";
 import { XIcon } from "@phosphor-icons/react";
+import mockAPI from "../../Utils/mockData";
 
 export default function AdicionarDivida({
   onClose,
@@ -36,19 +37,7 @@ export default function AdicionarDivida({
 
   const handleGetRespWithAluno = async (nomeAluno: string) => {
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/alunos/search?nome=${nomeAluno}`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Erro ao buscar aluno");
-      }
-
-      const data = await response.json();
+      const data = await mockAPI.searchAlunos(nomeAluno);
       setAlunos(data);
 
       console.log(alunos);
@@ -114,21 +103,8 @@ export default function AdicionarDivida({
         observacao: formData.observacao,
       };
 
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/pagamentos/divida`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(data),
-        }
-      );
+      await mockAPI.createDivida(data);
 
-      if (!response.ok) {
-        throw new Error("Erro ao registrar dívida");
-      }
       alert("Dívida registrada com sucesso!");
       setSelected(null);
     } catch (error: any) {

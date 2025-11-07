@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { User } from "../Utils/Types";
+import mockAPI from "../Utils/mockData";
 
 type AuthContextType = {
   isLogged: boolean;
@@ -35,34 +36,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [error, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkToken = async () => {
+    // Auto-login with mock user
+    const autoLogin = async () => {
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/user/check`,
-          { credentials: "include" }
-        );
-        if (!response.ok) {
-          setLogged(false);
-          return;
-        }
-        const userCharacteristics = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/user/get`,
-          {
-            credentials: "include",
-          }
-        );
-        if (!userCharacteristics) {
-          throw new Error("Erro ao pegar informações do usuário");
-        }
-        const user = await userCharacteristics.json();
-        setUser(user);
+        setLoading(true);
+        const mockUser = await mockAPI.getCurrentUser();
+        setUser(mockUser);
+        setToken('mock-jwt-token');
         setLogged(true);
       } catch (error) {
-        console.error(error);
+        console.error('Auto-login error:', error);
+        setLogged(false);
+      } finally {
+        setLoading(false);
       }
     };
 
-    checkToken();
+    autoLogin();
   }, []);
 
   const login = async (usernam: string, passwor: string) => {
@@ -74,49 +64,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(true);
       setLocalError(null);
 
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/user/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({ username: usernam, password: passwor }),
-        }
-      );
+      const resToken = await mockAPI.login(usernam, passwor);
+      setToken(resToken.token);
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error("Username ou senha inválidos");
-        } else if (response.status >= 500) {
-          throw new Error("Erro no servidor, tente novamente mais tarde");
-        } else {
-          throw new Error("Erro ao fazer login");
-        }
-      }
-
-      const resToken = await response.json();
-      setToken(resToken);
-      const userCharacteristics = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/user/get`,
-        {
-          headers: { Authorization: `Bearer ${resToken.token}` },
-          credentials: "include",
-        }
-      );
-
-      if (!userCharacteristics.ok) {
-        if (userCharacteristics.status === 401) {
-          throw new Error("Username ou senha inválidos");
-        } else if (response.status >= 500) {
-          throw new Error("Erro no servidor, tente novamente mais tarde");
-        } else {
-          throw new Error("Erro ao fazer login");
-        }
-      }
-      const user = await userCharacteristics.json();
-      setUser(user);
+      const mockUser = await mockAPI.getCurrentUser();
+      setUser(mockUser);
       setLogged(true);
     } catch (error: any) {
       console.error("Erro ao fazer login: ", error);

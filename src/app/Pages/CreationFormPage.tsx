@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { FieldConfig } from "../Utils/Types";
 import ErrorDisplay from "../Components/ErrorDisplay";
 import { useAuth } from "../Context/AuthContext";
+import mockAPI from "../Utils/mockData";
 
 export default function CreationFormPage() {
   const [alunoFields, setAlunoFields] = useState<FieldConfig[]>([
@@ -219,13 +220,7 @@ export default function CreationFormPage() {
   useEffect(() => {
     const getTurmas = async () => {
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/turmas/all`,
-          { credentials: "include" }
-        );
-        if (!response.ok) throw new Error(await response.text());
-
-        const turmas = await response.json();
+        const turmas = await mockAPI.getAllTurmas();
 
         const turmaOptions = turmas.turmas.map((t: any) => ({
           label: t.nome,
@@ -249,19 +244,13 @@ export default function CreationFormPage() {
   }, []);
   const handleSubmit = async (formData: FormData) => {
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/alunos`,
-        {
-          method: "POST",
-          body: formData,
-          credentials: "include",
-        }
-      );
+      // Convert FormData to object for mockAPI
+      const alunoData: any = {};
+      formData.forEach((value, key) => {
+        alunoData[key] = value;
+      });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText);
-      }
+      await mockAPI.createAluno(alunoData);
 
       alert("Aluno criado com sucesso!");
     } catch (err: any) {

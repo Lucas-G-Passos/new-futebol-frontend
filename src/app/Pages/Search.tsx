@@ -6,6 +6,7 @@ import ErrorDisplay from "../Components/ErrorDisplay";
 import DetailsAluno from "../Components/Search/DetailsAluno";
 import { StyleSheet } from "../Utils/Stylesheet";
 import Colors from "../Utils/Colors";
+import mockAPI from "../Utils/mockData";
 
 export default function Search() {
   const [results, setResults] = useState<any[]>([]);
@@ -28,47 +29,13 @@ export default function Search() {
       }
 
       if (type === "ALUNO") {
-        const response = await fetch(
-          `${
-            import.meta.env.VITE_BACKEND_URL
-          }/alunos/search?nome=${encodeURIComponent(query)}`,
-          {
-            credentials: "include",
-          }
-        );
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            setResults([]);
-            return [];
-          }
-          throw new Error(await response.text());
-        }
-
-        const data = await response.json();
+        const data = await mockAPI.searchAlunos(query);
         setResults(data);
         return data;
       }
 
       if (type === "FUNCIONARIO") {
-        const response = await fetch(
-          `${
-            import.meta.env.VITE_BACKEND_URL
-          }/funcionarios/search?nome=${encodeURIComponent(query)}`,
-          {
-            credentials: "include",
-          }
-        );
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            setResults([]);
-            return [];
-          }
-          throw new Error(await response.text());
-        }
-
-        const data = await response.json();
+        const data = await mockAPI.searchFuncionarios(query);
         setResults(data);
         return data;
       }

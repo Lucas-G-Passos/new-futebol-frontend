@@ -5,6 +5,7 @@ import GenericSearcher from "../Components/Home/GenericSearcher";
 import { StyleSheet } from "../Utils/Stylesheet";
 import Colors from "../Utils/Colors";
 import { useNavigate } from "react-router";
+import mockAPI from "../Utils/mockData";
 
 export default function Home() {
   const [nivers, setNivers] = useState<Array<Aluno> | null>(null);
@@ -16,23 +17,15 @@ export default function Home() {
 
   useEffect(() => {
     const getData = async () => {
-      const api: string = import.meta.env.VITE_BACKEND_URL;
-      const anivers = await fetch(`${api}/alunos/aniversariantes`, {
-        credentials: "include",
-      });
-      const inadimp = await fetch(`${api}/alunos/inadimplentes`, {
-        credentials: "include",
-      });
+      try {
+        const aniverData = await mockAPI.getAniversariantes();
+        const inadimData = await mockAPI.getInadimplentes();
 
-      if (!anivers.ok || !inadimp.ok) {
-        throw new Error("Erro ao recuperar inadimplentes ou aniversariantes");
+        setNivers(aniverData);
+        setInadimplentes(inadimData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
       }
-
-      const aniverData = await anivers.json();
-      const inadimData = await inadimp.json();
-
-      setNivers(aniverData);
-      setInadimplentes(inadimData);
     };
     getData();
   }, [refresh]);

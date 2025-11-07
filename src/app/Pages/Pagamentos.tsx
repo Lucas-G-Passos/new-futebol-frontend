@@ -6,6 +6,7 @@ import { type Aluno } from "../Utils/Types";
 import AlunoTable from "../Components/Aluno/AlunoTable";
 import AdicionarDivida from "../Components/Pagamentos/AdicionarDivida";
 import Conciliacao from "../Components/Pagamentos/Conciliacao";
+import mockAPI from "../Utils/mockData";
 
 export default function Pagamentos() {
   const [showManual, setShowManual] = useState(false);
@@ -16,17 +17,7 @@ export default function Pagamentos() {
 
   const fetchInadimplentes = async () => {
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/alunos/inadimplentes`,
-        {
-          credentials: "include",
-        }
-      );
-      if (!response.ok) {
-        alert("Erro ao buscar inadimplentes");
-        return;
-      }
-      const data = await response.json();
+      const data = await mockAPI.getInadimplentes();
       console.log(data);
       setInadimplentes(data);
     } catch (error) {
