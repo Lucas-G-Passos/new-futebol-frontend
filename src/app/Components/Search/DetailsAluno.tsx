@@ -11,10 +11,12 @@ import {
   FilePdfIcon,
   CurrencyDollarIcon,
   PlusIcon,
+  CalendarBlankIcon,
 } from "@phosphor-icons/react";
 import type { Pagamento } from "../../Utils/Types";
 import PagamentoManual from "../Pagamentos/pagManual";
 import AdicionarDivida from "../Pagamentos/AdicionarDivida";
+import Calendar from "./Calendar/Calendar";
 
 function escapeForRegex(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -290,9 +292,8 @@ export default function DetailsAluno({
     }).format(value);
   };
 
-  const formatDate = (date: Date | undefined) => {
-    if (!date) return "N/A";
-    return new Date(date).toLocaleDateString("pt-BR");
+  const ensureNumber = (value: number | undefined): number => {
+    return value ?? 0;
   };
 
   useEffect(() => {
@@ -745,7 +746,7 @@ export default function DetailsAluno({
 
       {showPaymentHistory && (
         <PaymentHistoryModal
-          valorDevido={data.valorDevido}
+          valorDevido={ensureNumber(data.valorDevido)}
           pagamentos={data.pagamento || []}
           alunoNome={data.nomeCompleto}
           onClose={() => setShowPaymentHistory(false)}
@@ -922,7 +923,9 @@ export default function DetailsAluno({
                     style={{
                       ...style.value,
                       color:
-                        data.valorDevido > 0 ? Colors.error : Colors.success,
+                        (data.valorDevido ?? 0) > 0
+                          ? Colors.error
+                          : Colors.success,
                       fontWeight: 600,
                     }}
                   >
@@ -930,9 +933,11 @@ export default function DetailsAluno({
                   </div>
                 </div>
                 <div style={style.fieldContainer}>
-                  <label style={style.label}>Data de Pagamento</label>
+                  <label style={style.label}>Dia de Pagamento</label>
                   <div style={style.value}>
-                    {formatDate(data.dataPagamento)}
+                    {data.dataPagamento
+                      ? `Dia ${data.dataPagamento}`
+                      : "Não informado"}
                   </div>
                 </div>
               </div>
@@ -1023,6 +1028,8 @@ function PaymentHistoryModal({
   const [showNewPaymentModal, setShowNewPaymentModal] =
     useState<boolean>(false);
   const [showDividaModal, setShowDividaModal] = useState<boolean>(false);
+  const [showCalendar, setShowCalendar] = useState<boolean>(false);
+  const [selectedPagamento, setSelectedPagamento] = useState<Pagamento | null>(null);
 
   const handlePaymentModal = () => {
     setShowNewPaymentModal(!showNewPaymentModal);
@@ -1030,6 +1037,10 @@ function PaymentHistoryModal({
 
   const handleDividaModal = () => {
     setShowDividaModal(!showDividaModal);
+  };
+
+  const handleCalendar = () => {
+    setShowCalendar(!showCalendar);
   };
 
   const formatCurrency = (value: number) => {
@@ -1041,6 +1052,14 @@ function PaymentHistoryModal({
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("pt-BR");
+  };
+
+  const mapPagamentosToEventos = (pagamentos: Pagamento[]) => {
+    return pagamentos.map((pagamento) => ({
+      onClick: () => setSelectedPagamento(pagamento),
+      label: formatCurrency(pagamento.valorPago),
+      date: new Date(pagamento.dataPago),
+    }));
   };
 
   const getMethodBadgeColor = (method: string) => {
@@ -1067,6 +1086,12 @@ function PaymentHistoryModal({
             <p style={style.paymentHistorySubtitle}>{alunoNome}</p>
           </div>
           <div style={{ flexDirection: "row", display: "flex", gap: 8 }}>
+            <button
+              onClick={handleCalendar}
+              style={style.paymentHistoryCloseButton}
+            >
+              <CalendarBlankIcon size={24} />
+            </button>
             <button
               onClick={handlePaymentModal}
               style={style.paymentHistoryCloseButton}
@@ -1156,6 +1181,73 @@ function PaymentHistoryModal({
             showClose={true}
             defaultAluno={aluno}
           />
+        </div>
+      )}
+
+      {showCalendar && aluno?.dataMatricula && aluno?.intervalosInadimplencia && (
+        <div style={style.paymentNewModalOverlay}>
+          <Calendar
+            startDate={aluno.dataMatricula}
+            intervalos={aluno.intervalosInadimplencia}
+            eventos={mapPagamentosToEventos(pagamentos)}
+          />
+        </div>
+      )}
+
+      {selectedPagamento && (
+        <div style={style.paymentNewModalOverlay} onClick={() => setSelectedPagamento(null)}>
+          <div style={style.paymentDetailsModal} onClick={(e) => e.stopPropagation()}>
+            <div style={style.paymentDetailsHeader}>
+              <h3 style={{ margin: 0, fontSize: "1.2rem", color: Colors.text }}>
+                Detalhes do Pagamento
+              </h3>
+              <button
+                onClick={() => setSelectedPagamento(null)}
+                style={style.paymentHistoryCloseButton}
+              >
+                <X size={20} weight="bold" color={Colors.text} />
+              </button>
+            </div>
+            <div style={style.paymentDetailsBody}>
+              <div style={style.paymentDetailRow}>
+                <span style={style.paymentDetailLabel}>Valor Pago:</span>
+                <span style={style.paymentDetailValue}>
+                  {formatCurrency(selectedPagamento.valorPago)}
+                </span>
+              </div>
+              <div style={style.paymentDetailRow}>
+                <span style={style.paymentDetailLabel}>Data do Pagamento:</span>
+                <span style={style.paymentDetailValue}>
+                  {formatDate(selectedPagamento.dataPago)}
+                </span>
+              </div>
+              <div style={style.paymentDetailRow}>
+                <span style={style.paymentDetailLabel}>Método de Pagamento:</span>
+                <span
+                  style={{
+                    ...style.methodBadge,
+                    backgroundColor: getMethodBadgeColor(selectedPagamento.metodoPagamento),
+                  }}
+                >
+                  {selectedPagamento.metodoPagamento}
+                </span>
+              </div>
+              <div style={style.paymentDetailRow}>
+                <span style={style.paymentDetailLabel}>Automatizado:</span>
+                <span style={style.paymentDetailValue}>
+                  {selectedPagamento.isAutomatized ? "Sim" : "Não"}
+                </span>
+              </div>
+              {selectedPagamento.observacao && (
+                <div style={style.paymentDetailRow}>
+                  <span style={style.paymentDetailLabel}>Observação:</span>
+                  <span style={style.paymentDetailValue}>
+                    {selectedPagamento.observacao}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -1695,5 +1787,53 @@ const style = StyleSheet.create({
     backdropFilter: "blur(8px)",
     padding: "1rem",
     width: "100vw",
+  },
+  paymentDetailsModal: {
+    backgroundColor: Colors.surface,
+    borderRadius: "12px",
+    padding: "1.5rem",
+    maxWidth: "500px",
+    width: "90%",
+    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+    border: `1px solid ${Colors.borderLight}`,
+  },
+  paymentDetailsHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "1.5rem",
+    paddingBottom: "1rem",
+    borderBottom: `1px solid ${Colors.borderLight}`,
+  },
+  paymentDetailsBody: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
+  },
+  paymentDetailRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "0.75rem",
+    backgroundColor: Colors.background,
+    borderRadius: "8px",
+    border: `1px solid ${Colors.borderLight}`,
+  },
+  paymentDetailLabel: {
+    fontSize: "0.95rem",
+    fontWeight: "600",
+    color: Colors.textLight,
+  },
+  paymentDetailValue: {
+    fontSize: "0.95rem",
+    fontWeight: "500",
+    color: Colors.text,
+  },
+  methodBadge: {
+    padding: "0.4rem 0.8rem",
+    borderRadius: "6px",
+    fontSize: "0.85rem",
+    fontWeight: "bold",
+    color: Colors.text,
   },
 });

@@ -40,7 +40,8 @@ export default function AlunoTable({
     return new Date(date).toLocaleDateString("pt-BR");
   };
 
-  const isAdimplente = (valorDevido: number) => {
+  const isAdimplente = (valorDevido: number | undefined) => {
+    if (valorDevido === undefined || valorDevido === null) return true;
     return valorDevido === 0;
   };
 
