@@ -4,15 +4,12 @@ import DetailsAluno from "../Components/Search/DetailsAluno";
 import GenericSearcher from "../Components/Home/GenericSearcher";
 import { StyleSheet } from "../Utils/Stylesheet";
 import Colors from "../Utils/Colors";
-import { useNavigate } from "react-router";
 
 export default function Home() {
   const [nivers, setNivers] = useState<Array<Aluno> | null>(null);
   const [inadimplentes, setInadimplentes] = useState<Array<Aluno> | null>(null);
   const [selectedAluno, setSelectedAluno] = useState<Aluno | null>(null);
   const [refresh, setRefresh] = useState<boolean>(false);
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     const getData = async () => {
@@ -55,7 +52,6 @@ export default function Home() {
       {/* Page Header */}
       <div style={style.header}>
         <h1 style={style.title}>Início</h1>
-        <button onClick={() => navigate("/app/test")}>botao</button>
       </div>
 
       {/* Content Grid */}
