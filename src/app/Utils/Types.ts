@@ -73,14 +73,26 @@ export interface Aluno {
   time?: string;
   indicacao?: string;
   observacao?: string;
+  acordo?: string;
+  cep?: string;
+  rua?: string;
+  enderecoNumero?: string;
+  cidade?: string;
+  estado?: string;
+  isAtivo?: boolean;
+  filePath?: string;
   url?: string;
+  turmaId?: number;
+  turmaNome?: string;
+  isAdimplente?: boolean;
+  valorFatura?: number;
+  valorDevido?: number;
+  dataPagamento?: number; // Day of month (1-31)
+  numeroCartao?: string;
+  pagamento?: Pagamento[]; // Note: backend uses 'pagamentos' (plural) in entity but 'pagamento' in DTO
+  intervalosInadimplencia?: IntervaloInadimplencia[];
   responsavel?: Responsavel;
   turma?: Turma;
-  acordo: string;
-  pagamentos: Pagamento[];
-  valorFatura: number;
-  valorDevido: number;
-  dataPagamento: Date;
 
   [key: string]: any;
 }
@@ -142,4 +154,19 @@ export interface Pagamento {
   metodoPagamento: "DINHEIRO" | "PIX" | "CARTAO";
   isAutomatized: boolean;
   observacao: string;
+}
+
+export interface IntervaloInadimplencia {
+  id: number;
+  dataInicio: Date;
+  dataTermino?: Date | null;
+  causaInicio: string;
+  causaTermino?: string | null;
+  pagamentoTermino?: Pagamento | null;
+}
+
+export interface ConciliacaoResponse {
+  alunosToUpdate: Aluno[];
+  pagamentosToCreate: Pagamento[];
+  failedFields: Map<String, String>;
 }

@@ -34,7 +34,7 @@ export default function UserTable({
   };
 
   const formatPermissions = (permissions: { permission: string }[]) => {
-    return permissions.join(", ");
+    return permissions.map((p) => p.permission).join(", ");
   };
 
   const renderMobileView = () => {

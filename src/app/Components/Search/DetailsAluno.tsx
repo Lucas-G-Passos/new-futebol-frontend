@@ -11,9 +11,12 @@ import {
   FilePdfIcon,
   CurrencyDollarIcon,
   PlusIcon,
+  CalendarBlankIcon,
 } from "@phosphor-icons/react";
 import type { Pagamento } from "../../Utils/Types";
 import PagamentoManual from "../Pagamentos/pagManual";
+import AdicionarDivida from "../Pagamentos/AdicionarDivida";
+import Calendar from "./Calendar/Calendar";
 
 function escapeForRegex(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -274,12 +277,24 @@ export default function DetailsAluno({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [id, setId] = useState<number>();
   const [showPaymentHistory, setShowPaymentHistory] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const [areYouSure, setAreYouSure] = useState<{
     open: boolean;
     label: string;
     options: string[];
     onConfirm: () => Promise<void> | void;
   } | null>(null);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const formatCurrency = (value: number | undefined) => {
     if (value === undefined || value === null) return "N/A";
@@ -289,9 +304,8 @@ export default function DetailsAluno({
     }).format(value);
   };
 
-  const formatDate = (date: Date | undefined) => {
-    if (!date) return "N/A";
-    return new Date(date).toLocaleDateString("pt-BR");
+  const ensureNumber = (value: number | undefined): number => {
+    return value ?? 0;
   };
 
   useEffect(() => {
@@ -343,6 +357,11 @@ export default function DetailsAluno({
 
   const formatDisplayValue = (value: any, field: FieldConfig): string => {
     if (!value) return "Não informado";
+
+    // Special handling for turmaId - display turma name instead
+    if (field.name === "turmaId") {
+      return (data as any).turmaNome || "Não informado";
+    }
 
     switch (field.type) {
       case "DATE":
@@ -727,71 +746,108 @@ export default function DetailsAluno({
   };
 
   return (
-    <div style={style.overlay}>
+    <div style={{ ...style.overlay, padding: isMobile ? "0.5rem" : "2vw" }}>
       {areYouSure?.open && (
         <AreYouSureDialog
           label={areYouSure.label}
           options={areYouSure.options}
           onClose={() => setAreYouSure(null)}
           onConfirm={areYouSure.onConfirm}
+          isMobile={isMobile}
         />
       )}
 
       {showPaymentHistory && (
         <PaymentHistoryModal
-          valorDevido={data.valorDevido}
+          valorDevido={ensureNumber(data.valorDevido)}
           pagamentos={data.pagamento || []}
           alunoNome={data.nomeCompleto}
           onClose={() => setShowPaymentHistory(false)}
+          aluno={data}
+          isMobile={isMobile}
         />
       )}
 
-      <div style={style.mainContainer}>
-        <div style={style.header}>
+      <div
+        style={{
+          ...style.mainContainer,
+          width: isMobile ? "95vw" : "90vw",
+          borderRadius: isMobile ? "12px" : "20px",
+        }}
+      >
+        <div
+          style={{
+            ...style.header,
+            padding: isMobile ? "1rem" : "1.5rem 2rem",
+            flexDirection: isMobile ? "column" : "row",
+            alignItems: isMobile ? "flex-start" : "flex-start",
+          }}
+        >
           <div style={style.titleSection}>
-            <h2 style={style.title}>
+            <h2
+              style={{
+                ...style.title,
+                fontSize: isMobile ? "1.25rem" : "clamp(1.25rem, 4vw, 1.75rem)",
+              }}
+            >
               {data.nomeCompleto || "Nome não informado"}
             </h2>
             <div style={style.subtitle}>Detalhes do Aluno</div>
           </div>
-          <div style={style.actions}>
+          <div
+            style={{
+              ...style.actions,
+              width: isMobile ? "100%" : "auto",
+              marginTop: isMobile ? "0.75rem" : "0",
+              gap: isMobile ? "0.5rem" : "0.75rem",
+            }}
+          >
             <button
               type="button"
               onClick={() => id && handlePdf(id)}
-              style={style.saveButton}
-              className="action-button"
+              style={{
+                ...style.saveButton,
+                padding: isMobile ? "0.625rem" : "0.625rem 1.25rem",
+                minWidth: isMobile ? "2.75rem" : "min-content",
+              }}
             >
               <FilePdfIcon size={18} />
-              <span style={style.buttonText}>Gerar PDF</span>
+              {!isMobile && <span style={style.buttonText}>Gerar PDF</span>}
             </button>
 
             {!editMode && (
               <button
                 type="button"
                 onClick={handleDelete}
-                style={style.deleteButton}
-                className="action-button"
+                style={{
+                  ...style.deleteButton,
+                  padding: isMobile ? "0.625rem" : "0.625rem 1.25rem",
+                  minWidth: isMobile ? "2.75rem" : "min-content",
+                }}
               >
                 <Trash size={18} />
-                <span style={style.buttonText}>Excluir</span>
+                {!isMobile && <span style={style.buttonText}>Excluir</span>}
               </button>
             )}
 
             <button
               type="button"
               onClick={editMode ? handleSaveEdit : () => setEditMode(true)}
-              style={editMode ? style.saveButton : style.editButton}
-              className="action-button"
+              style={{
+                ...(editMode ? style.saveButton : style.editButton),
+                padding: isMobile ? "0.625rem" : "0.625rem 1.25rem",
+                minWidth: isMobile ? "2.75rem" : "min-content",
+              }}
             >
               {editMode ? (
                 <>
                   <FloppyDisk size={18} />
-                  <span style={style.buttonText}>Salvar</span>
+                  {!isMobile && <span style={style.buttonText}>Salvar</span>}
                 </>
               ) : (
                 <>
                   <Pencil size={18} />
-                  <span style={style.buttonText}>Editar</span>
+                  {!isMobile && <span style={style.buttonText}>Editar</span>}
                 </>
               )}
             </button>
@@ -800,11 +856,14 @@ export default function DetailsAluno({
               <button
                 type="button"
                 onClick={handleDiscardChanges}
-                style={style.discardButton}
-                className="action-button"
+                style={{
+                  ...style.discardButton,
+                  padding: isMobile ? "0.625rem" : "0.625rem 1.25rem",
+                  minWidth: isMobile ? "2.75rem" : "min-content",
+                }}
               >
                 <ArrowCounterClockwise size={18} />
-                <span style={style.buttonText}>Descartar</span>
+                {!isMobile && <span style={style.buttonText}>Descartar</span>}
               </button>
             )}
 
@@ -815,21 +874,35 @@ export default function DetailsAluno({
             >
               <CurrencyDollarIcon size={22} />
             </button>
-            <button
-              type="button"
-              onClick={close}
-              style={style.closeButton}
-              className="close-button"
-            >
+            <button type="button" onClick={close} style={style.closeButton}>
               <X size={22} />
             </button>
           </div>
         </div>
 
-        <div style={style.content}>
+        <div
+          style={{
+            ...style.content,
+            padding: isMobile ? "1rem" : "2rem",
+            gap: isMobile ? "1rem" : "1.5rem",
+          }}
+        >
           <div style={style.row}>
-            <div style={{ ...style.imageContainer, ...style.card }}>
-              <h3 style={style.cardTitle}>Foto</h3>
+            <div
+              style={{
+                ...style.imageContainer,
+                ...style.card,
+                padding: isMobile ? "1rem" : "1.5rem",
+              }}
+            >
+              <h3
+                style={{
+                  ...style.cardTitle,
+                  fontSize: isMobile ? "1rem" : "1.125rem",
+                }}
+              >
+                Foto
+              </h3>
               {editMode ? (
                 <div style={style.fileUpload}>
                   {renderField({
@@ -846,8 +919,18 @@ export default function DetailsAluno({
               )}
             </div>
 
-            <div style={style.card}>
-              <h3 style={style.cardTitle}>
+            <div
+              style={{
+                ...style.card,
+                padding: isMobile ? "1rem" : "1.5rem",
+              }}
+            >
+              <h3
+                style={{
+                  ...style.cardTitle,
+                  fontSize: isMobile ? "1rem" : "1.125rem",
+                }}
+              >
                 <span style={style.icon}>👤</span>
                 Dados Pessoais
               </h3>
@@ -858,8 +941,18 @@ export default function DetailsAluno({
           </div>
 
           <div style={style.row}>
-            <div style={style.card}>
-              <h3 style={style.cardTitle}>
+            <div
+              style={{
+                ...style.card,
+                padding: isMobile ? "1rem" : "1.5rem",
+              }}
+            >
+              <h3
+                style={{
+                  ...style.cardTitle,
+                  fontSize: isMobile ? "1rem" : "1.125rem",
+                }}
+              >
                 <span style={style.icon}>🏫</span>
                 Informações Escolares
               </h3>
@@ -868,8 +961,18 @@ export default function DetailsAluno({
               </div>
             </div>
 
-            <div style={style.card}>
-              <h3 style={style.cardTitle}>
+            <div
+              style={{
+                ...style.card,
+                padding: isMobile ? "1rem" : "1.5rem",
+              }}
+            >
+              <h3
+                style={{
+                  ...style.cardTitle,
+                  fontSize: isMobile ? "1rem" : "1.125rem",
+                }}
+              >
                 <span style={style.icon}>🏥</span>
                 Saúde
               </h3>
@@ -880,8 +983,18 @@ export default function DetailsAluno({
           </div>
 
           <div style={style.row}>
-            <div style={style.card}>
-              <h3 style={style.cardTitle}>
+            <div
+              style={{
+                ...style.card,
+                padding: isMobile ? "1rem" : "1.5rem",
+              }}
+            >
+              <h3
+                style={{
+                  ...style.cardTitle,
+                  fontSize: isMobile ? "1rem" : "1.125rem",
+                }}
+              >
                 <span style={style.icon}>📝</span>
                 Informações Adicionais
               </h3>
@@ -891,8 +1004,18 @@ export default function DetailsAluno({
               </div>
             </div>
 
-            <div style={style.card}>
-              <h3 style={style.cardTitle}>
+            <div
+              style={{
+                ...style.card,
+                padding: isMobile ? "1rem" : "1.5rem",
+              }}
+            >
+              <h3
+                style={{
+                  ...style.cardTitle,
+                  fontSize: isMobile ? "1rem" : "1.125rem",
+                }}
+              >
                 <span style={style.icon}>💰</span>
                 Informações Financeiras
               </h3>
@@ -915,7 +1038,9 @@ export default function DetailsAluno({
                     style={{
                       ...style.value,
                       color:
-                        data.valorDevido > 0 ? Colors.error : Colors.success,
+                        (data.valorDevido ?? 0) > 0
+                          ? Colors.error
+                          : Colors.success,
                       fontWeight: 600,
                     }}
                   >
@@ -923,9 +1048,11 @@ export default function DetailsAluno({
                   </div>
                 </div>
                 <div style={style.fieldContainer}>
-                  <label style={style.label}>Data de Pagamento</label>
+                  <label style={style.label}>Dia de Pagamento</label>
                   <div style={style.value}>
-                    {formatDate(data.dataPagamento)}
+                    {data.dataPagamento
+                      ? `Dia ${data.dataPagamento}`
+                      : "Não informado"}
                   </div>
                 </div>
               </div>
@@ -934,8 +1061,18 @@ export default function DetailsAluno({
 
           <div style={style.row}>
             {data.responsavel && (
-              <div style={style.card}>
-                <h3 style={style.cardTitle}>
+              <div
+                style={{
+                  ...style.card,
+                  padding: isMobile ? "1rem" : "1.5rem",
+                }}
+              >
+                <h3
+                  style={{
+                    ...style.cardTitle,
+                    fontSize: isMobile ? "1rem" : "1.125rem",
+                  }}
+                >
                   <span style={style.icon}>👨‍👩‍👧‍👦</span>
                   Responsável
                 </h3>
@@ -945,8 +1082,18 @@ export default function DetailsAluno({
               </div>
             )}
           </div>
-          <div style={style.card}>
-            <h3 style={style.cardTitle}>
+          <div
+            style={{
+              ...style.card,
+              padding: isMobile ? "1rem" : "1.5rem",
+            }}
+          >
+            <h3
+              style={{
+                ...style.cardTitle,
+                fontSize: isMobile ? "1rem" : "1.125rem",
+              }}
+            >
               <span style={style.icon}>🏠</span>
               Endereço
             </h3>
@@ -965,31 +1112,53 @@ function AreYouSureDialog({
   options,
   onClose,
   onConfirm,
+  isMobile,
 }: {
   label: string;
   options: string[];
   onClose: () => void;
   onConfirm: () => void;
+  isMobile: boolean;
 }) {
   return (
     <div style={style.dialogOverlay}>
-      <div style={style.dialogContainer}>
-        <div style={style.dialogContent}>
+      <div
+        style={{
+          ...style.dialogContainer,
+          width: isMobile ? "95vw" : "90vw",
+          maxWidth: isMobile ? "90vw" : "400px",
+        }}
+      >
+        <div
+          style={{
+            ...style.dialogContent,
+            padding: isMobile ? "1.25rem" : "2rem",
+          }}
+        >
           <div style={style.warningIcon}>⚠️</div>
           <h3 style={style.dialogTitle}>Confirmação</h3>
           <p style={style.dialogMessage}>{label}</p>
-          <div style={style.dialogActions}>
+          <div
+            style={{
+              ...style.dialogActions,
+              flexDirection: isMobile ? "column" : "row",
+            }}
+          >
             <button
               onClick={onClose}
-              style={style.dialogSecondaryButton}
-              className="dialog-button"
+              style={{
+                ...style.dialogSecondaryButton,
+                width: isMobile ? "100%" : "auto",
+              }}
             >
               {options[0]}
             </button>
             <button
               onClick={onConfirm}
-              style={style.dialogPrimaryButton}
-              className="dialog-button"
+              style={{
+                ...style.dialogPrimaryButton,
+                width: isMobile ? "100%" : "auto",
+              }}
             >
               {options[1]}
             </button>
@@ -1005,17 +1174,34 @@ function PaymentHistoryModal({
   alunoNome,
   onClose,
   valorDevido,
+  aluno,
+  isMobile,
 }: {
   valorDevido: number;
   pagamentos: Pagamento[];
   alunoNome: string;
+  aluno?: Aluno;
   onClose: () => void;
+  isMobile: boolean;
 }) {
   const [showNewPaymentModal, setShowNewPaymentModal] =
     useState<boolean>(false);
+  const [showDividaModal, setShowDividaModal] = useState<boolean>(false);
+  const [showCalendar, setShowCalendar] = useState<boolean>(false);
+  const [selectedPagamento, setSelectedPagamento] = useState<Pagamento | null>(
+    null
+  );
 
   const handlePaymentModal = () => {
     setShowNewPaymentModal(!showNewPaymentModal);
+  };
+
+  const handleDividaModal = () => {
+    setShowDividaModal(!showDividaModal);
+  };
+
+  const handleCalendar = () => {
+    setShowCalendar(!showCalendar);
   };
 
   const formatCurrency = (value: number) => {
@@ -1027,6 +1213,14 @@ function PaymentHistoryModal({
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("pt-BR");
+  };
+
+  const mapPagamentosToEventos = (pagamentos: Pagamento[]) => {
+    return pagamentos.map((pagamento) => ({
+      onClick: () => setSelectedPagamento(pagamento),
+      label: formatCurrency(pagamento.valorPago),
+      date: new Date(pagamento.dataPago),
+    }));
   };
 
   const getMethodBadgeColor = (method: string) => {
@@ -1043,20 +1237,59 @@ function PaymentHistoryModal({
   };
 
   return (
-    <div style={style.paymentHistoryOverlay}>
-      <div style={style.paymentHistoryContainer}>
-        <div style={style.paymentHistoryHeader}>
+    <div
+      style={{
+        ...style.paymentHistoryOverlay,
+        padding: isMobile ? "1rem" : "1rem",
+        paddingTop: isMobile ? "1rem" : "65rem",
+      }}
+    >
+      <div
+        style={{
+          ...style.paymentHistoryContainer,
+          width: isMobile ? "95vw" : "90vw",
+        }}
+      >
+        <div
+          style={{
+            ...style.paymentHistoryHeader,
+            padding: isMobile ? "1rem" : "1.5rem 2rem",
+            flexDirection: isMobile ? "column" : "row",
+            alignItems: isMobile ? "flex-start" : "flex-start",
+            gap: isMobile ? "1rem" : "0",
+          }}
+        >
           <div>
-            <h2 style={style.paymentHistoryTitle}>
+            <h2
+              style={{
+                ...style.paymentHistoryTitle,
+                fontSize: isMobile ? "1.125rem" : "1.5rem",
+                wordBreak: "break-word",
+              }}
+            >
               Histórico de Pagamentos | Valor devido: R${valorDevido}
             </h2>
             <p style={style.paymentHistorySubtitle}>{alunoNome}</p>
           </div>
           <div style={{ flexDirection: "row", display: "flex", gap: 8 }}>
             <button
+              onClick={handleCalendar}
+              style={style.paymentHistoryCloseButton}
+            >
+              <CalendarBlankIcon size={24} />
+            </button>
+            <button
               onClick={handlePaymentModal}
               style={style.paymentHistoryCloseButton}
             >
+              Novo Pagamento
+              <PlusIcon size={24} />
+            </button>
+            <button
+              onClick={handleDividaModal}
+              style={style.paymentHistoryCloseButton}
+            >
+              Nova Dívida
               <PlusIcon size={24} />
             </button>
             <button onClick={onClose} style={style.paymentHistoryCloseButton}>
@@ -1065,7 +1298,12 @@ function PaymentHistoryModal({
           </div>
         </div>
 
-        <div style={style.paymentHistoryContent}>
+        <div
+          style={{
+            ...style.paymentHistoryContent,
+            padding: isMobile ? "1rem" : "1.5rem 2rem",
+          }}
+        >
           {pagamentos.length === 0 ? (
             <div style={style.noPaymentsContainer}>
               <div style={style.noPaymentsIcon}>💳</div>
@@ -1074,22 +1312,51 @@ function PaymentHistoryModal({
           ) : (
             <div style={style.paymentsList}>
               {pagamentos.map((pagamento) => (
-                <div key={pagamento.id} style={style.paymentCard}>
-                  <div style={style.paymentCardHeader}>
+                <div
+                  key={pagamento.id}
+                  style={{
+                    ...style.paymentCard,
+                    borderRadius: isMobile ? "8px" : "12px",
+                  }}
+                >
+                  <div
+                    style={{
+                      ...style.paymentCardHeader,
+                      padding: isMobile ? "0.75rem" : "1rem 1.25rem",
+                      flexDirection: isMobile ? "column" : "row",
+                      alignItems: isMobile ? "flex-start" : "center",
+                      gap: isMobile ? "0.5rem" : "0",
+                    }}
+                  >
                     <div style={style.paymentDateContainer}>
                       <span style={style.paymentDateLabel}>Data</span>
                       <span style={style.paymentDate}>
                         {formatDate(pagamento.dataPago)}
                       </span>
                     </div>
-                    <div style={style.paymentValueContainer}>
-                      <span style={style.paymentValue}>
+                    <div
+                      style={{
+                        ...style.paymentValueContainer,
+                        textAlign: isMobile ? "left" : "right",
+                      }}
+                    >
+                      <span
+                        style={{
+                          ...style.paymentValue,
+                          fontSize: isMobile ? "1.125rem" : "1.25rem",
+                        }}
+                      >
                         {formatCurrency(pagamento.valorPago)}
                       </span>
                     </div>
                   </div>
 
-                  <div style={style.paymentCardBody}>
+                  <div
+                    style={{
+                      ...style.paymentCardBody,
+                      padding: isMobile ? "0.75rem" : "1rem 1.25rem",
+                    }}
+                  >
                     <div style={style.paymentMeta}>
                       <span
                         style={{
@@ -1120,7 +1387,124 @@ function PaymentHistoryModal({
       </div>
       {showNewPaymentModal && (
         <div style={style.paymentNewModalOverlay}>
-          <PagamentoManual onClose={handlePaymentModal} showClose={true} />
+          <PagamentoManual
+            onClose={handlePaymentModal}
+            showClose={true}
+            defaultAluno={aluno}
+          />
+        </div>
+      )}
+      {showDividaModal && (
+        <div style={style.paymentNewModalOverlay}>
+          <AdicionarDivida
+            onClose={handleDividaModal}
+            showClose={true}
+            defaultAluno={aluno}
+          />
+        </div>
+      )}
+
+      {showCalendar &&
+        aluno?.dataMatricula &&
+        aluno?.intervalosInadimplencia && (
+          <div
+            style={style.paymentNewModalOverlay}
+            onClick={() => setShowCalendar(false)}
+          >
+            <button
+              onClick={() => setShowCalendar(false)}
+              style={{
+                ...style.calendarCloseButton,
+                top: isMobile ? "1rem" : "2rem",
+                right: isMobile ? "1rem" : "2rem",
+                width: isMobile ? "40px" : "48px",
+                height: isMobile ? "40px" : "48px",
+              }}
+              aria-label="Fechar calendário"
+            >
+              <X size={24} weight="bold" />
+            </button>
+            <div
+              style={style.calendarModalContainer}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Calendar
+                startDate={aluno.dataMatricula}
+                intervalos={aluno.intervalosInadimplencia}
+                eventos={mapPagamentosToEventos(pagamentos)}
+              />
+            </div>
+          </div>
+        )}
+
+      {selectedPagamento && (
+        <div
+          style={style.paymentNewModalOverlay}
+          onClick={() => setSelectedPagamento(null)}
+        >
+          <div
+            style={{
+              ...style.paymentDetailsModal,
+              width: isMobile ? "95%" : "90%",
+              padding: isMobile ? "1rem" : "1.5rem",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={style.paymentDetailsHeader}>
+              <h3 style={{ margin: 0, fontSize: "1.2rem", color: Colors.text }}>
+                Detalhes do Pagamento
+              </h3>
+              <button
+                onClick={() => setSelectedPagamento(null)}
+                style={style.paymentHistoryCloseButton}
+              >
+                <X size={20} weight="bold" color={Colors.text} />
+              </button>
+            </div>
+            <div style={style.paymentDetailsBody}>
+              <div style={style.paymentDetailRow}>
+                <span style={style.paymentDetailLabel}>Valor Pago:</span>
+                <span style={style.paymentDetailValue}>
+                  {formatCurrency(selectedPagamento.valorPago)}
+                </span>
+              </div>
+              <div style={style.paymentDetailRow}>
+                <span style={style.paymentDetailLabel}>Data do Pagamento:</span>
+                <span style={style.paymentDetailValue}>
+                  {formatDate(selectedPagamento.dataPago)}
+                </span>
+              </div>
+              <div style={style.paymentDetailRow}>
+                <span style={style.paymentDetailLabel}>
+                  Método de Pagamento:
+                </span>
+                <span
+                  style={{
+                    ...style.methodBadge,
+                    backgroundColor: getMethodBadgeColor(
+                      selectedPagamento.metodoPagamento
+                    ),
+                  }}
+                >
+                  {selectedPagamento.metodoPagamento}
+                </span>
+              </div>
+              <div style={style.paymentDetailRow}>
+                <span style={style.paymentDetailLabel}>Automatizado:</span>
+                <span style={style.paymentDetailValue}>
+                  {selectedPagamento.isAutomatized ? "Sim" : "Não"}
+                </span>
+              </div>
+              {selectedPagamento.observacao && (
+                <div style={style.paymentDetailRow}>
+                  <span style={style.paymentDetailLabel}>Observação:</span>
+                  <span style={style.paymentDetailValue}>
+                    {selectedPagamento.observacao}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -1163,7 +1547,7 @@ const style = StyleSheet.create({
     gap: "1rem",
   },
   titleSection: {
-    flex: "1 1 300px",
+    flex: "1",
     minWidth: 0,
   },
   title: {
@@ -1494,6 +1878,8 @@ const style = StyleSheet.create({
     zIndex: 15,
     backdropFilter: "blur(8px)",
     padding: "1rem",
+    paddingTop: "65rem",
+    overflow: "auto",
   },
   paymentHistoryContainer: {
     backgroundColor: Colors.surface,
@@ -1530,7 +1916,7 @@ const style = StyleSheet.create({
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    width: "2.5rem",
+    minWidth: "2.5rem",
     height: "2.5rem",
     backgroundColor: "rgba(0, 0, 0, 0.1)",
     border: `1px solid ${Colors.border}`,
@@ -1539,6 +1925,7 @@ const style = StyleSheet.create({
     cursor: "pointer",
     transition: "all 0.2s ease",
     flexShrink: 0,
+    gap: 4,
   },
   paymentHistoryContent: {
     flex: 1,
@@ -1654,10 +2041,83 @@ const style = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.85)",
     display: "flex",
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "flex-start",
     zIndex: 18,
     backdropFilter: "blur(8px)",
-    padding: "1rem",
+    padding: "2rem 1rem",
     width: "100vw",
+    height: "100vh",
+    overflow: "auto",
+    boxSizing: "border-box",
+  },
+  paymentDetailsModal: {
+    backgroundColor: Colors.surface,
+    borderRadius: "12px",
+    padding: "1.5rem",
+    width: "90%",
+    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+    border: `1px solid ${Colors.borderLight}`,
+  },
+  calendarModalContainer: {
+    position: "relative",
+    width: "90%",
+    marginTop: "3rem",
+  },
+  calendarCloseButton: {
+    position: "fixed",
+    top: "2rem",
+    right: "2rem",
+    backgroundColor: Colors.surface,
+    border: `2px solid ${Colors.border}`,
+    borderRadius: "50%",
+    width: "48px",
+    height: "48px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    color: Colors.text,
+    transition: "all 0.2s ease",
+    zIndex: 20,
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+  },
+  paymentDetailsHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "1.5rem",
+    paddingBottom: "1rem",
+    borderBottom: `1px solid ${Colors.borderLight}`,
+  },
+  paymentDetailsBody: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
+  },
+  paymentDetailRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "0.75rem",
+    backgroundColor: Colors.background,
+    borderRadius: "8px",
+    border: `1px solid ${Colors.borderLight}`,
+  },
+  paymentDetailLabel: {
+    fontSize: "0.95rem",
+    fontWeight: "600",
+    color: Colors.textLight,
+  },
+  paymentDetailValue: {
+    fontSize: "0.95rem",
+    fontWeight: "500",
+    color: Colors.text,
+  },
+  methodBadge: {
+    padding: "0.4rem 0.8rem",
+    borderRadius: "6px",
+    fontSize: "0.85rem",
+    fontWeight: "bold",
+    color: Colors.text,
   },
 });

@@ -7,7 +7,6 @@ import ErrorDisplay from "../Components/ErrorDisplay";
 import { useAuth } from "../Context/AuthContext";
 
 export default function CreationFormPage() {
-  const [type, setType] = useState<"ALUNO" | "FUNCIONARIO">("ALUNO");
   const [alunoFields, setAlunoFields] = useState<FieldConfig[]>([
     {
       name: "nomeCompleto",
@@ -41,7 +40,6 @@ export default function CreationFormPage() {
       type: "TEXT",
       mask: "(99) 99999-9999",
     },
-
     {
       name: "cpf",
       placeholder: "CPF",
@@ -208,113 +206,15 @@ export default function CreationFormPage() {
       placeholder: "Valor da Fatura",
       type: "TEXT",
       required: true,
+      mask: "numberOnly",
     },
     {
       name: "dataPagamento",
       placeholder: "Dia a se pagar",
       type: "TEXT",
-      required: true,
-      mask: "99",
     },
   ]);
   const { setError } = useAuth();
-
-  const funcionarioFields: FieldConfig[] = [
-    {
-      name: "nome",
-      placeholder: "Nome Completo",
-      type: "TEXT",
-      required: true,
-    },
-    {
-      name: "dataNascimento",
-      placeholder: "Data de Nascimento",
-      type: "DATE",
-      required: true,
-    },
-    {
-      name: "dataAdmissao",
-      placeholder: "Data de Admissão",
-      type: "DATE",
-      required: true,
-    },
-    {
-      name: "telefone1",
-      placeholder: "Telefone 1",
-      type: "TEXT",
-      mask: "(99) 99999-9999",
-      required: true,
-    },
-    {
-      name: "telefone2",
-      placeholder: "Telefone 2",
-      type: "TEXT",
-      mask: "(99) 99999-9999",
-    },
-    {
-      name: "cpf",
-      placeholder: "CPF",
-      type: "TEXT",
-      mask: "999.999.999-99",
-      required: true,
-    },
-    {
-      name: "rg",
-      placeholder: "RG",
-      type: "TEXT",
-      mask: "99.999.999-9",
-      required: true,
-    },
-    {
-      name: "jornadaEscala",
-      placeholder: "Jornada/Escala",
-      type: "TEXT",
-      required: true,
-    },
-    {
-      name: "situacao",
-      placeholder: "Situação",
-      type: "SELECT",
-      required: true,
-      options: [
-        { label: "Ativo", value: "OK" },
-        { label: "Inativo", value: "DESLIGADO" },
-      ],
-    },
-    {
-      name: "file",
-      placeholder: "Foto",
-      type: "FILE",
-    },
-    {
-      name: "user.username",
-      placeholder: "Nome de Usuário",
-      type: "TEXT",
-    },
-    {
-      name: "user.email",
-      placeholder: "Email",
-      type: "TEXT",
-    },
-    {
-      name: "user.password",
-      placeholder: "Senha",
-      type: "TEXT",
-    },
-    {
-      name: "user.permissions",
-      placeholder: "Permissões",
-      type: "CHECKBOXGROUP",
-      options: [
-        { label: "Administrador", value: "ADMIN" },
-        { label: "Gerenciamento de Alunos", value: "ALUNOS" },
-        { label: "Gerenciamento de Turmas", value: "TURMAS" },
-        { label: "Gerenciamento de Funcionarios", value: "FUNCIONARIO" },
-        { label: "Gerenciamento de Pagamentos", value: "PAGAMENTOS" },
-        { label: "Gerenciamento de usuários", value: "USERS" },
-      ],
-    },
-  ];
 
   useEffect(() => {
     const getTurmas = async () => {
@@ -348,80 +248,37 @@ export default function CreationFormPage() {
     getTurmas();
   }, []);
   const handleSubmit = async (formData: FormData) => {
-    if (type === "ALUNO") {
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/alunos`,
-          {
-            method: "POST",
-            body: formData,
-            credentials: "include",
-          }
-        );
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/alunos`,
+        {
+          method: "POST",
+          body: formData,
+          credentials: "include",
         }
+      );
 
-        alert("Aluno criado com sucesso!");
-      } catch (err: any) {
-        console.error("Erro na requisição:", err);
-        setError("Erro ao criar aluno: " + err.message);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText);
       }
-    }
-    if (type === "FUNCIONARIO") {
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/funcionarios`,
-          {
-            method: "POST",
-            body: formData,
-            credentials: "include",
-          }
-        );
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Erro ao criar funcionário:", errorText);
-          alert("Erro ao criar funcionário: " + errorText);
-          return;
-        }
-
-        alert("Funcionário criado com sucesso!");
-      } catch (err) {
-        console.error("Erro na requisição:", err);
-        alert("Erro na requisição");
-      }
+      alert("Aluno criado com sucesso!");
+    } catch (err: any) {
+      console.error("Erro na requisição:", err);
+      setError("Erro ao criar aluno: " + err.message);
     }
   };
+
   return (
     <div style={style.mainContainer}>
-      <button
-        onClick={() => {
-          if (type === "ALUNO") setType("FUNCIONARIO");
-          if (type === "FUNCIONARIO") setType("ALUNO");
-        }}
-      >
-        mudar tipo
-      </button>
-      {type === "ALUNO" ? (
-        <DynamicForm
-          onSubmit={handleSubmit}
-          fields={alunoFields}
-          title="Criação de Aluno"
-          sendAs="FORMDATA"
-        />
-      ) : (
-        <div>
-          <DynamicForm
-            onSubmit={handleSubmit}
-            fields={funcionarioFields}
-            title="Criação de Funcionário"
-            sendAs="FORMDATA"
-          />
-        </div>
-      )}
+      <DynamicForm
+        onSubmit={handleSubmit}
+        fields={alunoFields}
+        title="Criação de Aluno"
+        sendAs="FORMDATA"
+      />
+
       <ErrorDisplay />
     </div>
   );

@@ -13,11 +13,77 @@ import {
   PencilSimpleLineIcon,
   UsersFourIcon,
 } from "@phosphor-icons/react";
+import type { User } from "../Utils/Types";
+
+type NavRoute = {
+  path: string;
+  label: string;
+  icon: React.ReactNode;
+  requiredPermission?: string;
+};
+
+const navRoutes: NavRoute[] = [
+  {
+    path: "/app/home",
+    label: "Home",
+    icon: <HouseIcon size={32} />,
+  },
+  {
+    path: "/app/search",
+    label: "Pesquisa",
+    icon: <MagnifyingGlassIcon size={32} />,
+    requiredPermission: "ALUNOS",
+  },
+  {
+    path: "/app/form",
+    label: "Form",
+    icon: <PencilSimpleLineIcon size={32} />,
+    requiredPermission: "ALUNOS",
+  },
+  {
+    path: "/app/turmas",
+    label: "Turmas",
+    icon: <UsersFourIcon size={32} />,
+    requiredPermission: "TURMAS",
+  },
+  {
+    path: "/app/filiais",
+    label: "Filiais",
+    icon: <BuildingApartmentIcon size={32} />,
+    requiredPermission: "FILIAIS",
+  },
+  {
+    path: "/app/users",
+    label: "Usuários",
+    icon: <UserCircleIcon size={32} />,
+    requiredPermission: "USUARIOS",
+  },
+  {
+    path: "/app/pagamentos",
+    label: "Pagamento",
+    icon: <CurrencyDollarSimpleIcon size={32} />,
+    requiredPermission: "PAGAMENTOS",
+  },
+];
+
+const hasPermission = (
+  user: User | null,
+  requiredPermission?: string
+): boolean => {
+  if (!requiredPermission) return true;
+  if (!user) return false;
+  if (user.permissions.some((p) => p.permission === "ADMIN")) return true;
+  return user.permissions.some((p) => p.permission === requiredPermission);
+};
 
 export default function Navbar() {
   const { user } = useAuth();
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const allowedRoutes = navRoutes.filter((route) =>
+    hasPermission(user, route.requiredPermission)
+  );
 
   useEffect(() => {
     const handleResize = () => {
@@ -42,41 +108,14 @@ export default function Navbar() {
 
         {!isMobile && (
           <div style={style.buttonContainer}>
-            <NavButton
-              path="/app/home"
-              label="Home"
-              icon={<HouseIcon size={32} />}
-            />
-            <NavButton
-              path="/app/search"
-              label="Pesquisa"
-              icon={<MagnifyingGlassIcon size={32} />}
-            />
-            <NavButton
-              path="/app/form"
-              label="Form"
-              icon={<PencilSimpleLineIcon size={32} />}
-            />
-            <NavButton
-              path="/app/turmas"
-              label="Turmas"
-              icon={<UsersFourIcon size={32} />}
-            />
-            <NavButton
-              path="/app/filiais"
-              label="Filiais"
-              icon={<BuildingApartmentIcon size={32} />}
-            />
-            <NavButton
-              path="/app/users"
-              label="Usuários"
-              icon={<UserCircleIcon size={32} />}
-            />
-            <NavButton
-              path="/app/pagamentos"
-              label="Pagamento"
-              icon={<CurrencyDollarSimpleIcon size={32} />}
-            />
+            {allowedRoutes.map((route) => (
+              <NavButton
+                key={route.path}
+                path={route.path}
+                label={route.label}
+                icon={route.icon}
+              />
+            ))}
           </div>
         )}
 
@@ -109,36 +148,15 @@ export default function Navbar() {
       </div>
       {isMobile && menuOpen && (
         <div style={{ ...style.mobileMenuRow, padding: 0 }}>
-          <NavButton
-            path="/app/home"
-            label="Home"
-            icon={<HouseIcon size={32} />}
-          />
-          <NavButton
-            path="/app/search"
-            label="Pesquisa"
-            icon={<MagnifyingGlassIcon size={32} />}
-          />
-          <NavButton
-            path="/app/form"
-            label="Form"
-            icon={<PencilSimpleLineIcon size={32} />}
-          />
-          <NavButton
-            path="/app/turmas"
-            label="Turmas"
-            icon={<UsersFourIcon size={32} />}
-          />
-          <NavButton
-            path="/app/users"
-            label="Usuários"
-            icon={<UserCircleIcon size={32} />}
-          />
-          <NavButton
-            path="/app/pagamentos"
-            label="Pagamentos"
-            icon={<CurrencyDollarSimpleIcon size={32} />}
-          />
+          {allowedRoutes.map((route) => (
+            <NavButton
+              key={route.path}
+              path={route.path}
+              label={route.label}
+              icon={route.icon}
+              setOpen={setMenuOpen}
+            />
+          ))}
         </div>
       )}
       <div style={style.content}>
