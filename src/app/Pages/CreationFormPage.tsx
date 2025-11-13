@@ -101,7 +101,7 @@ export default function CreationFormPage() {
       options: [],
     },
 
-    { name: "file", placeholder: "Foto", type: "FILE", required: true },
+    { name: "file", placeholder: "Foto", type: "FILE" },
 
     {
       name: "responsavel.nomeCompleto",
