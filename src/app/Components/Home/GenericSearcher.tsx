@@ -1,7 +1,7 @@
 import Colors from "../../Utils/Colors";
 import { StyleSheet } from "../../Utils/Stylesheet";
 import type { Aluno } from "../../Utils/Types";
-import { SearchResults } from "../Search/SearchField";
+import SearchResults from "../Search/SearchResults";
 
 export default function GenericSearcher({
   data,

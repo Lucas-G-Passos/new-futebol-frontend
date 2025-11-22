@@ -9,9 +9,7 @@ import Colors from "../Utils/Colors";
 
 export default function Search() {
   const [results, setResults] = useState<any[]>([]);
-  const [searchType, setSearchType] = useState<"ALUNO" | "FUNCIONARIO">(
-    "ALUNO"
-  );
+  const [searchInactive, setSearchInactive] = useState<boolean>(false);
   const [selected, setSelected] = useState<any | null>(null);
   const { setError } = useAuth();
 
@@ -20,60 +18,35 @@ export default function Search() {
     setValue: (value: string) => void;
   }>(null);
 
-  const handleSearch = async (query: string, type: "ALUNO" | "FUNCIONARIO") => {
+  const handleSearch = async (query: string) => {
     try {
       if (!query.trim()) {
         setResults([]);
         return [];
       }
 
-      if (type === "ALUNO") {
-        const response = await fetch(
-          `${
-            import.meta.env.VITE_BACKEND_URL
-          }/alunos/search?nome=${encodeURIComponent(query)}`,
-          {
-            credentials: "include",
-          }
-        );
+      const endpoint = searchInactive
+        ? `/alunos/inativos/search?nome=${encodeURIComponent(query)}`
+        : `/alunos/search?nome=${encodeURIComponent(query)}`;
 
-        if (!response.ok) {
-          if (response.status === 404) {
-            setResults([]);
-            return [];
-          }
-          throw new Error(await response.text());
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}${endpoint}`,
+        {
+          credentials: "include",
         }
+      );
 
-        const data = await response.json();
-        setResults(data);
-        return data;
+      if (!response.ok) {
+        if (response.status === 404) {
+          setResults([]);
+          return [];
+        }
+        throw new Error(await response.text());
       }
 
-      if (type === "FUNCIONARIO") {
-        const response = await fetch(
-          `${
-            import.meta.env.VITE_BACKEND_URL
-          }/funcionarios/search?nome=${encodeURIComponent(query)}`,
-          {
-            credentials: "include",
-          }
-        );
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            setResults([]);
-            return [];
-          }
-          throw new Error(await response.text());
-        }
-
-        const data = await response.json();
-        setResults(data);
-        return data;
-      }
-
-      return [];
+      const data = await response.json();
+      setResults(data);
+      return data;
     } catch (error: any) {
       console.error("Erro na busca:", error);
       setError(error);
@@ -82,9 +55,8 @@ export default function Search() {
     }
   };
 
-  const handleSearchResult = (data: any, type: "ALUNO" | "FUNCIONARIO") => {
+  const handleSearchResult = (data: any) => {
     setResults(data || []);
-    setSearchType(type);
   };
 
   // Function to refresh search with current query
@@ -92,7 +64,7 @@ export default function Search() {
     if (searchFieldRef.current) {
       const currentQuery = searchFieldRef.current.getValue();
       if (currentQuery.trim()) {
-        await handleSearch(currentQuery, searchType);
+        await handleSearch(currentQuery);
       }
     }
   };
@@ -101,7 +73,7 @@ export default function Search() {
   const triggerSearch = async () => {
     if (searchFieldRef.current) {
       const query = searchFieldRef.current.getValue();
-      await handleSearch(query, searchType);
+      await handleSearch(query);
     }
   };
 
@@ -124,13 +96,13 @@ export default function Search() {
   };
 
   const getTitle = () => {
-    return searchType === "ALUNO" ? "Buscar Alunos" : "Buscar Funcionários";
+    return searchInactive ? "Buscar Alunos Inativos" : "Buscar Alunos";
   };
 
   const getEmptyStateMessage = () => {
     if (!searchFieldRef.current?.getValue()) {
       return `Digite um termo de busca para encontrar ${
-        searchType === "ALUNO" ? "alunos" : "funcionários"
+        searchInactive ? "alunos inativos" : "alunos"
       }`;
     }
     return `Nenhum resultado encontrado para "${searchFieldRef.current.getValue()}"`;
@@ -156,34 +128,21 @@ export default function Search() {
         onSearch={handleSearch}
         onResult={handleSearchResult}
         ref={searchFieldRef}
-        type={searchType}
       />
 
-      {/* Search Type Selector */}
-      <div style={style.typeSelector}>
-        <label style={style.radioLabel}>
+      {/* Inactive Students Checkbox */}
+      <div style={style.checkboxContainer}>
+        <label style={style.checkboxLabel}>
           <input
-            type="radio"
-            value="ALUNO"
-            checked={searchType === "ALUNO"}
-            onChange={(e) =>
-              setSearchType(e.target.value as "ALUNO" | "FUNCIONARIO")
-            }
-            style={style.radioInput}
+            type="checkbox"
+            checked={searchInactive}
+            onChange={(e) => {
+              setSearchInactive(e.target.checked);
+              setResults([]); // Clear results when switching
+            }}
+            style={style.checkboxInput}
           />
-          Alunos
-        </label>
-        <label style={style.radioLabel}>
-          <input
-            type="radio"
-            value="FUNCIONARIO"
-            checked={searchType === "FUNCIONARIO"}
-            onChange={(e) =>
-              setSearchType(e.target.value as "ALUNO" | "FUNCIONARIO")
-            }
-            style={style.radioInput}
-          />
-          Funcionários
+          Buscar apenas alunos inativos
         </label>
       </div>
 
@@ -192,17 +151,13 @@ export default function Search() {
           <div style={style.resultsHeader}>
             <h3 style={style.resultsTitle}>
               Resultados ({results.length}) -{" "}
-              {searchType === "ALUNO" ? "Alunos" : "Funcionários"}
+              {searchInactive ? "Alunos Inativos" : "Alunos"}
             </h3>
             <button onClick={refreshSearch} style={style.refreshButton}>
               ↻ Atualizar
             </button>
           </div>
-          <SearchResults
-            data={results}
-            onClick={setSelected}
-            type={searchType}
-          />
+          <SearchResults data={results} onClick={setSelected} type="ALUNO" />
         </div>
       )}
 
@@ -224,23 +179,12 @@ export default function Search() {
       )}
 
       {/* Student Details Modal */}
-      {selected && searchType === "ALUNO" && (
+      {selected && (
         <DetailsAluno
           data={selected}
           close={handleCloseDetails}
           onUpdate={handleStudentUpdated}
         />
-      )}
-
-      {/* TODO: Add DetailsFuncionario component when available */}
-      {selected && searchType === "FUNCIONARIO" && (
-        <div style={style.comingSoon}>
-          <h3>Detalhes do Funcionário</h3>
-          <p>Funcionalidade em desenvolvimento</p>
-          <button onClick={handleCloseDetails} style={style.secondaryButton}>
-            Fechar
-          </button>
-        </div>
       )}
 
       <ErrorDisplay />
@@ -273,13 +217,14 @@ const style = StyleSheet.create({
     display: "flex",
     gap: "8px",
   },
-  typeSelector: {
+  checkboxContainer: {
     display: "flex",
-    gap: "16px",
     alignItems: "center",
-    padding: "12px 0",
+    padding: "12px 16px",
+    backgroundColor: Colors.surface,
+    borderRadius: "8px",
   },
-  radioLabel: {
+  checkboxLabel: {
     display: "flex",
     alignItems: "center",
     gap: "8px",
@@ -288,9 +233,11 @@ const style = StyleSheet.create({
     fontSize: "14px",
     fontWeight: "500",
   },
-  radioInput: {
+  checkboxInput: {
     margin: 0,
     cursor: "pointer",
+    width: "16px",
+    height: "16px",
   },
   resultsSection: {
     marginTop: "8px",
@@ -360,19 +307,5 @@ const style = StyleSheet.create({
     ":hover": {
       backgroundColor: Colors.surfaceAlt,
     },
-  },
-  comingSoon: {
-    position: "fixed",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    backgroundColor: Colors.surface,
-    padding: "24px",
-    borderRadius: "12px",
-    border: `1px solid ${Colors.border}`,
-    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
-    zIndex: 1000,
-    textAlign: "center",
-    minWidth: "300px",
   },
 });

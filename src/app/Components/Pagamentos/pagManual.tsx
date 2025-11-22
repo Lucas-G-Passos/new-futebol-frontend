@@ -125,9 +125,14 @@ export default function PagamentoManual({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+    ];
     if (!allowedTypes.includes(file.type)) {
-      alert('Por favor, envie um arquivo PDF ou uma imagem (JPG, PNG)');
+      alert("Por favor, envie um arquivo PDF ou uma imagem (JPG, PNG)");
       return;
     }
 
@@ -135,30 +140,32 @@ export default function PagamentoManual({
 
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append("file", file);
 
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/pagamentos/parse`,
         {
-          method: 'POST',
-          credentials: 'include',
+          method: "POST",
+          credentials: "include",
           body: formData,
         }
       );
 
       if (!response.ok) {
-        throw new Error('Erro ao processar o comprovante');
+        throw new Error("Erro ao processar o comprovante");
       }
 
       const data = await response.json();
       setParsedData(data);
-      alert('Comprovante processado com sucesso! Os campos foram preenchidos automaticamente.');
+      alert(
+        "Comprovante processado com sucesso! Os campos foram preenchidos automaticamente."
+      );
     } catch (error: any) {
-      alert(error.message || 'Erro ao processar o comprovante');
+      alert(error.message || "Erro ao processar o comprovante");
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
     }
   };
@@ -168,11 +175,13 @@ export default function PagamentoManual({
   };
 
   const fields = useMemo<FieldConfig[]>(() => {
-    // Convert date from DD/MM/YYYY to YYYY-MM-DD format
     let formattedDate = "";
     if (parsedData?.dataPagamento) {
       const [day, month, year] = parsedData.dataPagamento.split("/");
-      formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(
+        2,
+        "0"
+      )}`;
     }
 
     return [
@@ -181,7 +190,10 @@ export default function PagamentoManual({
         placeholder: "Nome do Pagador",
         type: "TEXT",
         required: true,
-        defaultValue: parsedData?.nomeResponsavel || selectedAluno?.responsavel?.nomeCompleto || "",
+        defaultValue:
+          parsedData?.nomeResponsavel ||
+          selectedAluno?.responsavel?.nomeCompleto ||
+          "",
       },
       {
         name: "dataPago",
@@ -239,7 +251,7 @@ export default function PagamentoManual({
               type="file"
               accept="application/pdf,image/jpeg,image/jpg,image/png"
               onChange={handleFileUpload}
-              style={{ display: 'none' }}
+              style={{ display: "none" }}
             />
             <button
               type="button"
@@ -248,7 +260,9 @@ export default function PagamentoManual({
               style={styles.uploadButton}
             >
               <Upload size={20} style={{ marginRight: 8 }} />
-              {isUploading ? 'Processando...' : 'Enviar Comprovante (PDF/Imagem)'}
+              {isUploading
+                ? "Processando..."
+                : "Enviar Comprovante (PDF/Imagem)"}
             </button>
             {parsedData && (
               <div style={styles.parsedDataBadge}>

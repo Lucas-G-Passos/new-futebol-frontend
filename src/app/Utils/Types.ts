@@ -170,3 +170,13 @@ export interface ConciliacaoResponse {
   pagamentosToCreate: Pagamento[];
   failedFields: Map<String, String>;
 }
+
+export interface DashBoard {
+  adimplentes: number;
+  inadimplentes: number;
+  total: number;
+  ativos: number;
+  inativos: number;
+  valorEsperado: number;
+  valorRecebido: number;
+}
