@@ -131,8 +131,6 @@ export default function Turmas() {
         local: formData.local,
       };
 
-      console.log("Creating turma:", turmaData);
-
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/turmas`,
         {
@@ -149,9 +147,6 @@ export default function Turmas() {
         const errorText = await response.text();
         throw new Error(errorText || "Erro ao criar turma");
       }
-
-      const result = await response.json();
-      console.log("Turma created:", result);
 
       setShowForm(false);
       setRefresh(!refresh);
@@ -192,7 +187,6 @@ export default function Turmas() {
         throw new Error(errorText || "Erro ao editar turma");
       }
 
-      console.log(turmaData);
       setEditForm(false);
       setRefresh(!refresh);
       alert("Turma editada com sucesso!");
@@ -203,7 +197,6 @@ export default function Turmas() {
   };
 
   const handleSelectTurmaForEdit = (formData: Record<string, any>) => {
-    console.log("selectingTurma:", formData);
     setSelectedTurma(formData);
     setEditForm(true);
   };

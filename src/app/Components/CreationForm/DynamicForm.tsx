@@ -282,7 +282,6 @@ export default function DynamicForm({
           jsonData[key] = value;
         }
       }
-      console.log("formData being sent:", jsonData);
 
       await onSubmit(jsonData);
     }

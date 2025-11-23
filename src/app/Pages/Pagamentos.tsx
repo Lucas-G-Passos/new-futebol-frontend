@@ -31,7 +31,6 @@ export default function Pagamentos() {
         throw new Error("Erro ao buscar dados do dashboard");
       }
       const data: DashBoard = await response.json();
-      console.log(data);
       setDashboardData(data);
     } catch (error: any) {
       alert(error.message || "Erro ao buscar dados do dashboard");
@@ -51,7 +50,6 @@ export default function Pagamentos() {
         return;
       }
       const data = await response.json();
-      console.log(data);
       setInadimplentes(data);
     } catch (error) {
       console.error("Erro ao buscar inadimplentes:", error);

@@ -113,7 +113,6 @@ export default function UserManagement() {
         password: formdata.password,
         permissions: formdata.permissions,
       };
-      console.log("Userdata: " + userData);
 
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/user/create`,
@@ -129,11 +128,6 @@ export default function UserManagement() {
         const errorText = await response.text();
         throw new Error(errorText || "Erro ao criar usuário");
       }
-
-      const result = await response.json();
-
-      console.log("Usuario Criado!" + result);
-
       setCreateForm(false);
       setRefresh(!refresh);
       alert("Usuário criado com sucesso!");
@@ -172,8 +166,6 @@ export default function UserManagement() {
         throw new Error(errorText || "Erro ao editar usuário");
       }
 
-      console.log("User edit data prepared:", userData);
-
       alert("Usuário alterado com sucesso!");
 
       setEditForm(false);
@@ -185,7 +177,6 @@ export default function UserManagement() {
   };
 
   const handleSelectUserForEdit = (formData: Record<string, any>) => {
-    console.log("Selecting user:", formData);
     setSelectedUser(formData);
     setEditForm(true);
   };

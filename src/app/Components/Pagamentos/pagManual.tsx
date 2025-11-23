@@ -53,9 +53,6 @@ export default function PagamentoManual({
 
       const data = await response.json();
       setAlunos(data);
-
-      console.log(alunos);
-      console.log(data);
     } catch (error: any) {
       alert(error.message);
     }

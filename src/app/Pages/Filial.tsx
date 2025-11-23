@@ -83,8 +83,6 @@ export default function Filial() {
         estado: formData.estado,
       };
 
-      console.log("Creating filial:", filialData);
-
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/filiais`,
         {
@@ -101,10 +99,6 @@ export default function Filial() {
         const errorText = await response.text();
         throw new Error(errorText || "Erro ao criar filial");
       }
-
-      const result = await response.json();
-      console.log("Filial created:", result);
-
       setShowForm(false);
       setRefresh(!refresh);
       alert("Filial criada com sucesso!");
@@ -141,8 +135,6 @@ export default function Filial() {
         const errorText = await response.text();
         throw new Error(errorText || "Erro ao editar filial");
       }
-
-      console.log(filialData);
       setEditForm(false);
       setRefresh(!refresh);
       alert("Filial editada com sucesso!");
@@ -153,7 +145,6 @@ export default function Filial() {
   };
 
   const handleSelectFilialForEdit = (formData: Record<string, any>) => {
-    console.log("selectingFilial:", formData);
     setSelectedFilial(formData);
     setEditForm(true);
   };
