@@ -209,6 +209,13 @@ export default function CreationFormPage() {
       mask: "numberOnly",
     },
     {
+      name: "numeroCartao",
+      placeholder: "Últimos 4 dígitos do cartão pagador",
+      type: "NUMBER",
+      required: true,
+      mask: "numberOnly",
+    },
+    {
       name: "dataPagamento",
       placeholder: "Dia a se pagar",
       type: "TEXT",
