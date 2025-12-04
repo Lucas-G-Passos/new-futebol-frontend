@@ -1,11 +1,14 @@
-import { useState, useEffect, useMemo } from "react";
-import PagamentoManual from "../Components/Pagamentos/pagManual";
-import { StyleSheet } from "../Utils/Stylesheet";
-import Colors from "../Utils/Colors";
-import { type Aluno } from "../Utils/Types";
+import { useEffect, useMemo, useState } from "react";
 import AlunoTable from "../Components/Aluno/AlunoTable";
 import AdicionarDivida from "../Components/Pagamentos/AdicionarDivida";
 import Conciliacao from "../Components/Pagamentos/Conciliacao";
+import PagamentoManual from "../Components/Pagamentos/pagManual";
+import Colors from "../Utils/Colors";
+import { StyleSheet } from "../Utils/Stylesheet";
+import { type Aluno, type DashBoard } from "../Utils/Types";
+import GraphExpectedReceived from "../Components/Pagamentos/GraphExpectedReceived";
+import GraphAdimplentesInadimplentes from "./GraphAdimplentesInadimplentes";
+import AnalyticsLineGraph from "../Components/Pagamentos/AnalyticsLineGraph";
 
 export default function Pagamentos() {
   const [showManual, setShowManual] = useState(false);
@@ -13,6 +16,27 @@ export default function Pagamentos() {
   const [isMobile, setIsMobile] = useState(false);
   const [inadimplentes, setInadimplentes] = useState<Aluno[]>([]);
   const [showTable, setShowTable] = useState<boolean>(false);
+  const [showGraphs, setShowGraphs] = useState<boolean>(false);
+  const [dashboardData, setDashboardData] = useState<DashBoard | null>(null);
+
+  const fetchDashboardData = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/pagamentos/dashboard`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Erro ao buscar dados do dashboard");
+      }
+      const data: DashBoard = await response.json();
+      setDashboardData(data);
+    } catch (error: any) {
+      alert(error.message || "Erro ao buscar dados do dashboard");
+    }
+  };
 
   const fetchInadimplentes = async () => {
     try {
@@ -27,7 +51,6 @@ export default function Pagamentos() {
         return;
       }
       const data = await response.json();
-      console.log(data);
       setInadimplentes(data);
     } catch (error) {
       console.error("Erro ao buscar inadimplentes:", error);
@@ -43,10 +66,15 @@ export default function Pagamentos() {
     checkMobile();
     window.addEventListener("resize", checkMobile);
 
+    fetchDashboardData();
     fetchInadimplentes();
 
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  useEffect(() => {
+    console.log(dashboardData);
+  }, [dashboardData]);
 
   const styles = isMobile ? mobileStyle : style;
 
@@ -67,30 +95,40 @@ export default function Pagamentos() {
     setShowManual(!showManual);
     setShowAddDivida(false);
     setShowTable(false);
+    setShowGraphs(false);
   };
 
   const handleShowAddDivida = () => {
     setShowAddDivida(!showAddDivida);
     setShowManual(false);
     setShowTable(false);
+    setShowGraphs(false);
   };
 
   const handleShowTable = () => {
     setShowTable(!showTable);
     setShowManual(false);
     setShowAddDivida(false);
+    setShowGraphs(false);
+  };
+
+  const handleShowGraphs = () => {
+    setShowGraphs(!showGraphs);
+    setShowManual(false);
+    setShowAddDivida(false);
+    setShowTable(false);
   };
 
   const renderContent = () => {
-    if (showManual && !showAddDivida && !showTable) {
+    if (showManual) {
       return <PagamentoManual showClose={false} />;
     }
 
-    if (!showManual && showAddDivida && !showTable) {
+    if (showAddDivida) {
       return <AdicionarDivida showClose={false} />;
     }
 
-    if (!showManual && !showAddDivida && showTable) {
+    if (showTable) {
       return (
         <div style={styles.tableSection}>
           <h2 style={styles.sectionTitle}>Alunos Inadimplentes</h2>
@@ -99,15 +137,21 @@ export default function Pagamentos() {
       );
     }
 
-    if (!showManual && !showAddDivida && !showTable) {
+    if (showGraphs && dashboardData) {
       return (
-        <div>
-          <Conciliacao />
-        </div>
+        <>
+          <GraphExpectedReceived data={dashboardData} />
+          <GraphAdimplentesInadimplentes data={dashboardData} />
+          <AnalyticsLineGraph analytics={dashboardData.analytics} />
+        </>
       );
     }
 
-    return null;
+    return (
+      <div>
+        <Conciliacao />
+      </div>
+    );
   };
 
   return (
@@ -124,6 +168,9 @@ export default function Pagamentos() {
           <button style={styles.toggleButton} onClick={handleShowTable}>
             {showTable ? "Fechar" : "Inadimplentes"}
           </button>
+          <button style={styles.toggleButton} onClick={handleShowGraphs}>
+            {showGraphs ? "Fechar" : "Gráficos"}
+          </button>
         </div>
       </div>
 
@@ -136,12 +183,14 @@ export default function Pagamentos() {
               {formatCurrency(totalValorDevido)}
             </div>
             <div style={styles.totalCardSubtext}>
-              {inadimplentes.length} {inadimplentes.length === 1 ? "aluno inadimplente" : "alunos inadimplentes"}
+              {inadimplentes.length}{" "}
+              {inadimplentes.length === 1
+                ? "aluno inadimplente"
+                : "alunos inadimplentes"}
             </div>
           </div>
         </div>
       )}
-
       {renderContent()}
     </div>
   );

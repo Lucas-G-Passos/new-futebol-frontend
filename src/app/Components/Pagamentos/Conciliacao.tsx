@@ -96,7 +96,6 @@ export default function Conciliacao() {
       }
 
       const data = await response.json();
-      console.log(data);
       setData(data);
     } catch (error: any) {
       alert(error.message);

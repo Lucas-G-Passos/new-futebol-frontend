@@ -101,7 +101,7 @@ export default function CreationFormPage() {
       options: [],
     },
 
-    { name: "file", placeholder: "Foto", type: "FILE", required: true },
+    { name: "file", placeholder: "Foto", type: "FILE" },
 
     {
       name: "responsavel.nomeCompleto",
@@ -205,6 +205,13 @@ export default function CreationFormPage() {
       name: "valorFatura",
       placeholder: "Valor da Fatura",
       type: "TEXT",
+      required: true,
+      mask: "numberOnly",
+    },
+    {
+      name: "numeroCartao",
+      placeholder: "Últimos 4 dígitos do cartão pagador",
+      type: "NUMBER",
       required: true,
       mask: "numberOnly",
     },

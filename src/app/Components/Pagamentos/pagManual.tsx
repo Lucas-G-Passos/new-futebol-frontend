@@ -1,10 +1,10 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { type Aluno, type FieldConfig } from "../../Utils/Types";
 import { StyleSheet } from "../../Utils/Stylesheet";
 import Colors from "../../Utils/Colors";
 import DynamicForm from "../CreationForm/DynamicForm";
 import GenericSearcher from "../Home/GenericSearcher";
-import { XIcon } from "@phosphor-icons/react";
+import { XIcon, Upload } from "@phosphor-icons/react";
 
 export default function PagamentoManual({
   onClose,
@@ -18,6 +18,9 @@ export default function PagamentoManual({
   const [alunos, setAlunos] = useState<Array<Aluno> | null>(null);
   const [selectedAluno, setSelected] = useState<Aluno | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [parsedData, setParsedData] = useState<any>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -50,9 +53,6 @@ export default function PagamentoManual({
 
       const data = await response.json();
       setAlunos(data);
-
-      console.log(alunos);
-      console.log(data);
     } catch (error: any) {
       alert(error.message);
     }
@@ -118,26 +118,93 @@ export default function PagamentoManual({
     }
   };
 
-  const fields = useMemo<FieldConfig[]>(
-    () => [
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      alert("Por favor, envie um arquivo PDF ou uma imagem (JPG, PNG)");
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/pagamentos/parse`,
+        {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Erro ao processar o comprovante");
+      }
+
+      const data = await response.json();
+      setParsedData(data);
+      alert(
+        "Comprovante processado com sucesso! Os campos foram preenchidos automaticamente."
+      );
+    } catch (error: any) {
+      alert(error.message || "Erro ao processar o comprovante");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const fields = useMemo<FieldConfig[]>(() => {
+    let formattedDate = "";
+    if (parsedData?.dataPagamento) {
+      const [day, month, year] = parsedData.dataPagamento.split("/");
+      formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(
+        2,
+        "0"
+      )}`;
+    }
+
+    return [
       {
         name: "nomeResponsavel",
         placeholder: "Nome do Pagador",
         type: "TEXT",
         required: true,
-        defaultValue: selectedAluno?.responsavel?.nomeCompleto || "",
+        defaultValue:
+          parsedData?.nomeResponsavel ||
+          selectedAluno?.responsavel?.nomeCompleto ||
+          "",
       },
       {
         name: "dataPago",
         placeholder: "Data do Pagamento",
         type: "DATE",
         required: true,
+        defaultValue: formattedDate || "",
       },
       {
         name: "valorPago",
         placeholder: "Valor do Pagamento",
         type: "NUMBER",
         required: true,
+        defaultValue: parsedData?.valorPagamento || "",
       },
       {
         name: "metodoPagamento",
@@ -149,6 +216,7 @@ export default function PagamentoManual({
           { label: "PIX", value: "PIX" },
           { label: "Dinheiro", value: "DINHEIRO" },
         ],
+        defaultValue: parsedData?.metodoPagamento || "",
       },
       {
         name: "observacao",
@@ -156,9 +224,8 @@ export default function PagamentoManual({
         type: "TEXT",
         required: true,
       },
-    ],
-    [selectedAluno]
-  );
+    ];
+  }, [selectedAluno, parsedData]);
 
   const styles = isMobile ? mobileStyle : style;
 
@@ -175,6 +242,31 @@ export default function PagamentoManual({
 
       <div style={styles.content}>
         <div>
+          <div style={styles.uploadSection}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/pdf,image/jpeg,image/jpg,image/png"
+              onChange={handleFileUpload}
+              style={{ display: "none" }}
+            />
+            <button
+              type="button"
+              onClick={handleUploadClick}
+              disabled={isUploading}
+              style={styles.uploadButton}
+            >
+              <Upload size={20} style={{ marginRight: 8 }} />
+              {isUploading
+                ? "Processando..."
+                : "Enviar Comprovante (PDF/Imagem)"}
+            </button>
+            {parsedData && (
+              <div style={styles.parsedDataBadge}>
+                Dados do comprovante carregados
+              </div>
+            )}
+          </div>
           <DynamicForm
             title="Dados do Pagamento"
             sendAs="JSON"
@@ -268,6 +360,35 @@ const style = StyleSheet.create({
   },
   formSection: {
     flex: 1,
+  },
+  uploadSection: {
+    marginBottom: 20,
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
+  },
+  uploadButton: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "12px 20px",
+    backgroundColor: Colors.primary,
+    color: Colors.black,
+    border: "none",
+    borderRadius: 8,
+    cursor: "pointer",
+    fontSize: 14,
+    fontWeight: 600,
+    transition: "opacity 0.2s, background-color 0.2s",
+  },
+  parsedDataBadge: {
+    padding: "8px 12px",
+    backgroundColor: Colors.borderSuccess,
+    color: Colors.white,
+    borderRadius: 6,
+    fontSize: 13,
+    fontWeight: 500,
+    textAlign: "center",
   },
   searchContainer: {
     backgroundColor: Colors.surface,
@@ -378,6 +499,36 @@ const mobileStyle = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     gap: 16,
+  },
+  uploadSection: {
+    marginBottom: 15,
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+  },
+  uploadButton: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "10px 16px",
+    backgroundColor: Colors.primary,
+    color: Colors.black,
+    border: "none",
+    borderRadius: 8,
+    cursor: "pointer",
+    fontSize: 13,
+    fontWeight: 600,
+    transition: "opacity 0.2s, background-color 0.2s",
+    width: "100%",
+  },
+  parsedDataBadge: {
+    padding: "6px 10px",
+    backgroundColor: Colors.borderSuccess,
+    color: Colors.white,
+    borderRadius: 6,
+    fontSize: 12,
+    fontWeight: 500,
+    textAlign: "center",
   },
   searchContainer: {
     backgroundColor: Colors.backgroundAlt,
