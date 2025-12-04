@@ -8,6 +8,7 @@ import { StyleSheet } from "../Utils/Stylesheet";
 import { type Aluno, type DashBoard } from "../Utils/Types";
 import GraphExpectedReceived from "../Components/Pagamentos/GraphExpectedReceived";
 import GraphAdimplentesInadimplentes from "./GraphAdimplentesInadimplentes";
+import AnalyticsLineGraph from "../Components/Pagamentos/AnalyticsLineGraph";
 
 export default function Pagamentos() {
   const [showManual, setShowManual] = useState(false);
@@ -70,6 +71,10 @@ export default function Pagamentos() {
 
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  useEffect(() => {
+    console.log(dashboardData);
+  }, [dashboardData]);
 
   const styles = isMobile ? mobileStyle : style;
 
@@ -137,6 +142,7 @@ export default function Pagamentos() {
         <>
           <GraphExpectedReceived data={dashboardData} />
           <GraphAdimplentesInadimplentes data={dashboardData} />
+          <AnalyticsLineGraph analytics={dashboardData.analytics} />
         </>
       );
     }

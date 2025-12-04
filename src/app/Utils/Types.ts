@@ -179,4 +179,12 @@ export interface DashBoard {
   inativos: number;
   valorEsperado: number;
   valorRecebido: number;
+  analytics: Array<Analytics>;
+}
+
+export interface Analytics {
+  expectedValue: number;
+  receivedValue: number;
+  month: number;
+  year: number;
 }
