@@ -103,7 +103,7 @@ export default function Navbar() {
             if (isMobile) setMenuOpen((prev) => !prev);
           }}
         >
-          <img src="/logo.png" style={style.logo} />
+          <img src={import.meta.env.VITE_LOGO_URL} style={style.logo} />
         </div>
 
         {!isMobile && (

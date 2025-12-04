@@ -36,7 +36,7 @@ export default function LoginForm({
   return (
     <form action={login} style={style.mainContainer}>
       <div style={style.imageContainer}>
-        <img src="/logo.png" style={style.image} />
+        <img src={import.meta.env.VITE_LOGO_URL} style={style.image} />
         <h1 style={{ color: "red" }}>BETA TEST</h1>
       </div>
       <div style={style.textBoxContainer}>
