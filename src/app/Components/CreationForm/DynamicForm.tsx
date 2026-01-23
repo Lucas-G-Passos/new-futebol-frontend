@@ -94,7 +94,7 @@ export default function DynamicForm({
     let errorMsg = "";
 
     if (mask === "numberOnly" && typeof rawValue === "string") {
-      value = rawValue.replace(/[^0-9.,]/g, "");
+      value = rawValue.replace(/[^0-9.,]/g, "").replace(/,/g, ".");
       if (value !== rawValue) {
         errorMsg = "Apenas números são permitidos";
       }
@@ -324,8 +324,8 @@ export default function DynamicForm({
                     borderColor: error
                       ? "red"
                       : isHoveredField
-                      ? Colors.primary
-                      : Colors.border,
+                        ? Colors.primary
+                        : Colors.border,
                     backgroundColor: isHoveredField
                       ? Colors.surfaceAlt
                       : Colors.inputBackground,
@@ -457,8 +457,8 @@ export default function DynamicForm({
                           // Limpa o valor quando desmarca
                           [field.name]: checked
                             ? prev[field.name] ||
-                              field.ifCheckboxOk?.defaultValue ||
-                              ""
+                            field.ifCheckboxOk?.defaultValue ||
+                            ""
                             : undefined,
                         }));
                       }}
@@ -483,8 +483,8 @@ export default function DynamicForm({
                         borderColor: error
                           ? "red"
                           : isHoveredField
-                          ? Colors.primary
-                          : Colors.border,
+                            ? Colors.primary
+                            : Colors.border,
                         backgroundColor: isHoveredField
                           ? Colors.surfaceAlt
                           : Colors.inputBackground,
