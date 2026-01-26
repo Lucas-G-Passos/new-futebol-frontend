@@ -3,17 +3,21 @@ import type { Turma, Aluno } from "../../Utils/Types";
 import { StyleSheet } from "../../Utils/Stylesheet";
 import Colors from "../../Utils/Colors";
 import DetailsAluno from "../Search/DetailsAluno";
+import AreYouSureDialog from "../Search/AreYouSureDialog";
 
 export default function TurmaTable({
   data,
   onEdit,
+  onDelete,
 }: {
   data: { turmas: Turma[] };
   onEdit: (formData: Record<string, any>) => Promise<any> | void;
+  onDelete: (turma: Turma) => void;
 }) {
   const [selectedAluno, setSelectedAluno] = useState<Aluno | null>(null);
   const [expandedTurma, setExpandedTurma] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [deleteTurma, setDeleteTurma] = useState<Turma | null>(null);
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -53,6 +57,21 @@ export default function TurmaTable({
     };
 
     onEdit(formData);
+  };
+
+  const handleDeleteTurma = (turma: Turma) => {
+    setDeleteTurma(turma);
+  };
+
+  const confirmDeleteTurma = () => {
+    if (deleteTurma) {
+      onDelete(deleteTurma);
+      setDeleteTurma(null);
+    }
+  };
+
+  const cancelDeleteTurma = () => {
+    setDeleteTurma(null);
   };
 
   const formatDaysOfWeek = (days: string[]) => {
@@ -134,8 +153,11 @@ export default function TurmaTable({
 
             {/* Actions */}
             <div style={style.mobileActions}>
-              <button onClick={onEdit} style={style.mobileEditButton}>
+              <button onClick={() => handleEditTurma(turma)} style={style.mobileEditButton}>
                 Editar Turma
+              </button>
+              <button onClick={() => handleDeleteTurma(turma)} style={style.mobileDeleteButton}>
+                Deletar Turma
               </button>
             </div>
 
@@ -231,12 +253,20 @@ export default function TurmaTable({
                   </div>
                 </td>
                 <td style={style.td}>
-                  <button
-                    onClick={() => handleEditTurma(turma)}
-                    style={style.editButton}
-                  >
-                    Editar
-                  </button>
+                  <div style={style.actionButtons}>
+                    <button
+                      onClick={() => handleEditTurma(turma)}
+                      style={style.editButton}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleDeleteTurma(turma)}
+                      style={style.deleteButton}
+                    >
+                      Deletar
+                    </button>
+                  </div>
                 </td>
               </tr>
 
@@ -289,6 +319,16 @@ export default function TurmaTable({
     <div style={style.mainContainer}>
       {selectedAluno && (
         <DetailsAluno data={selectedAluno} close={handleCloseAlunoDetails} />
+      )}
+
+      {deleteTurma && (
+        <AreYouSureDialog
+          label={`Tem certeza que deseja deletar a turma "${deleteTurma.nome}"?`}
+          options={["Cancelar", "Deletar"]}
+          onClose={cancelDeleteTurma}
+          onConfirm={confirmDeleteTurma}
+          isMobile={isMobile}
+        />
       )}
 
       {isMobile ? renderMobileView() : renderDesktopView()}
@@ -360,6 +400,24 @@ const style = StyleSheet.create({
       backgroundColor: "#45a049",
       transform: "translateY(-1px)",
     },
+  },
+  deleteButton: {
+    padding: "6px 12px",
+    backgroundColor: Colors.error,
+    color: Colors.white,
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontWeight: "600",
+    transition: "all 0.2s ease",
+    ":hover": {
+      backgroundColor: "#d32f2f",
+      transform: "translateY(-1px)",
+    },
+  },
+  actionButtons: {
+    display: "flex",
+    gap: "8px",
   },
   alunosCell: {
     display: "flex",
@@ -541,6 +599,22 @@ const style = StyleSheet.create({
     transition: "all 0.2s ease",
     ":hover": {
       backgroundColor: "#45a049",
+    },
+  },
+  mobileDeleteButton: {
+    padding: "10px 20px",
+    backgroundColor: Colors.error,
+    color: Colors.white,
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "14px",
+    width: "100%",
+    maxWidth: "200px",
+    transition: "all 0.2s ease",
+    ":hover": {
+      backgroundColor: "#d32f2f",
     },
   },
   mobileAlunosSection: {

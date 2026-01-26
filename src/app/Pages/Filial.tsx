@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { StyleSheet } from "../Utils/Stylesheet";
 import FilialTable from "../Components/Filial/FilialTable";
 import DynamicForm from "../Components/CreationForm/DynamicForm";
-import type { FieldConfig } from "../Utils/Types";
+import type { FieldConfig, Filial } from "../Utils/Types";
 import Colors from "../Utils/Colors";
 
 export default function Filial() {
@@ -149,6 +149,27 @@ export default function Filial() {
     setEditForm(true);
   };
 
+  const handleDeleteFilial = async(filial: Filial) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/filiais?id=${filial.id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Erro ao deletar filial");
+      }
+
+      setRefresh(!refresh);
+      alert("Filial deletada com sucesso!");
+    } catch (error) {
+
+    }
+  };
+
   return (
     <div style={style.mainContainer}>
       <div style={style.header}>
@@ -205,7 +226,7 @@ export default function Filial() {
         })()}
 
       {filiais && (
-        <FilialTable data={filiais} onEdit={handleSelectFilialForEdit} />
+        <FilialTable data={filiais} onEdit={handleSelectFilialForEdit} onDelete={handleDeleteFilial} />
       )}
     </div>
   );

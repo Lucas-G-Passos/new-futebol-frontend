@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { StyleSheet } from "../Utils/Stylesheet";
 import TurmaTable from "../Components/Turma/TurmaTable";
 import DynamicForm from "../Components/CreationForm/DynamicForm";
-import type { FieldConfig } from "../Utils/Types";
+import type { FieldConfig, Turma } from "../Utils/Types";
 import Colors from "../Utils/Colors";
 import { XIcon } from "@phosphor-icons/react";
 
@@ -196,6 +196,27 @@ export default function Turmas() {
     }
   };
 
+  const handleDeleteTurma = async(turma: Turma) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/turmas?id=${turma.id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Erro ao deletar turma");
+      }
+
+      setRefresh(!refresh);
+      alert("Turma deletada com sucesso!");
+    } catch (error) {
+      
+    }
+  }
+
   const handleSelectTurmaForEdit = (formData: Record<string, any>) => {
     setSelectedTurma(formData);
     setEditForm(true);
@@ -269,7 +290,7 @@ export default function Turmas() {
           );
         })()}
 
-      {turmas && <TurmaTable data={turmas} onEdit={handleSelectTurmaForEdit} />}
+      {turmas && <TurmaTable data={turmas} onEdit={handleSelectTurmaForEdit} onDelete={handleDeleteTurma}/>}
     </div>
   );
 }
