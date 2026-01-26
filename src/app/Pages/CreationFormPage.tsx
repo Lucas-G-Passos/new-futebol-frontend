@@ -103,6 +103,8 @@ export default function CreationFormPage() {
 
     { name: "file", placeholder: "Foto", type: "FILE" },
 
+    { name: "atestado", placeholder: "Atestado Médico", type: "FILE" },
+
     {
       name: "responsavel.nomeCompleto",
       placeholder: "Nome do Responsável",

@@ -37,7 +37,7 @@ export default function LoginForm({
     <form action={login} style={style.mainContainer}>
       <div style={style.imageContainer}>
         <img src={import.meta.env.VITE_LOGO_URL} style={style.image} />
-        <h1 style={{ color: "red" }}>BETA TEST</h1>
+        {/* <h1 style={{ color: "red" }}>BETA TEST</h1> */}
       </div>
       <div style={style.textBoxContainer}>
         <input

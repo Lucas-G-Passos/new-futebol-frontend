@@ -2,16 +2,20 @@ import { useEffect, useState } from "react";
 import type { Filial } from "../../Utils/Types";
 import { StyleSheet } from "../../Utils/Stylesheet";
 import Colors from "../../Utils/Colors";
+import AreYouSureDialog from "../Search/AreYouSureDialog";
 
 export default function FilialTable({
   data,
   onEdit,
+  onDelete,
 }: {
   data: { filiais: Filial[] };
   onEdit: (formData: Record<string, any>) => Promise<any> | void;
+  onDelete: (filialId: Filial) => void;
 }) {
   const [expandedFilial, setExpandedFilial] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [deleteFilial, setDeleteFilial] = useState<Filial | null>(null);
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -40,6 +44,21 @@ export default function FilialTable({
     };
 
     onEdit(formData);
+  };
+
+  const handleDeleteFilial = (filial: Filial) => {
+    setDeleteFilial(filial);
+  };
+
+  const confirmDeleteFilial = () => {
+    if (deleteFilial) {
+      onDelete(deleteFilial);
+      setDeleteFilial(null);
+    }
+  };
+
+  const cancelDeleteFilial = () => {
+    setDeleteFilial(null);
   };
 
   const renderMobileView = () => {
@@ -99,6 +118,12 @@ export default function FilialTable({
                 style={style.mobileEditButton}
               >
                 Editar Filial
+              </button>
+              <button
+                onClick={() => handleDeleteFilial(filial)}
+                style={style.mobileDeleteButton}
+              >
+                Deletar Filial
               </button>
             </div>
 
@@ -170,12 +195,20 @@ export default function FilialTable({
                   </div>
                 </td>
                 <td style={style.td}>
-                  <button
-                    onClick={() => handleEditFilial(filial)}
-                    style={style.editButton}
-                  >
-                    Editar
-                  </button>
+                  <div style={style.actionButtons}>
+                    <button
+                      onClick={() => handleEditFilial(filial)}
+                      style={style.editButton}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleDeleteFilial(filial)}
+                      style={style.deleteButton}
+                    >
+                      Deletar
+                    </button>
+                  </div>
                 </td>
               </tr>
 
@@ -217,6 +250,16 @@ export default function FilialTable({
 
   return (
     <div style={style.mainContainer}>
+      {deleteFilial && (
+        <AreYouSureDialog
+          label={`Tem certeza que deseja deletar a filial "${deleteFilial.nome}"?`}
+          options={["Cancelar", "Deletar"]}
+          onClose={cancelDeleteFilial}
+          onConfirm={confirmDeleteFilial}
+          isMobile={isMobile}
+        />
+      )}
+
       {isMobile ? renderMobileView() : renderDesktopView()}
     </div>
   );
@@ -286,6 +329,24 @@ const style = StyleSheet.create({
       backgroundColor: "#45a049",
       transform: "translateY(-1px)",
     },
+  },
+  deleteButton: {
+    padding: "6px 12px",
+    backgroundColor: Colors.error,
+    color: Colors.white,
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontWeight: "600",
+    transition: "all 0.2s ease",
+    ":hover": {
+      backgroundColor: "#d32f2f",
+      transform: "translateY(-1px)",
+    },
+  },
+  actionButtons: {
+    display: "flex",
+    gap: "8px",
   },
   turmasCell: {
     display: "flex",
@@ -462,6 +523,22 @@ const style = StyleSheet.create({
     transition: "all 0.2s ease",
     ":hover": {
       backgroundColor: "#45a049",
+    },
+  },
+  mobileDeleteButton: {
+    padding: "10px 20px",
+    backgroundColor: Colors.error,
+    color: Colors.white,
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "14px",
+    width: "100%",
+    maxWidth: "200px",
+    transition: "all 0.2s ease",
+    ":hover": {
+      backgroundColor: "#d32f2f",
     },
   },
   mobileTurmasSection: {
