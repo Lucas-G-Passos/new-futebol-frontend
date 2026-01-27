@@ -265,6 +265,30 @@ export default function CreationFormPage() {
       }
     };
 
+    const getNextId = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/alunos/registro`,{
+            credentials:'include'
+          });
+
+          if (!response.ok) throw new Error(await response.text());
+
+          const nextId = await response.text();
+
+          setAlunoFields((prev) =>
+            prev.map((field) =>
+              field.name === "nRegistro"
+                ? { ...field, placeholder: `Número de Registro (Próximo: ${nextId})` }
+                : field
+            )
+          );
+      } catch (error:any) {
+        setError(error.message);
+      }
+    }
+
+    getNextId();
     getTurmas();
   }, []);
   const handleSubmit = async (formData: FormData) => {
