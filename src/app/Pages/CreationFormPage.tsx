@@ -23,6 +23,7 @@ export default function CreationFormPage() {
       name:"nRegistro",
       placeholder: "Número de Registro",
       type: "NUMBER",
+      required: true,
     },
     {
       name: "dataNascimento",
