@@ -15,6 +15,16 @@ export default function CreationFormPage() {
       required: true,
     },
     {
+      name: "apelido",
+      placeholder: "Apelido",
+      type: "TEXT",
+    },
+    {
+      name:"nRegistro",
+      placeholder: "Número de Registro",
+      type: "NUMBER",
+    },
+    {
       name: "dataNascimento",
       placeholder: "Data de Nascimento",
       type: "DATE",

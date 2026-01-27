@@ -109,12 +109,14 @@ export function getFieldGroups(alunoFields: FieldConfig[]) {
     personal: alunoFields.filter((field) =>
       [
         "nomeCompleto",
+        "apelido",
         "dataNascimento",
         "dataMatricula",
         "telefone1",
         "telefone2",
         "cpf",
         "rg",
+        "nRegistro",
       ].includes(field.name)
     ),
     school: alunoFields.filter((field) =>

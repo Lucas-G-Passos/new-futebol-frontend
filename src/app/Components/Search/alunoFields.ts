@@ -7,7 +7,16 @@ export const alunoFields: FieldConfig[] = [
     type: "TEXT",
     required: true,
   },
-
+  {
+    name: "apelido",
+    placeholder: "Apelido",
+    type: "TEXT",
+  },
+  {
+    name: "nRegistro",
+    placeholder: "Número de Registro",
+    type: "NUMBER",
+  },
   {
     name: "dataNascimento",
     placeholder: "Data de Nascimento",
@@ -103,8 +112,8 @@ export const alunoFields: FieldConfig[] = [
   },
 
   { name: "file", placeholder: "Foto", type: "FILE" },
-  
-  {name: "atestado", placeholder: "Atestado Médico", type: "FILE"},
+
+  { name: "atestado", placeholder: "Atestado Médico", type: "FILE" },
 
   {
     name: "responsavel.nomeCompleto",
