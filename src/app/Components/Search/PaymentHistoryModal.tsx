@@ -77,9 +77,7 @@ export default function PaymentHistoryModal({
   return (
     <div
       style={{
-        ...style.paymentHistoryOverlay,
-        padding: isMobile ? "1rem" : "1rem",
-        paddingTop: isMobile ? "1rem" : "65rem",
+        ...style.paymentHistoryOverlay
       }}
     >
       <div
@@ -359,8 +357,6 @@ const style = StyleSheet.create({
     alignItems: "center",
     zIndex: 15,
     backdropFilter: "blur(8px)",
-    padding: "1rem",
-    paddingTop: "65rem",
     overflow: "auto",
   },
   paymentHistoryContainer: {

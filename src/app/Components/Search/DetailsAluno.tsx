@@ -1,29 +1,29 @@
-import { useEffect, useState } from "react";
-import type { Aluno, FieldConfig } from "../../Utils/Types";
-import Colors from "../../Utils/Colors";
 import {
-  X,
+  ArrowCounterClockwise,
+  CurrencyDollarIcon,
+  FilePdfIcon,
   FloppyDisk,
   Pencil,
   Trash,
-  ArrowCounterClockwise,
-  FilePdfIcon,
-  CurrencyDollarIcon,
+  X,
 } from "@phosphor-icons/react";
-import { alunoFields } from "./alunoFields";
+import { useEffect, useState } from "react";
+import Colors from "../../Utils/Colors";
+import type { Aluno, FieldConfig } from "../../Utils/Types";
 import {
   applyMask,
-  maskToRegex,
   cleanValueForSubmission,
-  formatDisplayValue,
-  getFieldValue,
-  getFieldGroups,
-  formatCurrency,
   ensureNumber,
+  formatCurrency,
+  formatDisplayValue,
+  getFieldGroups,
+  getFieldValue,
+  maskToRegex,
 } from "./alunoUtils";
 import AreYouSureDialog from "./AreYouSureDialog";
-import PaymentHistoryModal from "./PaymentHistoryModal";
 import { detailsAlunoStyles as style } from "./DetailsAlunoStyles";
+import PaymentHistoryModal from "./PaymentHistoryModal";
+import { alunoFields } from "./alunoFields";
 
 export default function DetailsAluno({
   data,
@@ -35,9 +35,9 @@ export default function DetailsAluno({
   onUpdate?: () => void;
 }) {
   const [editMode, setEditMode] = useState<boolean>(false);
+  const [fields, setFields] = useState<FieldConfig[]>(alunoFields);
   const [formState, setFormState] = useState<Record<string, any>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [id, setId] = useState<number>();
   const [showPaymentHistory, setShowPaymentHistory] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [areYouSure, setAreYouSure] = useState<{
@@ -58,29 +58,128 @@ export default function DetailsAluno({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // useEffect(() => {
+  //   if (!editMode) return;
+
+  //   const getTurmas = async () => {
+  //     try {
+  //       const response = await fetch(
+  //         `${import.meta.env.VITE_BACKEND_URL}/turmas/all`,
+  //         { credentials: "include" },
+  //       );
+  //       if (!response.ok) throw new Error(await response.text());
+
+  //       const turmas = await response.json();
+
+  //       const turmaOptions = turmas.turmas.map((t: any) => ({
+  //         label: t.nome,
+  //         value: t.id,
+  //       }));
+
+  //     } catch (error: any) {
+  //       console.error(error);
+  //       setErrors(error);
+  //     }
+  //   };
+  //   const initialState: Record<string, any> = {};
+
+  //   fields.forEach((field) => {
+  //     let value: any;
+
+  //     if (field.name.includes(".")) {
+  //       const [parent, child] = field.name.split(".");
+  //       value = data[parent]?.[child];
+  //     } else {
+  //       value = data[field.name as keyof Aluno];
+  //     }
+
+  //     if (value == null) {
+  //       initialState[field.name] = "";
+  //       return;
+  //     }
+
+  //     if (field.mask && typeof value === "string") {
+  //       const digits = value.replace(/\D/g, "");
+  //       initialState[field.name] = applyMask(digits, field.mask);
+  //       return;
+  //     }
+
+  //     initialState[field.name] = value;
+  //   });
+
+  //   setFormState(initialState);
+  //   setErrors({});
+  // }, [editMode, fields, data]);
+
   useEffect(() => {
-    const initialState: Record<string, any> = {};
+    if (!editMode) return;
 
-    alunoFields.forEach((field) => {
-      if (field.name.includes(".")) {
-        const [parent, child] = field.name.split(".");
-        initialState[field.name] = data[parent]?.[child] || "";
-      } else {
-        if (field.type === "CHECKBOX") {
-          const value = data[field.name as keyof Aluno];
-          initialState[field.name] =
-            value === true || value === "true" || value === 1;
-        } else {
-          initialState[field.name] = data[field.name as keyof Aluno] || "";
-        }
+    const init = async () => {
+      let turmaOptions: { label: string; value: number }[] = [];
+
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/turmas/all`,
+          { credentials: "include" },
+        );
+
+        if (!response.ok) throw new Error(await response.text());
+
+        const turmas = await response.json();
+
+        turmaOptions = turmas.turmas.map((t: any) => ({
+          label: t.nome,
+          value: t.id,
+        }));
+
+        setFields((prev) =>
+          prev.map((field) =>
+            field.name === "turmaId"
+              ? { ...field, options: turmaOptions }
+              : field,
+          ),
+        );
+      } catch (e) {
+        console.error(e);
       }
-    });
 
-    initialState["url"] = data.url || "";
+      const initialState: Record<string, any> = {};
 
-    setId(data.id);
-    setFormState(initialState);
-  }, [data]);
+      fields.forEach((field) => {
+        let value: any;
+
+        if (field.name.includes(".")) {
+          const [parent, child] = field.name.split(".");
+          value = data[parent]?.[child];
+        } else {
+          value = data[field.name as keyof Aluno];
+        }
+
+        if (value == null) {
+          initialState[field.name] = "";
+          return;
+        }
+
+        if (field.name === "turmaId") {
+          initialState[field.name] = value;
+          return;
+        }
+
+        if (field.mask && typeof value === "string") {
+          const digits = value.replace(/\D/g, "");
+          initialState[field.name] = applyMask(digits, field.mask);
+          return;
+        }
+
+        initialState[field.name] = value;
+      });
+
+      setFormState(initialState);
+      setErrors({});
+    };
+
+    init();
+  }, [editMode, data]);
 
   const handleFieldChange = (name: string, rawValue: any, mask?: string) => {
     let value = rawValue;
@@ -101,9 +200,13 @@ export default function DetailsAluno({
   };
 
   const renderField = (field: FieldConfig) => {
-    const value = editMode ? formState[field.name] : getFieldValue(field.name, data);
+    const value = editMode
+      ? formState[field.name]
+      : getFieldValue(field.name, data);
     const error = errors[field.name];
-    const displayValue = editMode ? value : formatDisplayValue(value, field, data);
+    const displayValue = editMode
+      ? value
+      : formatDisplayValue(value, field, data);
 
     if (!editMode) {
       return (
@@ -236,7 +339,7 @@ export default function DetailsAluno({
   const handleSaveEdit = async () => {
     const newErrors: Record<string, string> = {};
 
-    alunoFields.forEach((field) => {
+    fields.forEach((field) => {
       if (field.required) {
         const value = formState[field.name];
         const empty = value === "" || value == null;
@@ -267,7 +370,7 @@ export default function DetailsAluno({
         id: data.id,
       };
 
-      alunoFields.forEach((field) => {
+      fields.forEach((field) => {
         if (field.name.startsWith("responsavel.")) {
           return;
         }
@@ -278,15 +381,18 @@ export default function DetailsAluno({
           value = cleanValueForSubmission(value, field.mask);
         }
 
-        if (field.type === "FILE" && value instanceof File) {
-          formData.append("file", value);
-        } else {
-          alunoData[field.name] = value || "";
+        if (field.type === "FILE") {
+          if (value instanceof File) {
+            formData.append(field.name, value);
+          }
+          return;
         }
+
+        alunoData[field.name] = value ?? "";
       });
 
       const responsavelData: any = {};
-      alunoFields
+      fields
         .filter((field) => field.name.startsWith("responsavel."))
         .forEach((field) => {
           const responsavelField = field.name.replace("responsavel.", "");
@@ -305,7 +411,7 @@ export default function DetailsAluno({
         "dto",
         new Blob([JSON.stringify(alunoData)], {
           type: "application/json",
-        })
+        }),
       );
 
       const response = await fetch(
@@ -314,7 +420,7 @@ export default function DetailsAluno({
           method: "PATCH",
           credentials: "include",
           body: formData,
-        }
+        },
       );
 
       if (!response.ok) {
@@ -339,12 +445,12 @@ export default function DetailsAluno({
         try {
           await fetch(
             `${import.meta.env.VITE_BACKEND_URL}/alunos?id=${encodeURIComponent(
-              data.id
+              data.id,
             )}`,
             {
               method: "DELETE",
               credentials: "include",
-            }
+            },
           );
           setAreYouSure(null);
           onUpdate?.();
@@ -363,7 +469,7 @@ export default function DetailsAluno({
       options: ["Cancelar", "Descartar"],
       onConfirm: () => {
         const initialState: Record<string, any> = {};
-        alunoFields.forEach((field) => {
+        fields.forEach((field) => {
           if (field.name.includes(".")) {
             const [parent, child] = field.name.split(".");
             initialState[field.name] = data[parent]?.[child] || "";
@@ -379,13 +485,13 @@ export default function DetailsAluno({
     });
   };
 
-  const handlePdf = async (id: number) => {
+  const handlePdf = async () => {
     try {
       const response = await fetch(
         `${
           import.meta.env.VITE_BACKEND_URL
-        }/alunos/contrato?id=${encodeURIComponent(id)}`,
-        { credentials: "include" }
+        }/alunos/contrato?id=${encodeURIComponent(data.id)}`,
+        { credentials: "include" },
       );
 
       if (!response.ok) {
@@ -409,7 +515,7 @@ export default function DetailsAluno({
     }
   };
 
-  const fieldGroups = getFieldGroups(alunoFields);
+  const fieldGroups = getFieldGroups(fields);
 
   return (
     <div style={{ ...style.overlay, padding: isMobile ? "0.5rem" : "2vw" }}>
@@ -470,7 +576,7 @@ export default function DetailsAluno({
           >
             <button
               type="button"
-              onClick={() => id && handlePdf(id)}
+              onClick={() => handlePdf()}
               style={{
                 ...style.saveButton,
                 padding: isMobile ? "0.625rem" : "0.625rem 1.25rem",
@@ -610,7 +716,11 @@ export default function DetailsAluno({
                   })}
                 </div>
               ) : data.atestadoUrl ? (
-                <img src={data.atestadoUrl} style={style.image} alt="Atestado" />
+                <img
+                  src={data.atestadoUrl}
+                  style={style.image}
+                  alt="Atestado"
+                />
               ) : (
                 <div style={style.placeholderImage}>Sem atestado</div>
               )}
