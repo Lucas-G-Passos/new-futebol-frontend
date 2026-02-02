@@ -531,6 +531,7 @@ export default function DetailsAluno({
 
       {showPaymentHistory && (
         <PaymentHistoryModal
+          onUpdate={onUpdate}
           valorDevido={ensureNumber(data.valorDevido)}
           pagamentos={data.pagamento || []}
           alunoNome={data.nomeCompleto}

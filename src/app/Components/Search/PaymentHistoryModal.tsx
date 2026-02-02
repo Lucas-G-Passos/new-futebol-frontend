@@ -2,11 +2,7 @@ import { useState } from "react";
 import { StyleSheet } from "../../Utils/Stylesheet";
 import type { Pagamento, Aluno } from "../../Utils/Types";
 import Colors from "../../Utils/Colors";
-import {
-  CalendarBlankIcon,
-  PlusIcon,
-  X,
-} from "@phosphor-icons/react";
+import { CalendarBlankIcon, PlusIcon, X } from "@phosphor-icons/react";
 import PagamentoManual from "../Pagamentos/pagManual";
 import AdicionarDivida from "../Pagamentos/AdicionarDivida";
 import Calendar from "./Calendar/Calendar";
@@ -19,6 +15,7 @@ interface PaymentHistoryModalProps {
   onClose: () => void;
   aluno: Aluno;
   isMobile: boolean;
+  onUpdate?: () => void;
 }
 
 export default function PaymentHistoryModal({
@@ -28,13 +25,14 @@ export default function PaymentHistoryModal({
   valorDevido,
   aluno,
   isMobile,
+  onUpdate,
 }: PaymentHistoryModalProps) {
   const [showNewPaymentModal, setShowNewPaymentModal] =
     useState<boolean>(false);
   const [showDividaModal, setShowDividaModal] = useState<boolean>(false);
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
   const [selectedPagamento, setSelectedPagamento] = useState<Pagamento | null>(
-    null
+    null,
   );
 
   const handlePaymentModal = () => {
@@ -77,7 +75,7 @@ export default function PaymentHistoryModal({
   return (
     <div
       style={{
-        ...style.paymentHistoryOverlay
+        ...style.paymentHistoryOverlay,
       }}
     >
       <div
@@ -198,7 +196,7 @@ export default function PaymentHistoryModal({
                         style={{
                           ...style.paymentMethodBadge,
                           backgroundColor: getMethodBadgeColor(
-                            pagamento.metodoPagamento
+                            pagamento.metodoPagamento,
                           ),
                         }}
                       >
@@ -227,6 +225,7 @@ export default function PaymentHistoryModal({
             onClose={handlePaymentModal}
             showClose={true}
             defaultAluno={aluno}
+            onUpdate={onUpdate}
           />
         </div>
       )}
@@ -236,6 +235,7 @@ export default function PaymentHistoryModal({
             onClose={handleDividaModal}
             showClose={true}
             defaultAluno={aluno}
+            onUpdate={onUpdate}
           />
         </div>
       )}
@@ -318,7 +318,7 @@ export default function PaymentHistoryModal({
                   style={{
                     ...style.methodBadge,
                     backgroundColor: getMethodBadgeColor(
-                      selectedPagamento.metodoPagamento
+                      selectedPagamento.metodoPagamento,
                     ),
                   }}
                 >
