@@ -3,6 +3,8 @@ import { WhatsappLogoIcon } from "@phosphor-icons/react";
 import { useAuth } from "../../Context/AuthContext";
 import type { User, SessionDto } from "../../Utils/Types";
 import { WhatsAppSessionPanel } from "./WhatsAppSessionPanel";
+import { StyleSheet } from "../../Utils/Stylesheet";
+import Colors from "../../Utils/Colors";
 
 const hasPermission = (
   user: User | null,
@@ -34,7 +36,7 @@ export function WhatsAppManager() {
     }
   };
 
-  const formatBRPhone = (value:string) => {
+  const formatBRPhone = (value: string) => {
     const digits = value.replace(/\D/g, "");
 
     const normalized = digits.startsWith("55") ? digits.slice(2) : digits;
@@ -137,13 +139,48 @@ export function WhatsAppManager() {
     };
   }, [qrCodeImage]);
 
+
+  useEffect(() => {
+    if (!qrCodeImage || !whatsappSession || whatsappSession.me !== null) {
+      return;
+    }
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/whatsapp/sessions`,
+          {
+            credentials: "include",
+          },
+        );
+
+        if (response.ok) {
+          const sessionData: SessionDto = await response.json();
+          setWhatsappSession(sessionData);
+
+          // Stop polling if session is authenticated
+          if (sessionData.me !== null) {
+            clearInterval(pollInterval);
+            setQrCodeImage(null); // Clear QR code
+          }
+        }
+      } catch (error) {
+        console.error("Error polling session status:", error);
+      }
+    }, 3000); // Poll every 3 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [qrCodeImage, whatsappSession]);
+
+  useEffect(()=>{},[])
+
   if (!hasPermission(user, "WHATSAPP")) {
     return null;
   }
 
   return (
     <>
-      <div onClick={handleShowWhatsappStatus}>
+      <div onClick={handleShowWhatsappStatus} style={style.whatsappButton}>
         <WhatsappLogoIcon size={32} />
       </div>
       {whatsappStatusOpen && whatsappSession && (
@@ -159,3 +196,9 @@ export function WhatsAppManager() {
     </>
   );
 }
+
+const style = StyleSheet.create({
+  whatsappButton: {
+    color: "#10b981",
+  },
+});

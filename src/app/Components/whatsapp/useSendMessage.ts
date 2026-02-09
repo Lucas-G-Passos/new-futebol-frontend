@@ -1,6 +1,7 @@
 import type { PersonSelector, SendResponse } from "../../Utils/Types";
 
 const url = import.meta.env.VITE_BACKEND_URL;
+const FILE_UPLOAD_ENABLED = import.meta.env.VITE_ENABLE_FILE_UPLOAD !== "false";
 
 type SendMessageParams = {
   alunos?: Array<PersonSelector>;
@@ -22,6 +23,10 @@ export const useSendMessage = async ({
 
   const hasAlunos = Boolean(alunos && alunos.length > 0);
   const hasTurmaId = Boolean(turmaId);
+
+  if (hasFile && !FILE_UPLOAD_ENABLED) {
+    throw new Error("File upload is currently disabled");
+  }
 
   if (hasText === hasFile) {
     throw new Error("You must provide either text or file, but not both");
