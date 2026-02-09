@@ -4,7 +4,6 @@ import { useAuth } from "../../Context/AuthContext";
 import type { User, SessionDto } from "../../Utils/Types";
 import { WhatsAppSessionPanel } from "./WhatsAppSessionPanel";
 import { StyleSheet } from "../../Utils/Stylesheet";
-import Colors from "../../Utils/Colors";
 
 const hasPermission = (
   user: User | null,
