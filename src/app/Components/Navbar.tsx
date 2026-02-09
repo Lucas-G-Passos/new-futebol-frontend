@@ -14,6 +14,7 @@ import {
   UsersFourIcon,
 } from "@phosphor-icons/react";
 import type { User } from "../Utils/Types";
+import { WhatsAppManager } from "./whatsapp/WhatsAppManager";
 
 type NavRoute = {
   path: string;
@@ -68,7 +69,7 @@ const navRoutes: NavRoute[] = [
 
 const hasPermission = (
   user: User | null,
-  requiredPermission?: string
+  requiredPermission?: string,
 ): boolean => {
   if (!requiredPermission) return true;
   if (!user) return false;
@@ -82,7 +83,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const allowedRoutes = navRoutes.filter((route) =>
-    hasPermission(user, route.requiredPermission)
+    hasPermission(user, route.requiredPermission),
   );
 
   useEffect(() => {
@@ -134,6 +135,7 @@ export default function Navbar() {
                     ))}
                   </div>
                 </div>
+                <WhatsAppManager />
               </div>
               {user.email === null && (
                 <div style={{ fontStyle: "italic", fontSize: "0.8em" }}>
@@ -237,7 +239,6 @@ const style = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 10,
-    cursor: "pointer",
   },
   profileRow: {
     display: "flex",

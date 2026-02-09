@@ -10,10 +10,12 @@ export default function AdicionarDivida({
   onClose,
   showClose,
   defaultAluno,
+  onUpdate
 }: {
   onClose?: () => void;
   showClose: boolean;
   defaultAluno?: Aluno;
+  onUpdate?:()=>void
 }) {
   const [alunos, setAlunos] = useState<Array<Aluno> | null>(null);
   const [selectedAluno, setSelected] = useState<Aluno | null>(null);
@@ -128,6 +130,7 @@ export default function AdicionarDivida({
       }
       alert("Dívida registrada com sucesso!");
       setSelected(null);
+      onUpdate?.();
     } catch (error: any) {
       alert(error.message);
     }

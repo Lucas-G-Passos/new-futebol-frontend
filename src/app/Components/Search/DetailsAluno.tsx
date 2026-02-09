@@ -6,6 +6,7 @@ import {
   Pencil,
   Trash,
   X,
+  WhatsappLogoIcon,
 } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 import Colors from "../../Utils/Colors";
@@ -24,6 +25,7 @@ import AreYouSureDialog from "./AreYouSureDialog";
 import { detailsAlunoStyles as style } from "./DetailsAlunoStyles";
 import PaymentHistoryModal from "./PaymentHistoryModal";
 import { alunoFields } from "./alunoFields";
+import SendMessagePanel from "../whatsapp/SendMessagePanel";
 
 export default function DetailsAluno({
   data,
@@ -39,6 +41,7 @@ export default function DetailsAluno({
   const [formState, setFormState] = useState<Record<string, any>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPaymentHistory, setShowPaymentHistory] = useState<boolean>(false);
+  const [showWhatsappDialog, setShowWhatsappDialog] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [areYouSure, setAreYouSure] = useState<{
     open: boolean;
@@ -531,10 +534,18 @@ export default function DetailsAluno({
 
       {showPaymentHistory && (
         <PaymentHistoryModal
+          onUpdate={onUpdate}
           valorDevido={ensureNumber(data.valorDevido)}
           pagamentos={data.pagamento || []}
           alunoNome={data.nomeCompleto}
           onClose={() => setShowPaymentHistory(false)}
+          aluno={data}
+          isMobile={isMobile}
+        />
+      )}
+      {showWhatsappDialog && (
+        <SendMessagePanel
+          onClose={() => setShowWhatsappDialog(false)}
           aluno={data}
           isMobile={isMobile}
         />
@@ -641,10 +652,17 @@ export default function DetailsAluno({
 
             <button
               type="button"
-              style={style.pagamentoButton}
+              style={style.editButton}
               onClick={() => setShowPaymentHistory(!showPaymentHistory)}
             >
               <CurrencyDollarIcon size={22} />
+            </button>
+            <button
+              type="button"
+              style={style.saveButton}
+              onClick={() => setShowWhatsappDialog(!showWhatsappDialog)}
+            >
+              <WhatsappLogoIcon size={22} />
             </button>
             <button type="button" onClick={close} style={style.closeButton}>
               <X size={22} />

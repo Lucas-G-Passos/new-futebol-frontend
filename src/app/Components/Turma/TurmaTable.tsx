@@ -4,6 +4,7 @@ import { StyleSheet } from "../../Utils/Stylesheet";
 import Colors from "../../Utils/Colors";
 import DetailsAluno from "../Search/DetailsAluno";
 import AreYouSureDialog from "../Search/AreYouSureDialog";
+import SendMessagePanel from "../whatsapp/SendMessagePanel";
 
 export default function TurmaTable({
   data,
@@ -18,6 +19,7 @@ export default function TurmaTable({
   const [expandedTurma, setExpandedTurma] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [deleteTurma, setDeleteTurma] = useState<Turma | null>(null);
+  const [messageTurma, setMessageTurma] = useState<Turma | null>(null);
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -72,6 +74,14 @@ export default function TurmaTable({
 
   const cancelDeleteTurma = () => {
     setDeleteTurma(null);
+  };
+
+  const handleMessageTurma = (turma: Turma) => {
+    setMessageTurma(turma);
+  };
+
+  const handleCloseMessagePanel = () => {
+    setMessageTurma(null);
   };
 
   const formatDaysOfWeek = (days: string[]) => {
@@ -155,6 +165,9 @@ export default function TurmaTable({
             <div style={style.mobileActions}>
               <button onClick={() => handleEditTurma(turma)} style={style.mobileEditButton}>
                 Editar Turma
+              </button>
+              <button onClick={() => handleMessageTurma(turma)} style={style.mobileMessageButton}>
+                Enviar mensagem
               </button>
               <button onClick={() => handleDeleteTurma(turma)} style={style.mobileDeleteButton}>
                 Deletar Turma
@@ -261,6 +274,12 @@ export default function TurmaTable({
                       Editar
                     </button>
                     <button
+                      onClick={() => handleMessageTurma(turma)}
+                      style={style.messageButton}
+                    >
+                      Enviar mensagem
+                    </button>
+                    <button
                       onClick={() => handleDeleteTurma(turma)}
                       style={style.deleteButton}
                     >
@@ -327,6 +346,15 @@ export default function TurmaTable({
           options={["Cancelar", "Deletar"]}
           onClose={cancelDeleteTurma}
           onConfirm={confirmDeleteTurma}
+          isMobile={isMobile}
+        />
+      )}
+
+      {messageTurma && (
+        <SendMessagePanel
+          turmaNome={messageTurma.nome}
+          turmaId={messageTurma.id}
+          onClose={handleCloseMessagePanel}
           isMobile={isMobile}
         />
       )}
@@ -412,6 +440,20 @@ const style = StyleSheet.create({
     transition: "all 0.2s ease",
     ":hover": {
       backgroundColor: "#d32f2f",
+      transform: "translateY(-1px)",
+    },
+  },
+  messageButton: {
+    padding: "6px 12px",
+    backgroundColor: "#25D366",
+    color: Colors.white,
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontWeight: "600",
+    transition: "all 0.2s ease",
+    ":hover": {
+      backgroundColor: "#128C7E",
       transform: "translateY(-1px)",
     },
   },
@@ -615,6 +657,22 @@ const style = StyleSheet.create({
     transition: "all 0.2s ease",
     ":hover": {
       backgroundColor: "#d32f2f",
+    },
+  },
+  mobileMessageButton: {
+    padding: "10px 20px",
+    backgroundColor: "#25D366",
+    color: Colors.white,
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "14px",
+    width: "100%",
+    maxWidth: "200px",
+    transition: "all 0.2s ease",
+    ":hover": {
+      backgroundColor: "#128C7E",
     },
   },
   mobileAlunosSection: {

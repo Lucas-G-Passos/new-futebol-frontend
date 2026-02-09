@@ -188,3 +188,28 @@ export interface Analytics {
   month: number;
   year: number;
 }
+
+// WhatsApp Types
+export interface SessionDto {
+  name: string;
+  me: Me | null;
+  status: string;
+}
+
+export interface Me {
+  id: string;
+  lid: string;
+  jid: string;
+  pushName: string;
+}
+
+export interface PersonSelector {
+  id: number;
+  isResponsavel: boolean;
+  phone2: boolean;
+}
+
+export interface SendResponse {
+  code: number;
+  recepient: string;
+}

@@ -10,10 +10,12 @@ export default function PagamentoManual({
   onClose,
   showClose,
   defaultAluno,
+  onUpdate,
 }: {
   onClose?: () => void;
   showClose: boolean;
   defaultAluno?: Aluno;
+  onUpdate?: () => void;
 }) {
   const [alunos, setAlunos] = useState<Array<Aluno> | null>(null);
   const [selectedAluno, setSelected] = useState<Aluno | null>(null);
@@ -44,7 +46,7 @@ export default function PagamentoManual({
         {
           method: "GET",
           credentials: "include",
-        }
+        },
       );
 
       if (!response.ok) {
@@ -95,7 +97,7 @@ export default function PagamentoManual({
           },
           credentials: "include",
           body: JSON.stringify(pagamentoData),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -104,6 +106,7 @@ export default function PagamentoManual({
 
       alert("Pagamento registrado com sucesso!");
       setSelected(null);
+      onUpdate?.();
     } catch (error: any) {
       alert(error.message);
     }
@@ -145,7 +148,7 @@ export default function PagamentoManual({
           method: "POST",
           credentials: "include",
           body: formData,
-        }
+        },
       );
 
       if (!response.ok) {
@@ -155,7 +158,7 @@ export default function PagamentoManual({
       const data = await response.json();
       setParsedData(data);
       alert(
-        "Comprovante processado com sucesso! Os campos foram preenchidos automaticamente."
+        "Comprovante processado com sucesso! Os campos foram preenchidos automaticamente.",
       );
     } catch (error: any) {
       alert(error.message || "Erro ao processar o comprovante");
@@ -177,7 +180,7 @@ export default function PagamentoManual({
       const [day, month, year] = parsedData.dataPagamento.split("/");
       formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(
         2,
-        "0"
+        "0",
       )}`;
     }
 
