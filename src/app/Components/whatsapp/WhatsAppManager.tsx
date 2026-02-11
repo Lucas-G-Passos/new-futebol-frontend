@@ -4,7 +4,6 @@ import { useAuth } from "../../Context/AuthContext";
 import type { User, SessionDto } from "../../Utils/Types";
 import { WhatsAppSessionPanel } from "./WhatsAppSessionPanel";
 import { StyleSheet } from "../../Utils/Stylesheet";
-import Colors from "../../Utils/Colors";
 
 const hasPermission = (
   user: User | null,
@@ -24,6 +23,7 @@ export function WhatsAppManager() {
   );
   const [qrCodeImage, setQrCodeImage] = useState<string | null>(null);
   const [loadingWhatsapp, setLoadingWhatsapp] = useState(false);
+  const [stop, setStop] = useState(false);
 
   const handleShowWhatsappStatus = async () => {
     if (!hasPermission(user, "WHATSAPP")) {
@@ -56,9 +56,9 @@ export function WhatsAppManager() {
   };
 
   const getWhatsappStatus = async () => {
-    if (!hasPermission(user, "WHATSAPP")) {
-      return;
-    }
+    if (!hasPermission(user, "WHATSAPP")) return;
+    if (stop) return;
+
     setLoadingWhatsapp(true);
     try {
       // First, start the session
@@ -131,6 +131,25 @@ export function WhatsAppManager() {
     }
   };
 
+  const handleShutdown = async () => {
+    try {
+      await refreshWhatsappStatus();
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/whatsapp/sessions/shutdown`,
+        {
+          credentials: "include",
+          method: "POST",
+        },
+      );
+
+      if (response.ok) {
+        setStop(true);
+      }
+    } catch (error) {
+      console.error("Error on shutdown:", error);
+    }
+  };
+
   useEffect(() => {
     return () => {
       if (qrCodeImage) {
@@ -138,7 +157,6 @@ export function WhatsAppManager() {
       }
     };
   }, [qrCodeImage]);
-
 
   useEffect(() => {
     if (!qrCodeImage || !whatsappSession || whatsappSession.me !== null) {
@@ -172,8 +190,6 @@ export function WhatsAppManager() {
     return () => clearInterval(pollInterval);
   }, [qrCodeImage, whatsappSession]);
 
-  useEffect(()=>{},[])
-
   if (!hasPermission(user, "WHATSAPP")) {
     return null;
   }
@@ -188,6 +204,7 @@ export function WhatsAppManager() {
           session={whatsappSession}
           qrCode={qrCodeImage}
           onLogout={handleWhatsappLogout}
+          onShutdown={handleShutdown}
           onClose={() => setWhatsappStatusOpen(false)}
           loading={loadingWhatsapp}
           formatPhone={formatBRPhone}
