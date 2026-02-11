@@ -7,6 +7,7 @@ type WhatsAppSessionPanelProps = {
   session: SessionDto;
   qrCode?: string | null;
   onLogout: () => void;
+  onShutdown: () => void;
   onClose: () => void;
   loading?: boolean;
   formatPhone: (v: string) => string;
@@ -16,6 +17,7 @@ export function WhatsAppSessionPanel({
   session,
   qrCode,
   onLogout,
+  onShutdown,
   onClose,
   loading = false,
   formatPhone,
@@ -39,6 +41,14 @@ export function WhatsAppSessionPanel({
                 Escaneie o qr code para se conectar ao whatsapp
               </p>
               <img src={qrCode} alt="WhatsApp QR Code" style={style.qrImage} />
+
+              <p>
+                Quando terminar de usar, sempre desligue, ou teremos gasto de
+                dinheiro a mais!
+              </p>
+              <button onClick={onShutdown} style={style.shutdownButton}>
+                Desligar
+              </button>
             </div>
           ) : session.me ? (
             <div style={style.connectedContainer}>
@@ -59,9 +69,20 @@ export function WhatsAppSessionPanel({
           )}
 
           {!qrCode && (
-            <button onClick={onLogout} style={style.logoutButton}>
-              Logout
-            </button>
+            <>
+              <p>
+                Quando terminar de usar, sempre desligue, ou teremos gasto de
+                dinheiro a mais!{" "}
+              </p>
+              <div style={style.buttonContainer}>
+                <button onClick={onLogout} style={style.logoutButton}>
+                  Logout
+                </button>
+                <button onClick={onShutdown} style={style.shutdownButton}>
+                  Desligar
+                </button>
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -163,7 +184,23 @@ const style = StyleSheet.create({
     padding: "12px 24px",
     fontSize: "16px",
     cursor: "pointer",
-    marginTop: 8,
     transition: "opacity 0.2s",
+    flex: 1,
+  },
+  shutdownButton: {
+    backgroundColor: "#6b7280",
+    color: "white",
+    border: "none",
+    borderRadius: 8,
+    padding: "12px 24px",
+    fontSize: "16px",
+    cursor: "pointer",
+    transition: "opacity 0.2s",
+    flex: 1,
+  },
+  buttonContainer: {
+    display: "flex",
+    gap: 12,
+    marginTop: 8,
   },
 });
