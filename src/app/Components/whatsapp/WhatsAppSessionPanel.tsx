@@ -42,9 +42,8 @@ export function WhatsAppSessionPanel({
               </p>
               <img src={qrCode} alt="WhatsApp QR Code" style={style.qrImage} />
 
-              <p>
-                Quando terminar de usar, sempre desligue, ou teremos gasto de
-                dinheiro a mais!
+              <p style={style.statusText}>
+                Ao término, clique em desligar, para evitar gastos.
               </p>
               <button onClick={onShutdown} style={style.shutdownButton}>
                 Desligar
@@ -78,7 +77,13 @@ export function WhatsAppSessionPanel({
                 <button onClick={onLogout} style={style.logoutButton}>
                   Logout
                 </button>
-                <button onClick={onShutdown} style={style.shutdownButton}>
+                <button
+                  onClick={() => {
+                    onShutdown();
+                    onClose();
+                  }}
+                  style={style.shutdownButton}
+                >
                   Desligar
                 </button>
               </div>

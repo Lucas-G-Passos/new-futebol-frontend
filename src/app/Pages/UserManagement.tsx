@@ -4,6 +4,7 @@ import { StyleSheet } from "../Utils/Stylesheet";
 import { type FieldConfig, type User } from "../Utils/Types";
 import DynamicForm from "../Components/CreationForm/DynamicForm";
 import Colors from "../Utils/Colors";
+import { XIcon } from "@phosphor-icons/react";
 
 const fields: FieldConfig[] = [
   {
@@ -30,9 +31,9 @@ const fields: FieldConfig[] = [
     options: [
       { label: "Admin", value: "ADMIN" },
       { label: "Alunos", value: "ALUNOS" },
-      { label: "Funcionarios", value: "FUNCIONARIOS" },
       { label: "Pagamentos", value: "PAGAMENTOS" },
       { label: "Turmas", value: "TURMAS" },
+      { label: "Whatsapp", value: "WHATSAPP" },
     ],
   },
 ];
@@ -65,6 +66,8 @@ const fieldsEdit: FieldConfig[] = [
       { label: "Funcionarios", value: "FUNCIONARIOS" },
       { label: "Pagamentos", value: "PAGAMENTOS" },
       { label: "Turmas", value: "TURMAS" },
+      { label: "Filiais", value: "FILIAIS" },
+      { label: "Deletar", value: "DELETE" },
     ],
   },
 ];
@@ -74,7 +77,7 @@ export default function UserManagement() {
   const [showCreateForm, setCreateForm] = useState<boolean>(false);
   const [editForm, setEditForm] = useState<boolean>(false);
   const [selectedUser, setSelectedUser] = useState<Record<string, any> | null>(
-    null
+    null,
   );
   const [refresh, setRefresh] = useState<boolean>(false);
   useEffect(() => {
@@ -82,21 +85,10 @@ export default function UserManagement() {
       try {
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_URL}/user/all`,
-          { credentials: "include" }
+          { credentials: "include" },
         );
         if (!response.ok) throw new Error("Erro ao pegar usuários");
         const data = await response.json();
-
-        // const func = await fetch(
-        //   `${import.meta.env.VITE_BACKEND_URL}/funcionarios/all`,
-        //   { credentials: "include" }
-        // );
-
-        // if (!func.ok) throw new Error("Erro ao pegar funcionários");
-
-        // const funcData = await func.json();
-
-        // setFuncionarios(funcData);
         setUsers(data);
       } catch (e) {
         alert(e);
@@ -121,7 +113,7 @@ export default function UserManagement() {
           credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(userData),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -158,7 +150,7 @@ export default function UserManagement() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(userData),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -192,6 +184,11 @@ export default function UserManagement() {
 
       {showCreateForm && (
         <div style={style.formOverlay}>
+          <div style={style.closeButtonContainer}>
+            <button style={style.closeButton}>
+              <XIcon size={32} onClick={() => setCreateForm(false)} />
+            </button>
+          </div>
           <div style={style.formContainer}>
             <DynamicForm
               onSubmit={handleCreateUser}
@@ -209,8 +206,10 @@ export default function UserManagement() {
           let userFieldsWithDefaults: FieldConfig[] = fieldsEdit.map(
             (field) => ({
               ...field,
-              defaultValue: selectedUser ? selectedUser[field.name] ?? "" : "",
-            })
+              defaultValue: selectedUser
+                ? (selectedUser[field.name] ?? "")
+                : "",
+            }),
           );
           userFieldsWithDefaults.push({
             name: "id",
@@ -293,5 +292,22 @@ const style = StyleSheet.create({
     width: "100%",
     minHeight: "50vh",
     overflow: "auto",
+  },
+  closeButtonContainer: {
+    position: "fixed",
+    top: 0,
+    right: 0,
+    margin: 25,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  closeButton: {
+    color: Colors.primary,
+    backgroundColor: Colors.background,
+    borderColor: Colors.borderDark,
+    borderRadius: 12,
+    cursor: "pointer",
+    border: "1px solid",
   },
 });
