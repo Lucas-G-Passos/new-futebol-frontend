@@ -122,26 +122,23 @@ export default function Navbar() {
 
         <div style={style.profileContainer}>
           {user ? (
-            <div style={{ marginLeft: "auto" }}>
-              <div style={style.profileRow}>
-                <div>
-                  <UserCircleIcon size={32} />
-                </div>
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  {user.username}
-                  <div style={{ fontSize: 11, fontStyle: "italic" }}>
-                    {user.permissions.map((p) => (
-                      <>{p.permission}, </>
-                    ))}
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <WhatsAppManager />
+              <div style={{ marginLeft: "auto" }}>
+                <div style={style.profileRow}>
+                  <div>
+                    <UserCircleIcon size={32} />
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    {user.username}
+                    <div style={{ fontSize: 11, fontStyle: "italic" }}>
+                      {user.permissions.map((p) => (
+                        <>{p.permission}, </>
+                      ))}
+                    </div>
                   </div>
                 </div>
-                <WhatsAppManager />
               </div>
-              {user.email === null && (
-                <div style={{ fontStyle: "italic", fontSize: "0.8em" }}>
-                  Considere criar um usuário com email.
-                </div>
-              )}
             </div>
           ) : (
             <></>

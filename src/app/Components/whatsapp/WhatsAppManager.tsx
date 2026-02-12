@@ -23,7 +23,6 @@ export function WhatsAppManager() {
   );
   const [qrCodeImage, setQrCodeImage] = useState<string | null>(null);
   const [loadingWhatsapp, setLoadingWhatsapp] = useState(false);
-  const [stop, setStop] = useState(false);
 
   const handleShowWhatsappStatus = async () => {
     if (!hasPermission(user, "WHATSAPP")) {
@@ -57,7 +56,6 @@ export function WhatsAppManager() {
 
   const getWhatsappStatus = async () => {
     if (!hasPermission(user, "WHATSAPP")) return;
-    if (stop) return;
 
     setLoadingWhatsapp(true);
     try {
@@ -143,7 +141,9 @@ export function WhatsAppManager() {
       );
 
       if (response.ok) {
-        setStop(true);
+        setWhatsappStatusOpen(false);
+        setWhatsappSession(null);
+        setQrCodeImage(null);
       }
     } catch (error) {
       console.error("Error on shutdown:", error);
@@ -217,5 +217,6 @@ export function WhatsAppManager() {
 const style = StyleSheet.create({
   whatsappButton: {
     color: "#10b981",
+    cursor: "pointer",
   },
 });
