@@ -33,10 +33,6 @@ export default function UserTable({
     onEdit(user);
   };
 
-  const formatPermissions = (permissions: { permission: string }[]) => {
-    return permissions.map((p) => p.permission).join(", ");
-  };
-
   const renderMobileView = () => {
     return (
       <div style={style.mobileContainer}>
@@ -69,7 +65,9 @@ export default function UserTable({
               <div style={style.mobileDetailRow}>
                 <span style={style.mobileLabel}>Permissões:</span>
                 <span style={style.mobileValue}>
-                  {formatPermissions(user.permissions)}
+                  {user.permissions.map((p) => (
+                    <>{p.permission}, </>
+                  ))}
                 </span>
               </div>
             </div>
@@ -106,7 +104,9 @@ export default function UserTable({
                   <div style={style.mobileDetailRow}>
                     <span style={style.mobileLabel}>Permissões:</span>
                     <span style={style.mobileValue}>
-                      {formatPermissions(user.permissions)}
+                      {user.permissions.map((p) => (
+                        <>{p.permission}, </>
+                      ))}
                     </span>
                   </div>
                 </div>
@@ -143,7 +143,9 @@ export default function UserTable({
                 <td style={style.td}>
                   <div style={style.permissionsCell}>
                     <span style={style.permissionsText}>
-                      {formatPermissions(user.permissions)}
+                      {user.permissions.map((p) => (
+                        <>{p.permission}, </>
+                      ))}
                     </span>
                     <button
                       onClick={() => toggleUserExpansion(user.id)}
@@ -198,7 +200,9 @@ export default function UserTable({
                           <div style={style.expandedDetail}>
                             <span style={style.expandedLabel}>Permissões:</span>
                             <span style={style.expandedValue}>
-                              {formatPermissions(user.permissions)}
+                              {user.permissions.map((p) => (
+                                <>{p.permission}, </>
+                              ))}
                             </span>
                           </div>
                         </div>

@@ -3,7 +3,9 @@ export type User = {
   username: string;
   password: string;
   email?: string | null;
-  permissions: [{ permission: string }];
+  permissions: string[];
+  filialIds: Array<number>;
+  filialNames: Array<String>;
 };
 
 export type Funcionario = {

@@ -67,6 +67,7 @@ export default function DynamicForm({
 }: Props) {
   const [isHovered, setHovered] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [hoveredField, setHoveredField] = useState<string | null>(null);
   const [formState, setFormState] = useState<Record<string, any>>(
     Object.fromEntries(
       fields.map((f) => [
@@ -294,7 +295,6 @@ export default function DynamicForm({
     >
       <h1 style={{ color: Colors.primary, textAlign: "center" }}>{title}</h1>
       {fields.map((field) => {
-        const [isHoveredField, setHoveredField] = useState(false);
         const error = errors[field.name];
 
         const labelWithRequired = (
@@ -323,15 +323,15 @@ export default function DynamicForm({
                     ...style.input,
                     borderColor: error
                       ? "red"
-                      : isHoveredField
+                      : hoveredField === field.name
                         ? Colors.primary
                         : Colors.border,
-                    backgroundColor: isHoveredField
+                    backgroundColor: hoveredField === field.name
                       ? Colors.surfaceAlt
                       : Colors.inputBackground,
                   }}
-                  onMouseEnter={() => setHoveredField(true)}
-                  onMouseLeave={() => setHoveredField(false)}
+                  onMouseEnter={() => setHoveredField(field.name)}
+                  onMouseLeave={() => setHoveredField(null)}
                 />
                 {error && <span style={style.error}>{error}</span>}
               </div>
@@ -482,15 +482,15 @@ export default function DynamicForm({
                         ...style.input,
                         borderColor: error
                           ? "red"
-                          : isHoveredField
+                          : hoveredField === field.name
                             ? Colors.primary
                             : Colors.border,
-                        backgroundColor: isHoveredField
+                        backgroundColor: hoveredField === field.name
                           ? Colors.surfaceAlt
                           : Colors.inputBackground,
                       }}
-                      onMouseEnter={() => setHoveredField(true)}
-                      onMouseLeave={() => setHoveredField(false)}
+                      onMouseEnter={() => setHoveredField(field.name)}
+                      onMouseLeave={() => setHoveredField(null)}
                     />
                     {inputRequired && (
                       <span
