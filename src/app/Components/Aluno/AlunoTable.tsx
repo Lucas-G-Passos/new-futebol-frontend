@@ -35,7 +35,7 @@ export default function AlunoTable({
     }).format(value);
   };
 
-  const formatDate = (date: Date | undefined) => {
+  const formatDate = (date: Date | string | undefined) => {
     if (!date) return "N/A";
     return new Date(date).toLocaleDateString("pt-BR");
   };

@@ -85,7 +85,6 @@ export default function PagamentoManual({
 
         comprovanteCpf: selectedAluno.responsavel?.cpf,
         nomeResponsavel: formData.nomeResponsavel,
-        responsavelId: selectedAluno.responsavel?.id,
       };
 
       const response = await fetch(

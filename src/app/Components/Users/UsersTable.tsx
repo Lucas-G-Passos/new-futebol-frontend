@@ -66,7 +66,7 @@ export default function UserTable({
                 <span style={style.mobileLabel}>Permissões:</span>
                 <span style={style.mobileValue}>
                   {user.permissions.map((p) => (
-                    <>{p.permission}, </>
+                    <>{p}, </>
                   ))}
                 </span>
               </div>
@@ -105,7 +105,7 @@ export default function UserTable({
                     <span style={style.mobileLabel}>Permissões:</span>
                     <span style={style.mobileValue}>
                       {user.permissions.map((p) => (
-                        <>{p.permission}, </>
+                        <>{p}, </>
                       ))}
                     </span>
                   </div>
@@ -144,7 +144,7 @@ export default function UserTable({
                   <div style={style.permissionsCell}>
                     <span style={style.permissionsText}>
                       {user.permissions.map((p) => (
-                        <>{p.permission}, </>
+                        <>{p}, </>
                       ))}
                     </span>
                     <button
@@ -201,7 +201,7 @@ export default function UserTable({
                             <span style={style.expandedLabel}>Permissões:</span>
                             <span style={style.expandedValue}>
                               {user.permissions.map((p) => (
-                                <>{p.permission}, </>
+                                <>{p}, </>
                               ))}
                             </span>
                           </div>

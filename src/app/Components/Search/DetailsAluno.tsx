@@ -101,7 +101,7 @@ export default function DetailsAluno({
 
         if (field.name.includes(".")) {
           const [parent, child] = field.name.split(".");
-          value = data[parent]?.[child];
+          value = (data[parent as keyof Aluno] as any)?.[child];
         } else {
           value = data[field.name as keyof Aluno];
         }
@@ -581,7 +581,7 @@ export default function DetailsAluno({
         fields.forEach((field) => {
           if (field.name.includes(".")) {
             const [parent, child] = field.name.split(".");
-            initialState[field.name] = data[parent]?.[child] || "";
+            initialState[field.name] = (data[parent as keyof Aluno] as any)?.[child] || "";
           } else {
             initialState[field.name] = data[field.name as keyof Aluno] || "";
           }

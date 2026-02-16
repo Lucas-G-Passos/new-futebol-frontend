@@ -113,7 +113,7 @@ export function formatDisplayValue(
 export function getFieldValue(fieldName: string, data: Aluno): any {
   if (fieldName.includes(".")) {
     const [parent, child] = fieldName.split(".");
-    return data[parent as keyof Aluno]?.[child] || "";
+    return (data[parent as keyof Aluno] as any)?.[child] || "";
   }
   return data[fieldName as keyof Aluno] || "";
 }

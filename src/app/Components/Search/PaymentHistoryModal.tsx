@@ -47,7 +47,7 @@ export default function PaymentHistoryModal({
     setShowCalendar(!showCalendar);
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date | string) => {
     return new Date(date).toLocaleDateString("pt-BR");
   };
 
@@ -265,7 +265,7 @@ export default function PaymentHistoryModal({
               onClick={(e) => e.stopPropagation()}
             >
               <Calendar
-                startDate={aluno.dataMatricula}
+                startDate={new Date(aluno.dataMatricula)}
                 intervalos={aluno.intervalosInadimplencia}
                 eventos={mapPagamentosToEventos(pagamentos)}
               />
