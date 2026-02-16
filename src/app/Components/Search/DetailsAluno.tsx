@@ -61,58 +61,6 @@ export default function DetailsAluno({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // useEffect(() => {
-  //   if (!editMode) return;
-
-  //   const getTurmas = async () => {
-  //     try {
-  //       const response = await fetch(
-  //         `${import.meta.env.VITE_BACKEND_URL}/turmas/all`,
-  //         { credentials: "include" },
-  //       );
-  //       if (!response.ok) throw new Error(await response.text());
-
-  //       const turmas = await response.json();
-
-  //       const turmaOptions = turmas.turmas.map((t: any) => ({
-  //         label: t.nome,
-  //         value: t.id,
-  //       }));
-
-  //     } catch (error: any) {
-  //       console.error(error);
-  //       setErrors(error);
-  //     }
-  //   };
-  //   const initialState: Record<string, any> = {};
-
-  //   fields.forEach((field) => {
-  //     let value: any;
-
-  //     if (field.name.includes(".")) {
-  //       const [parent, child] = field.name.split(".");
-  //       value = data[parent]?.[child];
-  //     } else {
-  //       value = data[field.name as keyof Aluno];
-  //     }
-
-  //     if (value == null) {
-  //       initialState[field.name] = "";
-  //       return;
-  //     }
-
-  //     if (field.mask && typeof value === "string") {
-  //       const digits = value.replace(/\D/g, "");
-  //       initialState[field.name] = applyMask(digits, field.mask);
-  //       return;
-  //     }
-
-  //     initialState[field.name] = value;
-  //   });
-
-  //   setFormState(initialState);
-  //   setErrors({});
-  // }, [editMode, fields, data]);
 
   useEffect(() => {
     if (!editMode) return;
@@ -158,6 +106,16 @@ export default function DetailsAluno({
           value = data[field.name as keyof Aluno];
         }
 
+        if (field.type === "CHECKBOXGROUP" || field.type === "IFOKCHECKBOXGROUP") {
+          value = value || [];
+          initialState[field.name] = value;
+          // Initialize the _enabled state for IFOKCHECKBOXGROUP
+          if (field.type === "IFOKCHECKBOXGROUP") {
+            initialState[`${field.name}_enabled`] = value.length > 0;
+          }
+          return;
+        }
+
         if (value == null) {
           initialState[field.name] = "";
           return;
@@ -200,6 +158,29 @@ export default function DetailsAluno({
 
     setFormState((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: errorMsg }));
+  };
+
+  const handleCheckboxGroupChange = (
+    fieldName: string,
+    optionValue: string,
+    isChecked: boolean
+  ) => {
+    setFormState((prev) => {
+      const currentValues = prev[fieldName] || [];
+      let newValues;
+
+      if (isChecked) {
+        newValues = [...currentValues, optionValue];
+      } else {
+        newValues = currentValues.filter(
+          (value: string) => value !== optionValue
+        );
+      }
+
+      return { ...prev, [fieldName]: newValues };
+    });
+
+    setErrors((prev) => ({ ...prev, [fieldName]: "" }));
   };
 
   const renderField = (field: FieldConfig) => {
@@ -317,6 +298,115 @@ export default function DetailsAluno({
             {error && <span style={style.error}>{error}</span>}
           </div>
         );
+
+      case "CHECKBOXGROUP":
+        return (
+          <div style={style.fieldContainer} key={field.name}>
+            {labelWithRequired}
+            <div style={style.checkboxGroup}>
+              {field.options?.map((option) => {
+                const isChecked = (formState[field.name] || []).includes(
+                  option.value
+                );
+                return (
+                  <label
+                    key={option.value}
+                    style={style.checkboxGroupLabel}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={(e) => {
+                        if (typeof option.value === "number") return;
+                        handleCheckboxGroupChange(
+                          field.name,
+                          option.value,
+                          e.target.checked
+                        );
+                      }}
+                      style={style.checkbox}
+                    />
+                    {option.label}
+                  </label>
+                );
+              })}
+            </div>
+            {error && <span style={style.error}>{error}</span>}
+          </div>
+        );
+
+      case "IFOKCHECKBOXGROUP":
+        const ifCbGroupCheckboxStateName = `${field.name}_enabled`;
+        const isIfCbGroupChecked = !!formState[ifCbGroupCheckboxStateName];
+        const ifCbGroupLabel =
+          field.ifCheckboxOk?.checkBoxLabel || field.placeholder;
+        const ifCbGroupRequired =
+          field.ifCheckboxOk?.required || field.required;
+
+        return (
+          <div style={style.fieldContainer} key={field.name}>
+            {/* Main checkbox */}
+            <div>
+              <label style={style.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={isIfCbGroupChecked}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setFormState((prev) => ({
+                      ...prev,
+                      [ifCbGroupCheckboxStateName]: checked,
+                      [field.name]: checked
+                        ? prev[field.name] ||
+                          field.ifCheckboxOk?.defaultValue ||
+                          []
+                        : [],
+                    }));
+                  }}
+                  style={style.checkbox}
+                />
+                {ifCbGroupLabel}
+                {ifCbGroupRequired && <span style={{ color: "red" }}> *</span>}
+              </label>
+            </div>
+
+            {/* Checkbox group that appears when checkbox is checked */}
+            {isIfCbGroupChecked && (
+              <div style={{ marginLeft: 16, marginTop: 8 }}>
+                <div style={style.checkboxGroup}>
+                  {field.options?.map((option) => {
+                    const isChecked = (formState[field.name] || []).includes(
+                      option.value
+                    );
+                    return (
+                      <label
+                        key={option.value}
+                        style={style.checkboxGroupLabel}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            if (typeof option.value === "number") return;
+                            handleCheckboxGroupChange(
+                              field.name,
+                              option.value,
+                              e.target.checked
+                            );
+                          }}
+                          style={style.checkbox}
+                        />
+                        {option.label}
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {error && <span style={style.error}>{error}</span>}
+          </div>
+        );
+
       default:
         return (
           <div style={style.fieldContainer} key={field.name}>
@@ -345,7 +435,23 @@ export default function DetailsAluno({
     fields.forEach((field) => {
       if (field.required) {
         const value = formState[field.name];
-        const empty = value === "" || value == null;
+        let empty = false;
+
+        if (field.type === "CHECKBOX") {
+          empty = value !== true;
+        } else if (field.type === "CHECKBOXGROUP") {
+          empty = !value || value.length === 0;
+        } else if (field.type === "IFOKCHECKBOXGROUP") {
+          const checkboxStateName = `${field.name}_enabled`;
+          const isCheckboxChecked = formState[checkboxStateName];
+          if (isCheckboxChecked) {
+            empty = !value || value.length === 0;
+          } else {
+            empty = false;
+          }
+        } else {
+          empty = value === "" || value == null;
+        }
 
         if (empty) {
           newErrors[field.name] = "Campo obrigatório";
@@ -870,6 +976,12 @@ export default function DetailsAluno({
                     }}
                   >
                     {formatCurrency(data.valorDevido)}
+                  </div>
+                </div>
+                <div style={style.fieldContainer}>
+                  <label style={style.label}>Valor do Uniforme</label>
+                  <div style={style.value}>
+                    {formatCurrency(data.valorUniforme)}
                   </div>
                 </div>
                 <div style={style.fieldContainer}>

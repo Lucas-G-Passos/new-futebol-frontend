@@ -12,6 +12,7 @@ import {
   MagnifyingGlassIcon,
   PencilSimpleLineIcon,
   UsersFourIcon,
+  SignOutIcon,
 } from "@phosphor-icons/react";
 import type { User } from "../Utils/Types";
 import { WhatsAppManager } from "./whatsapp/WhatsAppManager";
@@ -81,12 +82,15 @@ const hasPermission = (
     return undefined;
   };
 
-  if (user.permissions.some((p) => getPermissionValue(p) === "ADMIN")) return true;
-  return user.permissions.some((p) => getPermissionValue(p) === requiredPermission);
+  if (user.permissions.some((p) => getPermissionValue(p) === "ADMIN"))
+    return true;
+  return user.permissions.some(
+    (p) => getPermissionValue(p) === requiredPermission,
+  );
 };
 
 export default function Navbar() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -136,8 +140,19 @@ export default function Navbar() {
 
         <div style={style.profileContainer}>
           {user ? (
-            <div style={{ display: "flex", alignItems: "center" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "",
+                justifyContent: "center",
+              }}
+            >
               <WhatsAppManager />
+              <SignOutIcon
+                size={32}
+                style={{ cursor: "pointer" }}
+                onClick={logout}
+              />
               <div style={{ marginLeft: "auto" }}>
                 <div style={style.profileRow}>
                   <div>

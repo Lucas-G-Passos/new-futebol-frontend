@@ -60,10 +60,13 @@ export function cleanValueForSubmission(value: string, mask?: string): string {
   return cleaned.length > 0 ? cleaned : value;
 }
 
-export function formatDisplayValue(value: any, field: FieldConfig, data?: Aluno): string {
+export function formatDisplayValue(
+  value: any,
+  field: FieldConfig,
+  data?: Aluno,
+): string {
   if (!value) return "Não informado";
 
-  // Special handling for turmaId - display turma name instead
   if (field.name === "turmaId") {
     return (data as any)?.turmaNome || "Não informado";
   }
@@ -87,6 +90,17 @@ export function formatDisplayValue(value: any, field: FieldConfig, data?: Aluno)
       return option?.label || value;
     case "CHECKBOX":
       return value ? "Sim" : "Não";
+    case "CHECKBOXGROUP":
+    case "IFOKCHECKBOXGROUP":
+      if (Array.isArray(value) && value.length > 0) {
+        // Map the values to their labels
+        const labels = value.map((v) => {
+          const option = field.options?.find((opt) => opt.value === v);
+          return option?.label || v;
+        });
+        return labels.join(", ");
+      }
+      return "Nenhum";
 
     default:
       if (field.mask && value) {
@@ -117,23 +131,33 @@ export function getFieldGroups(alunoFields: FieldConfig[]) {
         "cpf",
         "rg",
         "nRegistro",
-      ].includes(field.name)
+        "diasExtras",
+      ].includes(field.name),
     ),
     school: alunoFields.filter((field) =>
-      ["colegio", "colegioAno"].includes(field.name)
+      ["colegio", "colegioAno"].includes(field.name),
     ),
     health: alunoFields.filter((field) =>
-      ["alergia", "usoMedicamento", "horarioMedicamento", "atestado"].includes(field.name)
+      ["alergia", "usoMedicamento", "horarioMedicamento", "atestado"].includes(
+        field.name,
+      ),
     ),
     additional: alunoFields.filter((field) =>
-      ["time", "indicacao", "observacao", "isAtivo"].includes(field.name)
+      [
+        "time",
+        "indicacao",
+        "observacao",
+        "acordo",
+        "valorUniforme",
+        "isAtivo",
+      ].includes(field.name),
     ),
     turma: alunoFields.filter((field) => ["turmaId"].includes(field.name)),
     responsible: alunoFields.filter((field) =>
-      field.name.startsWith("responsavel.")
+      field.name.startsWith("responsavel."),
     ),
     endereco: alunoFields.filter((field) =>
-      ["rua", "cep", "cidade", "estado", "enderecoNumero"].includes(field.name)
+      ["rua", "cep", "cidade", "estado", "enderecoNumero"].includes(field.name),
     ),
   };
 }

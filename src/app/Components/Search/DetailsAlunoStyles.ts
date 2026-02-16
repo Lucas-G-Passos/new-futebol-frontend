@@ -287,4 +287,21 @@ export const detailsAlunoStyles = StyleSheet.create({
     height: "1rem",
     cursor: "pointer",
   },
+  checkboxGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    padding: 8,
+    backgroundColor: Colors.surface,
+    borderRadius: 8,
+    border: `1px solid ${Colors.border}`,
+  },
+  checkboxGroupLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    cursor: "pointer",
+    fontSize: 14,
+    color: Colors.text,
+  },
 });
