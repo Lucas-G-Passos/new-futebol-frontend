@@ -2,7 +2,7 @@ import { StyleSheet } from "../Utils/Stylesheet";
 import Colors from "../Utils/Colors";
 import DynamicForm from "../Components/CreationForm/DynamicForm";
 import { useEffect, useState } from "react";
-import type { FieldConfig } from "../Utils/Types";
+import type { FieldConfig, Turma } from "../Utils/Types";
 import ErrorDisplay from "../Components/ErrorDisplay";
 import { useAuth } from "../Context/AuthContext";
 
@@ -20,7 +20,7 @@ export default function CreationFormPage() {
       type: "TEXT",
     },
     {
-      name:"nRegistro",
+      name: "nRegistro",
       placeholder: "Número de Registro",
       type: "NUMBER",
       required: true,
@@ -51,6 +51,7 @@ export default function CreationFormPage() {
       type: "TEXT",
       mask: "(99) 99999-9999",
     },
+
     {
       name: "cpf",
       placeholder: "CPF",
@@ -101,8 +102,19 @@ export default function CreationFormPage() {
     { name: "time", placeholder: "Time", type: "TEXT" },
     { name: "indicacao", placeholder: "Indicação", type: "TEXT" },
     { name: "observacao", placeholder: "Observação", type: "TEXT" },
-
-    { name: "isAtivo", placeholder: "Ativo", type: "CHECKBOX", required: true },
+    { name: "acordo", placeholder: "Acordo", type: "TEXT" },
+    {
+      name: "valorUniforme",
+      placeholder: "Valor do Uniforme",
+      type: "NUMBER",
+    },
+    {
+      name: "isAtivo",
+      placeholder: "Ativo",
+      type: "CHECKBOX",
+      required: true,
+      defaultValue: true,
+    },
 
     {
       name: "turmaId",
@@ -110,6 +122,24 @@ export default function CreationFormPage() {
       type: "SELECT",
       required: true,
       options: [],
+    },
+
+    {
+      name: "diasExtras",
+      placeholder: "Dias extras",
+      type: "IFOKCHECKBOXGROUP",
+      required: false,
+      defaultValue: [],
+
+      options: [
+        { label: "Segunda", value: "MONDAY" },
+        { label: "Terça", value: "TUESDAY" },
+        { label: "Quarta", value: "WEDNESDAY" },
+        { label: "Quinta", value: "THURSDAY" },
+        { label: "Sexta", value: "FRIDAY" },
+        { label: "Sábado", value: "SATURDAY" },
+        { label: "Domingo", value: "SUNDAY" },
+      ],
     },
 
     { name: "file", placeholder: "Foto", type: "FILE" },
@@ -241,14 +271,14 @@ export default function CreationFormPage() {
       try {
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_URL}/turmas/all`,
-          { credentials: "include" }
+          { credentials: "include" },
         );
         if (!response.ok) throw new Error(await response.text());
 
         const turmas = await response.json();
 
-        const turmaOptions = turmas.turmas.map((t: any) => ({
-          label: t.nome,
+        const turmaOptions = turmas.turmas.map((t: Turma) => ({
+          label: t.nome + " - Filial: " + t.filialNome,
           value: t.id,
         }));
 
@@ -256,8 +286,8 @@ export default function CreationFormPage() {
           prev.map((field) =>
             field.name === "turmaId"
               ? { ...field, options: turmaOptions }
-              : field
-          )
+              : field,
+          ),
         );
       } catch (error: any) {
         console.error(error);
@@ -268,25 +298,30 @@ export default function CreationFormPage() {
     const getNextId = async () => {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/alunos/registro`,{
-            credentials:'include'
-          });
+          `${import.meta.env.VITE_BACKEND_URL}/alunos/registro`,
+          {
+            credentials: "include",
+          },
+        );
 
-          if (!response.ok) throw new Error(await response.text());
+        if (!response.ok) throw new Error(await response.text());
 
-          const nextId = await response.text();
+        const nextId = await response.text();
 
-          setAlunoFields((prev) =>
-            prev.map((field) =>
-              field.name === "nRegistro"
-                ? { ...field, placeholder: `Número de Registro (Próximo: ${nextId})` }
-                : field
-            )
-          );
-      } catch (error:any) {
+        setAlunoFields((prev) =>
+          prev.map((field) =>
+            field.name === "nRegistro"
+              ? {
+                  ...field,
+                  placeholder: `Número de Registro (Próximo: ${nextId})`,
+                }
+              : field,
+          ),
+        );
+      } catch (error: any) {
         setError(error.message);
       }
-    }
+    };
 
     getNextId();
     getTurmas();
@@ -299,7 +334,7 @@ export default function CreationFormPage() {
           method: "POST",
           body: formData,
           credentials: "include",
-        }
+        },
       );
 
       if (!response.ok) {

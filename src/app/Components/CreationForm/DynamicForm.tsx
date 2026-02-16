@@ -67,11 +67,12 @@ export default function DynamicForm({
 }: Props) {
   const [isHovered, setHovered] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [hoveredField, setHoveredField] = useState<string | null>(null);
   const [formState, setFormState] = useState<Record<string, any>>(
     Object.fromEntries(
       fields.map((f) => [
         f.name,
-        f.defaultValue ?? (f.type === "CHECKBOXGROUP" ? [] : ""),
+        f.defaultValue ?? (f.type === "CHECKBOXGROUP" || f.type === "IFOKCHECKBOXGROUP" ? [] : ""),
       ])
     )
   );
@@ -83,7 +84,7 @@ export default function DynamicForm({
       Object.fromEntries(
         fields.map((f) => [
           f.name,
-          f.defaultValue ?? (f.type === "CHECKBOXGROUP" ? [] : ""),
+          f.defaultValue ?? (f.type === "CHECKBOXGROUP" || f.type === "IFOKCHECKBOXGROUP" ? [] : ""),
         ])
       )
     );
@@ -192,6 +193,14 @@ export default function DynamicForm({
             empty = value !== true;
           } else if (field.type === "CHECKBOXGROUP") {
             empty = !value || value.length === 0;
+          } else if (field.type === "IFOKCHECKBOXGROUP") {
+            const checkboxStateName = `${field.name}_enabled`;
+            const isCheckboxChecked = formState[checkboxStateName];
+            if (isCheckboxChecked) {
+              empty = !value || value.length === 0;
+            } else {
+              empty = false; // Not required if checkbox is not checked
+            }
           } else {
             empty = value === "" || value == null;
           }
@@ -234,6 +243,12 @@ export default function DynamicForm({
           if (!formState[checkboxStateName]) continue;
         }
 
+        // Skip IFOKCHECKBOXGROUP fields if their checkbox is not checked
+        if (fieldConfig?.type === "IFOKCHECKBOXGROUP") {
+          const checkboxStateName = `${key}_enabled`;
+          if (!formState[checkboxStateName]) continue;
+        }
+
         // Skip undefined values
         if (value === undefined) continue;
 
@@ -247,7 +262,9 @@ export default function DynamicForm({
           const cleanedValue = cleanValueForSubmission(value, fieldConfig.mask);
           data.append(key, cleanedValue);
         } else if (Array.isArray(value)) {
-          data.append(key, JSON.stringify(value));
+          // Send each array item as a separate form field with the same key
+          // Spring MVC will automatically collect these into a List
+          value.forEach((item) => data.append(key, item));
         } else {
           data.append(key, value);
         }
@@ -265,6 +282,12 @@ export default function DynamicForm({
 
         // Skip TEXTIFCHECKBOXOK fields if their checkbox is not checked
         if (fieldConfig?.type === "TEXTIFCHECKBOXOK") {
+          const checkboxStateName = `${key}_enabled`;
+          if (!formState[checkboxStateName]) continue;
+        }
+
+        // Skip IFOKCHECKBOXGROUP fields if their checkbox is not checked
+        if (fieldConfig?.type === "IFOKCHECKBOXGROUP") {
           const checkboxStateName = `${key}_enabled`;
           if (!formState[checkboxStateName]) continue;
         }
@@ -294,7 +317,6 @@ export default function DynamicForm({
     >
       <h1 style={{ color: Colors.primary, textAlign: "center" }}>{title}</h1>
       {fields.map((field) => {
-        const [isHoveredField, setHoveredField] = useState(false);
         const error = errors[field.name];
 
         const labelWithRequired = (
@@ -323,15 +345,15 @@ export default function DynamicForm({
                     ...style.input,
                     borderColor: error
                       ? "red"
-                      : isHoveredField
+                      : hoveredField === field.name
                         ? Colors.primary
                         : Colors.border,
-                    backgroundColor: isHoveredField
+                    backgroundColor: hoveredField === field.name
                       ? Colors.surfaceAlt
                       : Colors.inputBackground,
                   }}
-                  onMouseEnter={() => setHoveredField(true)}
-                  onMouseLeave={() => setHoveredField(false)}
+                  onMouseEnter={() => setHoveredField(field.name)}
+                  onMouseLeave={() => setHoveredField(null)}
                 />
                 {error && <span style={style.error}>{error}</span>}
               </div>
@@ -482,17 +504,94 @@ export default function DynamicForm({
                         ...style.input,
                         borderColor: error
                           ? "red"
-                          : isHoveredField
+                          : hoveredField === field.name
                             ? Colors.primary
                             : Colors.border,
-                        backgroundColor: isHoveredField
+                        backgroundColor: hoveredField === field.name
                           ? Colors.surfaceAlt
                           : Colors.inputBackground,
                       }}
-                      onMouseEnter={() => setHoveredField(true)}
-                      onMouseLeave={() => setHoveredField(false)}
+                      onMouseEnter={() => setHoveredField(field.name)}
+                      onMouseLeave={() => setHoveredField(null)}
                     />
                     {inputRequired && (
+                      <span
+                        style={{ color: "red", fontSize: 12, marginLeft: 4 }}
+                      >
+                        *
+                      </span>
+                    )}
+                  </div>
+                )}
+                {error && <span style={style.error}>{error}</span>}
+              </div>
+            );
+          case "IFOKCHECKBOXGROUP":
+            const ifCbGroupCheckboxStateName = `${field.name}_enabled`;
+            const isIfCbGroupChecked = !!formState[ifCbGroupCheckboxStateName];
+            const ifCbGroupLabel =
+              field.ifCheckboxOk?.checkBoxLabel || field.placeholder;
+            const ifCbGroupRequired =
+              field.ifCheckboxOk?.required || field.required;
+
+            return (
+              <div style={style.fieldGroup} key={field.name}>
+                {/* Main checkbox */}
+                <div style={style.checkboxWrapper}>
+                  <label style={style.checkboxLabel}>
+                    <input
+                      type="checkbox"
+                      checked={isIfCbGroupChecked}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setFormState((prev) => ({
+                          ...prev,
+                          [ifCbGroupCheckboxStateName]: checked,
+                          [field.name]: checked
+                            ? prev[field.name] ||
+                              field.ifCheckboxOk?.defaultValue ||
+                              []
+                            : [],
+                        }));
+                      }}
+                      style={style.checkbox}
+                    />
+                    {ifCbGroupLabel}
+                  </label>
+                </div>
+
+                {/* Checkbox group that appears when checkbox is checked */}
+                {isIfCbGroupChecked && (
+                  <div style={{ marginLeft: 24, marginTop: 8 }}>
+                    <div style={style.checkboxGroup}>
+                      {field.options?.map((option) => {
+                        const isChecked = (formState[field.name] || []).includes(
+                          option.value
+                        );
+                        return (
+                          <label
+                            key={option.value}
+                            style={style.checkboxGroupLabel}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) => {
+                                if (typeof option.value === "number") return;
+                                handleCheckboxGroupChange(
+                                  field.name,
+                                  option.value,
+                                  e.target.checked
+                                );
+                              }}
+                              style={style.checkbox}
+                            />
+                            {option.label}
+                          </label>
+                        );
+                      })}
+                    </div>
+                    {ifCbGroupRequired && (
                       <span
                         style={{ color: "red", fontSize: 12, marginLeft: 4 }}
                       >

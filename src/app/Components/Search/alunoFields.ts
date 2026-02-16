@@ -94,7 +94,12 @@ export const alunoFields: FieldConfig[] = [
   { name: "time", placeholder: "Time", type: "TEXT" },
   { name: "indicacao", placeholder: "Indicação", type: "TEXT" },
   { name: "observacao", placeholder: "Observação", type: "TEXT" },
-
+  { name: "acordo", placeholder: "Acordo", type: "TEXT" },
+  {
+    name: "valorUniforme",
+    placeholder: "Valor do Uniforme",
+    type: "NUMBER",
+  },
   {
     name: "isAtivo",
     placeholder: "Ativo",
@@ -109,6 +114,24 @@ export const alunoFields: FieldConfig[] = [
     type: "SELECT",
     required: true,
     options: [],
+  },
+
+  {
+    name: "diasExtras",
+    placeholder: "Dias extras",
+    type: "IFOKCHECKBOXGROUP",
+    required: false,
+    defaultValue: [],
+
+    options: [
+      { label: "Segunda", value: "MONDAY" },
+      { label: "Terça", value: "TUESDAY" },
+      { label: "Quarta", value: "WEDNESDAY" },
+      { label: "Quinta", value: "THURSDAY" },
+      { label: "Sexta", value: "FRIDAY" },
+      { label: "Sábado", value: "SATURDAY" },
+      { label: "Domingo", value: "SUNDAY" },
+    ],
   },
 
   { name: "file", placeholder: "Foto", type: "FILE" },

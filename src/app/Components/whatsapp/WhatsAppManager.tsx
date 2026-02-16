@@ -11,8 +11,8 @@ const hasPermission = (
 ): boolean => {
   if (!requiredPermission) return true;
   if (!user) return false;
-  if (user.permissions.some((p) => p.permission === "ADMIN")) return true;
-  return user.permissions.some((p) => p.permission === requiredPermission);
+  if (user.permissions.some((p) => p === "ADMIN")) return true;
+  return user.permissions.some((p) => p === requiredPermission);
 };
 
 export function WhatsAppManager() {

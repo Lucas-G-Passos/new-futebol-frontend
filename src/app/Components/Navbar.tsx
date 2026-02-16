@@ -12,6 +12,7 @@ import {
   MagnifyingGlassIcon,
   PencilSimpleLineIcon,
   UsersFourIcon,
+  SignOutIcon,
 } from "@phosphor-icons/react";
 import type { User } from "../Utils/Types";
 import { WhatsAppManager } from "./whatsapp/WhatsAppManager";
@@ -73,12 +74,23 @@ const hasPermission = (
 ): boolean => {
   if (!requiredPermission) return true;
   if (!user) return false;
-  if (user.permissions.some((p) => p.permission === "ADMIN")) return true;
-  return user.permissions.some((p) => p.permission === requiredPermission);
+
+  // Handle permissions as strings or objects with permission property
+  const getPermissionValue = (p: any): string | undefined => {
+    if (typeof p === "string") return p;
+    if (typeof p === "object" && p?.permission) return p.permission;
+    return undefined;
+  };
+
+  if (user.permissions.some((p) => getPermissionValue(p) === "ADMIN"))
+    return true;
+  return user.permissions.some(
+    (p) => getPermissionValue(p) === requiredPermission,
+  );
 };
 
 export default function Navbar() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -94,6 +106,12 @@ export default function Navbar() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  const formatFiliais = (user: User): string => {
+    if (!user.filialNames || user.filialNames.length === 0) return "";
+
+    return user.filialNames.join(", ");
+  };
 
   return (
     <div style={style.mainContainer}>
@@ -122,8 +140,19 @@ export default function Navbar() {
 
         <div style={style.profileContainer}>
           {user ? (
-            <div style={{ display: "flex", alignItems: "center" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "",
+                justifyContent: "center",
+              }}
+            >
               <WhatsAppManager />
+              <SignOutIcon
+                size={32}
+                style={{ cursor: "pointer" }}
+                onClick={logout}
+              />
               <div style={{ marginLeft: "auto" }}>
                 <div style={style.profileRow}>
                   <div>
@@ -132,9 +161,7 @@ export default function Navbar() {
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     {user.username}
                     <div style={{ fontSize: 11, fontStyle: "italic" }}>
-                      {user.permissions.map((p) => (
-                        <>{p.permission}, </>
-                      ))}
+                      {formatFiliais(user)}
                     </div>
                   </div>
                 </div>

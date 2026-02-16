@@ -129,6 +129,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setLoading(true);
       setLocalError(null);
+
+      // Call backend to clear the auth cookie
+      await fetch(`${import.meta.env.VITE_BACKEND_URL}/user/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      // Clear local state
       setToken(null);
       setUser(null);
       setLogged(false);

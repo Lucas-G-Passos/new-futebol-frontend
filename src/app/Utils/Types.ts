@@ -3,7 +3,9 @@ export type User = {
   username: string;
   password: string;
   email?: string | null;
-  permissions: [{ permission: string }];
+  permissions: string[];
+  filialIds: Array<number>;
+  filialNames: Array<String>;
 };
 
 export type Funcionario = {
@@ -59,42 +61,69 @@ export interface Filial {
 export interface Aluno {
   id: number;
   nomeCompleto: string;
-  dataNascimento?: Date; // LocalDate → string (YYYY-MM-DD)
-  dataMatricula?: Date; // LocalDate → string (YYYY-MM-DD)
+
+  dataNascimento?: string; // YYYY-MM-DD
+  dataMatricula?: string; // YYYY-MM-DD
+  horarioMedicamento?: string; // HH:mm:ss
+
   telefone1: string;
   telefone2?: string;
+
   cpf: string;
   rg: string;
+
   alergia?: string;
   usoMedicamento?: string;
-  horarioMedicamento?: string; // LocalTime → string (HH:mm:ss)
+
   colegio: string;
   colegioAno?: string;
   time?: string;
   indicacao?: string;
   observacao?: string;
   acordo?: string;
+
   cep?: string;
   rua?: string;
   enderecoNumero?: string;
   cidade?: string;
   estado?: string;
+
   isAtivo?: boolean;
+
   filePath?: string;
+  atestadoFile?: string;
+  atestadoUrl?: string;
   url?: string;
+
   turmaId?: number;
   turmaNome?: string;
-  isAdimplente?: boolean;
-  valorFatura?: number;
-  valorDevido?: number;
-  dataPagamento?: number; // Day of month (1-31)
-  numeroCartao?: string;
-  pagamento?: Pagamento[]; // Note: backend uses 'pagamentos' (plural) in entity but 'pagamento' in DTO
-  intervalosInadimplencia?: IntervaloInadimplencia[];
-  responsavel?: Responsavel;
-  turma?: Turma;
 
-  [key: string]: any;
+  isAdimplente?: boolean;
+
+  valorFatura?: number; // BigDecimal → number
+  valorDevido?: number; // BigDecimal → number
+  valorUniforme?: number; // BigDecimal → number
+
+  dataPagamento?: number; // backend usa int
+
+  numeroCartao?: string;
+
+  apelido?: string;
+  nRegistro?: number;
+
+  pagamento?: Pagamento[];
+  intervalosInadimplencia?: IntervaloInadimplencia[];
+
+  diasExtras: Array<string>
+
+  responsavel?: {
+    nomeCompleto: string;
+    cpf: string;
+    rg: string;
+    telefone1: string;
+    telefone2?: string;
+    email?: string;
+  };
 }
 
 export enum DayOfWeek {
@@ -120,7 +149,8 @@ export type FieldConfig = {
     | "TIME"
     | "CHECKBOXGROUP"
     | "HIDDEN"
-    | "TEXTIFCHECKBOXOK";
+    | "TEXTIFCHECKBOXOK"
+    | "IFOKCHECKBOXGROUP";
   options?: { label: string; value: string | number }[];
   defaultValue?: any;
   mask?: string;

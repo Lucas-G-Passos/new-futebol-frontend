@@ -1,85 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import UserTable from "../Components/Users/UsersTable";
 import { StyleSheet } from "../Utils/Stylesheet";
-import { type FieldConfig, type User } from "../Utils/Types";
+import { type Filial, type FieldConfig, type User } from "../Utils/Types";
 import DynamicForm from "../Components/CreationForm/DynamicForm";
 import Colors from "../Utils/Colors";
 import { XIcon } from "@phosphor-icons/react";
-
-const fields: FieldConfig[] = [
-  {
-    name: "username",
-    placeholder: "Username",
-    type: "TEXT",
-    required: true,
-  },
-  {
-    name: "password",
-    placeholder: "Senha",
-    type: "TEXT",
-    required: true,
-  },
-  {
-    name: "email",
-    placeholder: "E-Mail",
-    type: "TEXT",
-  },
-  {
-    name: "permissions",
-    type: "CHECKBOXGROUP",
-    placeholder: "Permissões",
-    options: [
-      { label: "Admin", value: "ADMIN" },
-      { label: "Alunos", value: "ALUNOS" },
-      { label: "Pagamentos", value: "PAGAMENTOS" },
-      { label: "Turmas", value: "TURMAS" },
-      { label: "Whatsapp", value: "WHATSAPP" },
-    ],
-  },
-];
-
-const fieldsEdit: FieldConfig[] = [
-  {
-    name: "username",
-    placeholder: "Username",
-    type: "TEXT",
-    required: true,
-  },
-  {
-    name: "password",
-    placeholder: "Senha",
-    type: "TEXTIFCHECKBOXOK",
-    ifCheckboxOk: { checkBoxLabel: "Alterar senha?", required: true },
-  },
-  {
-    name: "email",
-    placeholder: "E-Mail",
-    type: "TEXT",
-  },
-  {
-    name: "permissions",
-    type: "CHECKBOXGROUP",
-    placeholder: "Permissões",
-    options: [
-      { label: "Admin", value: "ADMIN" },
-      { label: "Alunos", value: "ALUNOS" },
-      { label: "Funcionarios", value: "FUNCIONARIOS" },
-      { label: "Pagamentos", value: "PAGAMENTOS" },
-      { label: "Turmas", value: "TURMAS" },
-      { label: "Filiais", value: "FILIAIS" },
-      { label: "Deletar", value: "DELETE" },
-    ],
-  },
-];
 
 export default function UserManagement() {
   const [users, setUsers] = useState<User[] | null>(null);
   const [showCreateForm, setCreateForm] = useState<boolean>(false);
   const [editForm, setEditForm] = useState<boolean>(false);
+  const [filiais, setFiliais] = useState<Array<Filial> | null>(null);
   const [selectedUser, setSelectedUser] = useState<Record<string, any> | null>(
     null,
   );
   const [refresh, setRefresh] = useState<boolean>(false);
+
   useEffect(() => {
     const getData = async () => {
       try {
@@ -97,6 +33,25 @@ export default function UserManagement() {
     getData();
   }, [refresh]);
 
+  useEffect(() => {
+    const getFiliais = async () => {
+      if (!editForm && !showCreateForm) return;
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/filiais/all`,
+          { credentials: "include" },
+        );
+        if (!response.ok) throw new Error("Erro ao pegar filiais");
+        const data = await response.json();
+        setFiliais(data.filiais);
+      } catch (e) {
+        alert(e);
+      }
+    };
+
+    getFiliais();
+  }, [editForm, showCreateForm]);
+
   const handleCreateUser = async (formdata: Record<string, any>) => {
     try {
       const userData: User = {
@@ -104,6 +59,8 @@ export default function UserManagement() {
         email: formdata?.email,
         password: formdata.password,
         permissions: formdata.permissions,
+        filialIds: formdata.filialIds,
+        filialNames: formdata.filialNames,
       };
 
       const response = await fetch(
@@ -172,6 +129,88 @@ export default function UserManagement() {
     setSelectedUser(formData);
     setEditForm(true);
   };
+
+  const fields: Array<FieldConfig> = useMemo(() => {
+    if (!filiais) return [];
+    return [
+      {
+        name: "username",
+        placeholder: "Username",
+        type: "TEXT",
+        required: true,
+      },
+      {
+        name: "password",
+        placeholder: "Senha",
+        type: "TEXT",
+        required: true,
+      },
+      {
+        name: "email",
+        placeholder: "E-Mail",
+        type: "TEXT",
+      },
+      {
+        name: "permissions",
+        type: "CHECKBOXGROUP",
+        placeholder: "Permissões",
+        options: [
+          { label: "Admin", value: "ADMIN" },
+          { label: "Alunos", value: "ALUNOS" },
+          { label: "Pagamentos", value: "PAGAMENTOS" },
+          { label: "Turmas", value: "TURMAS" },
+          { label: "Whatsapp", value: "WHATSAPP" },
+        ],
+      },
+      {
+        name: "filialIds",
+        type: "CHECKBOXGROUP",
+        placeholder: "Filiais",
+        options: filiais.map((f) => ({ label: f.nome, value: String(f.id) })),
+      },
+    ];
+  }, [filiais]);
+
+  const fieldsEdit: Array<FieldConfig> = useMemo(() => {
+    if (!filiais) return [];
+    return [
+      {
+        name: "username",
+        placeholder: "Username",
+        type: "TEXT",
+        required: true,
+      },
+      {
+        name: "password",
+        placeholder: "Senha",
+        type: "TEXTIFCHECKBOXOK",
+        ifCheckboxOk: { checkBoxLabel: "Alterar senha?", required: true },
+      },
+      {
+        name: "email",
+        placeholder: "E-Mail",
+        type: "TEXT",
+      },
+      {
+        name: "permissions",
+        type: "CHECKBOXGROUP",
+        placeholder: "Permissões",
+        options: [
+          { label: "Admin", value: "ADMIN" },
+          { label: "Alunos", value: "ALUNOS" },
+          { label: "Pagamentos", value: "PAGAMENTOS" },
+          { label: "Turmas", value: "TURMAS" },
+          { label: "Whatsapp", value: "WHATSAPP" },
+        ],
+      },
+      {
+        name: "filialIds",
+        type: "CHECKBOXGROUP",
+        placeholder: "Filiais",
+        options: filiais.map((f) => ({ label: f.nome, value: String(f.id) })),
+      },
+    ];
+  }, [filiais]);
 
   return (
     <div style={style.mainContainer}>
