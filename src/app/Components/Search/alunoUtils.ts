@@ -74,7 +74,7 @@ export function formatDisplayValue(
   switch (field.type) {
     case "DATE":
       try {
-        return new Date(value).toLocaleDateString("pt-BR");
+        return new Date(value).toLocaleDateString("pt-BR", { timeZone: "UTC" });
       } catch {
         return "Data inválida";
       }
