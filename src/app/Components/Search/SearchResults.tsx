@@ -94,7 +94,8 @@ export default function SearchResults({ data, onClick }: SearchResultsProps) {
                     <span style={style.detailItem}>
                       Nascimento:{" "}
                       {new Date(item.dataNascimento).toLocaleDateString(
-                        "pt-BR"
+                        "pt-BR",
+                        { timeZone: "UTC" },
                       )}
                     </span>
                   )}
