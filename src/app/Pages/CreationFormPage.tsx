@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import type { FieldConfig, Turma } from "../Utils/Types";
 import ErrorDisplay from "../Components/ErrorDisplay";
 import { useAuth } from "../Context/AuthContext";
+import { useError } from "../Context/ErrorContext";
+import { mapErrorMessage } from "../Utils/ErrorMapping";
 
 export default function CreationFormPage() {
   const [alunoFields, setAlunoFields] = useState<FieldConfig[]>([
@@ -265,6 +267,7 @@ export default function CreationFormPage() {
     },
   ]);
   const { setError } = useAuth();
+  const { addError } = useError();
 
   useEffect(() => {
     const getTurmas = async () => {
@@ -342,7 +345,7 @@ export default function CreationFormPage() {
         throw new Error(errorText);
       }
 
-      alert("Aluno criado com sucesso!");
+      addError("Aluno criado com sucesso!", "success", 3000);
     } catch (err: any) {
       console.error("Erro na requisição:", err);
       setError("Erro ao criar aluno: " + err.message);

@@ -4,8 +4,11 @@ import FilialTable from "../Components/Filial/FilialTable";
 import DynamicForm from "../Components/CreationForm/DynamicForm";
 import type { FieldConfig, Filial } from "../Utils/Types";
 import Colors from "../Utils/Colors";
+import { useError } from "../Context/ErrorContext";
+import { mapErrorMessage } from "../Utils/ErrorMapping";
 
 export default function Filial() {
+  const { addError } = useError();
   const [filiais, setFiliais] = useState(null);
   const [refresh, setRefresh] = useState<boolean>(false);
   const [showForm, setShowForm] = useState<boolean>(false);
@@ -26,7 +29,7 @@ export default function Filial() {
         const data = await response.json();
         setFiliais(data);
       } catch (error) {
-        alert(error);
+        addError(mapErrorMessage(error));
       }
     };
     getFiliais();
@@ -101,10 +104,10 @@ export default function Filial() {
       }
       setShowForm(false);
       setRefresh(!refresh);
-      alert("Filial criada com sucesso!");
+      addError("Filial criada com sucesso!", "success", 3000);
     } catch (error: any) {
       console.error("Error creating filial:", error);
-      alert("Erro ao criar filial: " + error.message);
+      addError(mapErrorMessage(error));
     }
   };
 
@@ -137,10 +140,10 @@ export default function Filial() {
       }
       setEditForm(false);
       setRefresh(!refresh);
-      alert("Filial editada com sucesso!");
+      addError("Filial editada com sucesso!", "success", 3000);
     } catch (error: any) {
       console.error("Error editing filial:", error);
-      alert("Erro ao editar filial: " + error.message);
+      addError(mapErrorMessage(error));
     }
   };
 
@@ -164,9 +167,9 @@ export default function Filial() {
       }
 
       setRefresh(!refresh);
-      alert("Filial deletada com sucesso!");
+      addError("Filial deletada com sucesso!", "success", 3000);
     } catch (error) {
-
+      addError(mapErrorMessage(error));
     }
   };
 

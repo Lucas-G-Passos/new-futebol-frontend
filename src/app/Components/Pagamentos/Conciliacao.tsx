@@ -3,8 +3,11 @@ import { StyleSheet } from "../../Utils/Stylesheet";
 import { type ConciliacaoResponse, type Aluno } from "../../Utils/Types";
 import Colors from "../../Utils/Colors";
 import DetailsAluno from "../Search/DetailsAluno";
+import { useError } from "../../Context/ErrorContext";
+import { mapErrorMessage } from "../../Utils/ErrorMapping";
 
 export default function Conciliacao() {
+  const { addError } = useError();
   const [file, setFile] = useState<Blob | null>(null);
   const [data, setData] = useState<ConciliacaoResponse | null>(null);
 
@@ -43,7 +46,7 @@ export default function Conciliacao() {
       let response: Response | undefined;
 
       if (!file) {
-        alert("Por favor, selecione um arquivo CSV antes de enviar.");
+        addError("Por favor, selecione um arquivo CSV antes de enviar.");
         return;
       }
 
@@ -98,7 +101,7 @@ export default function Conciliacao() {
       const data = await response.json();
       setData(data);
     } catch (error: any) {
-      alert(error.message);
+      addError(mapErrorMessage(error));
     }
   };
 

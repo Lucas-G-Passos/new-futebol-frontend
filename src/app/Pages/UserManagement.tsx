@@ -5,8 +5,11 @@ import { type Filial, type FieldConfig, type User } from "../Utils/Types";
 import DynamicForm from "../Components/CreationForm/DynamicForm";
 import Colors from "../Utils/Colors";
 import { XIcon } from "@phosphor-icons/react";
+import { useError } from "../Context/ErrorContext";
+import { mapErrorMessage } from "../Utils/ErrorMapping";
 
 export default function UserManagement() {
+  const { addError } = useError();
   const [users, setUsers] = useState<User[] | null>(null);
   const [showCreateForm, setCreateForm] = useState<boolean>(false);
   const [editForm, setEditForm] = useState<boolean>(false);
@@ -27,7 +30,7 @@ export default function UserManagement() {
         const data = await response.json();
         setUsers(data);
       } catch (e) {
-        alert(e);
+        addError(mapErrorMessage(e));
       }
     };
     getData();
@@ -45,7 +48,7 @@ export default function UserManagement() {
         const data = await response.json();
         setFiliais(data.filiais);
       } catch (e) {
-        alert(e);
+        addError(mapErrorMessage(e));
       }
     };
 
@@ -79,10 +82,10 @@ export default function UserManagement() {
       }
       setCreateForm(false);
       setRefresh(!refresh);
-      alert("Usuário criado com sucesso!");
+      addError("Usuário criado com sucesso!", "success", 3000);
     } catch (error: any) {
       console.error("Error creating usuario:", error);
-      alert("Erro ao criar usuário: " + error.message);
+      addError(mapErrorMessage(error));
     }
   };
 
@@ -115,13 +118,13 @@ export default function UserManagement() {
         throw new Error(errorText || "Erro ao editar usuário");
       }
 
-      alert("Usuário alterado com sucesso!");
+      addError("Usuário alterado com sucesso!", "success", 3000);
 
       setEditForm(false);
       setRefresh(!refresh);
     } catch (error: any) {
       console.error("Error editing user:", error);
-      alert("Erro ao editar usuário: " + error.message);
+      addError(mapErrorMessage(error));
     }
   };
 

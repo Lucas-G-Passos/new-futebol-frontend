@@ -26,6 +26,8 @@ import { detailsAlunoStyles as style } from "./DetailsAlunoStyles";
 import PaymentHistoryModal from "./PaymentHistoryModal";
 import { alunoFields } from "./alunoFields";
 import SendMessagePanel from "../whatsapp/SendMessagePanel";
+import { useError } from "../../Context/ErrorContext";
+import { mapErrorMessage } from "../../Utils/ErrorMapping";
 
 export default function DetailsAluno({
   data,
@@ -36,6 +38,7 @@ export default function DetailsAluno({
   close: (value: any) => void;
   onUpdate?: () => void;
 }) {
+  const { addError } = useError();
   const [editMode, setEditMode] = useState<boolean>(false);
   const [fields, setFields] = useState<FieldConfig[]>(alunoFields);
   const [formState, setFormState] = useState<Record<string, any>>({});
@@ -537,11 +540,11 @@ export default function DetailsAluno({
         throw new Error(errorText || `HTTP error! status: ${response.status}`);
       }
 
-      alert("Aluno atualizado com sucesso!");
+      addError("Aluno atualizado com sucesso!", "success", 3000);
       onUpdate?.();
       setEditMode(false);
     } catch (error: any) {
-      alert("Erro ao atualizar aluno: " + error.message);
+      addError(mapErrorMessage(error));
     }
   };
 
@@ -620,7 +623,7 @@ export default function DetailsAluno({
         window.location.href = url;
       }
     } catch (error) {
-      alert("Erro ao carregar o PDF");
+      addError("Erro ao carregar o PDF");
     }
   };
 
@@ -802,7 +805,7 @@ export default function DetailsAluno({
               {editMode ? (
                 <div style={style.fileUpload}>
                   {renderField({
-                    name: "url",
+                    name: "file",
                     placeholder: "Foto",
                     type: "FILE",
                     required: false,

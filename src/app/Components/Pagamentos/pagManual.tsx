@@ -5,6 +5,8 @@ import Colors from "../../Utils/Colors";
 import DynamicForm from "../CreationForm/DynamicForm";
 import GenericSearcher from "../Home/GenericSearcher";
 import { XIcon, Upload } from "@phosphor-icons/react";
+import { useError } from "../../Context/ErrorContext";
+import { mapErrorMessage } from "../../Utils/ErrorMapping";
 
 export default function PagamentoManual({
   onClose,
@@ -17,6 +19,7 @@ export default function PagamentoManual({
   defaultAluno?: Aluno;
   onUpdate?: () => void;
 }) {
+  const { addError } = useError();
   const [alunos, setAlunos] = useState<Array<Aluno> | null>(null);
   const [selectedAluno, setSelected] = useState<Aluno | null>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -56,7 +59,7 @@ export default function PagamentoManual({
       const data = await response.json();
       setAlunos(data);
     } catch (error: any) {
-      alert(error.message);
+      addError(mapErrorMessage(error));
     }
   };
 
@@ -71,7 +74,7 @@ export default function PagamentoManual({
 
   const handleSubmit = async (formData: Record<string, any>) => {
     if (!selectedAluno) {
-      alert("Por favor, selecione um aluno");
+      addError("Por favor, selecione um aluno");
       return;
     }
 
@@ -103,11 +106,11 @@ export default function PagamentoManual({
         throw new Error("Erro ao registrar pagamento");
       }
 
-      alert("Pagamento registrado com sucesso!");
+      addError("Pagamento registrado com sucesso!", "success", 3000);
       setSelected(null);
       onUpdate?.();
     } catch (error: any) {
-      alert(error.message);
+      addError(mapErrorMessage(error));
     }
   };
 
@@ -131,7 +134,7 @@ export default function PagamentoManual({
       "image/png",
     ];
     if (!allowedTypes.includes(file.type)) {
-      alert("Por favor, envie um arquivo PDF ou uma imagem (JPG, PNG)");
+      addError("Por favor, envie um arquivo PDF ou uma imagem (JPG, PNG)");
       return;
     }
 
@@ -156,11 +159,13 @@ export default function PagamentoManual({
 
       const data = await response.json();
       setParsedData(data);
-      alert(
+      addError(
         "Comprovante processado com sucesso! Os campos foram preenchidos automaticamente.",
+        "success",
+        3000,
       );
     } catch (error: any) {
-      alert(error.message || "Erro ao processar o comprovante");
+      addError(mapErrorMessage(error));
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {

@@ -9,8 +9,11 @@ import { type Aluno, type DashBoard } from "../Utils/Types";
 import GraphExpectedReceived from "../Components/Pagamentos/GraphExpectedReceived";
 import GraphAdimplentesInadimplentes from "./GraphAdimplentesInadimplentes";
 import AnalyticsLineGraph from "../Components/Pagamentos/AnalyticsLineGraph";
+import { useError } from "../Context/ErrorContext";
+import { mapErrorMessage } from "../Utils/ErrorMapping";
 
 export default function Pagamentos() {
+  const { addError } = useError();
   const [showManual, setShowManual] = useState(false);
   const [showAddDivida, setShowAddDivida] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -34,7 +37,7 @@ export default function Pagamentos() {
       const data: DashBoard = await response.json();
       setDashboardData(data);
     } catch (error: any) {
-      alert(error.message || "Erro ao buscar dados do dashboard");
+      addError(mapErrorMessage(error));
     }
   };
 
@@ -47,14 +50,14 @@ export default function Pagamentos() {
         }
       );
       if (!response.ok) {
-        alert("Erro ao buscar inadimplentes");
+        addError("Erro ao buscar inadimplentes");
         return;
       }
       const data = await response.json();
       setInadimplentes(data);
     } catch (error) {
       console.error("Erro ao buscar inadimplentes:", error);
-      alert("Erro ao buscar inadimplentes");
+      addError(mapErrorMessage(error));
     }
   };
 

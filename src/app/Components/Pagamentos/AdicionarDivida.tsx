@@ -5,6 +5,8 @@ import Colors from "../../Utils/Colors";
 import DynamicForm from "../CreationForm/DynamicForm";
 import GenericSearcher from "../Home/GenericSearcher";
 import { XIcon } from "@phosphor-icons/react";
+import { useError } from "../../Context/ErrorContext";
+import { mapErrorMessage } from "../../Utils/ErrorMapping";
 
 export default function AdicionarDivida({
   onClose,
@@ -17,6 +19,7 @@ export default function AdicionarDivida({
   defaultAluno?: Aluno;
   onUpdate?:()=>void
 }) {
+  const { addError } = useError();
   const [alunos, setAlunos] = useState<Array<Aluno> | null>(null);
   const [selectedAluno, setSelected] = useState<Aluno | null>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -53,7 +56,7 @@ export default function AdicionarDivida({
       const data = await response.json();
       setAlunos(data);
     } catch (error: any) {
-      alert(error.message);
+      addError(mapErrorMessage(error));
     }
   };
 
@@ -102,7 +105,7 @@ export default function AdicionarDivida({
 
   const handleSubmit = async (formData: Record<string, any>) => {
     if (!selectedAluno) {
-      alert("Por favor, selecione um aluno");
+      addError("Por favor, selecione um aluno");
       return;
     }
 
@@ -128,11 +131,11 @@ export default function AdicionarDivida({
       if (!response.ok) {
         throw new Error("Erro ao registrar dívida");
       }
-      alert("Dívida registrada com sucesso!");
+      addError("Dívida registrada com sucesso!", "success", 3000);
       setSelected(null);
       onUpdate?.();
     } catch (error: any) {
-      alert(error.message);
+      addError(mapErrorMessage(error));
     }
   };
 

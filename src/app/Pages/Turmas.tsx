@@ -5,8 +5,11 @@ import DynamicForm from "../Components/CreationForm/DynamicForm";
 import type { FieldConfig, Turma } from "../Utils/Types";
 import Colors from "../Utils/Colors";
 import { XIcon } from "@phosphor-icons/react";
+import { useError } from "../Context/ErrorContext";
+import { mapErrorMessage } from "../Utils/ErrorMapping";
 
 export default function Turmas() {
+  const { addError } = useError();
   const [turmas, setTurmas] = useState(null);
   const [filiais, setFiliais] = useState<{ id: number; nome: string }[]>([]);
   const [refresh, setRefresh] = useState<boolean>(false);
@@ -28,7 +31,7 @@ export default function Turmas() {
         const data = await response.json();
         setTurmas(data); // Handle both response formats
       } catch (error) {
-        alert(error);
+        addError(mapErrorMessage(error));
       }
     };
     getTurmas();
@@ -150,10 +153,10 @@ export default function Turmas() {
 
       setShowForm(false);
       setRefresh(!refresh);
-      alert("Turma criada com sucesso!");
+      addError("Turma criada com sucesso!", "success", 3000);
     } catch (error: any) {
       console.error("Error creating turma:", error);
-      alert("Erro ao criar turma: " + error.message);
+      addError(mapErrorMessage(error));
     }
   };
 
@@ -189,10 +192,10 @@ export default function Turmas() {
 
       setEditForm(false);
       setRefresh(!refresh);
-      alert("Turma editada com sucesso!");
+      addError("Turma editada com sucesso!", "success", 3000);
     } catch (error: any) {
       console.error("Error editing turma:", error);
-      alert("Erro ao editar turma: " + error.message);
+      addError(mapErrorMessage(error));
     }
   };
 
@@ -211,9 +214,9 @@ export default function Turmas() {
       }
 
       setRefresh(!refresh);
-      alert("Turma deletada com sucesso!");
+      addError("Turma deletada com sucesso!", "success", 3000);
     } catch (error) {
-      
+      addError(mapErrorMessage(error));
     }
   }
 
