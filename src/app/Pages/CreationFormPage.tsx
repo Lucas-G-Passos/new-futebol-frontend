@@ -6,7 +6,6 @@ import type { FieldConfig, Turma } from "../Utils/Types";
 import ErrorDisplay from "../Components/ErrorDisplay";
 import { useAuth } from "../Context/AuthContext";
 import { useError } from "../Context/ErrorContext";
-import { mapErrorMessage } from "../Utils/ErrorMapping";
 
 export default function CreationFormPage() {
   const [alunoFields, setAlunoFields] = useState<FieldConfig[]>([

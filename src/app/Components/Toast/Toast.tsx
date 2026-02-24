@@ -1,6 +1,5 @@
 import { X, Warning, CheckCircle, Info } from "@phosphor-icons/react";
 import { StyleSheet } from "../../Utils/Stylesheet";
-import Colors from "../../Utils/Colors";
 
 type Props = {
   message: string;
