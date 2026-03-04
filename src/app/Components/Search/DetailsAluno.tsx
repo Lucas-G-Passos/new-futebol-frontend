@@ -119,6 +119,12 @@ export default function DetailsAluno({
           return;
         }
 
+        if (field.type === "CHECKBOX") {
+          // Convert null/undefined to false for checkboxes, not to empty string
+          initialState[field.name] = value === true;
+          return;
+        }
+
         if (value == null) {
           initialState[field.name] = "";
           return;
@@ -441,7 +447,9 @@ export default function DetailsAluno({
         let empty = false;
 
         if (field.type === "CHECKBOX") {
-          empty = value !== true;
+          // For checkboxes, both true and false are valid (user made a choice)
+          // Only null or undefined should fail required validation
+          empty = value === null || value === undefined;
         } else if (field.type === "CHECKBOXGROUP") {
           empty = !value || value.length === 0;
         } else if (field.type === "IFOKCHECKBOXGROUP") {
@@ -500,7 +508,11 @@ export default function DetailsAluno({
           return;
         }
 
-        alunoData[field.name] = value ?? "";
+        if (field.type === "CHECKBOX") {
+          alunoData[field.name] = value === true;
+        } else {
+          alunoData[field.name] = value ?? "";
+        }
       });
 
       const responsavelData: any = {};

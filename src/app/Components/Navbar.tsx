@@ -75,7 +75,6 @@ const hasPermission = (
   if (!requiredPermission) return true;
   if (!user) return false;
 
-  // Handle permissions as strings or objects with permission property
   const getPermissionValue = (p: any): string | undefined => {
     if (typeof p === "string") return p;
     if (typeof p === "object" && p?.permission) return p.permission;
